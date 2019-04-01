@@ -4,3 +4,4 @@ jupyter
 matplotlib
 keras
 pylint
+keras-tqdm
