@@ -1,5 +1,6 @@
 numpy
+numba
 jupyter
 matplotlib
-keras 
+keras
 pylint
