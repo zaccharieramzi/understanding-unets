@@ -1,13 +1,18 @@
-from keras.datasets import cifar10
+from keras.datasets import cifar10, mnist
 from keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 
 np.random.seed(1)
 
 
-def im_generator_cifar(mode='training', batch_size=32, noise_mean=0.0, noise_std=10, validation_split=0.1):
+def im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=10, validation_split=0.1, source='cifar10'):
     train_modes = ('training', 'validation')
-    (x_train, _), (x_test, _) = cifar10.load_data()
+    if source == 'cifar10':
+        (x_train, _), (x_test, _) = cifar10.load_data()
+    elif source == 'mnist':
+        (x_train, _), (x_test, _) = mnist.load_data()
+    else:
+        raise ValueError('Source unknown')
     if mode in train_modes:
         x = x_train
         subset = mode
@@ -25,6 +30,8 @@ def im_generator_cifar(mode='training', batch_size=32, noise_mean=0.0, noise_std
         vertical_flip=True,
         validation_split=validation_split,
     )
+    if len(x.shape) == 3:
+        x = x[:, :, :, None]
     image_generator = image_datagen.flow(
         x,
         batch_size=batch_size,
