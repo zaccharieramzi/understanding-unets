@@ -6,3 +6,4 @@ keras
 pylint
 keras-tqdm
 pydot
+tensorboard
