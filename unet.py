@@ -1,12 +1,19 @@
 """Largely inspired by https://github.com/zhixuhao/unet/blob/master/model.py"""
 from keras import activations
-from keras import backend as K
 from keras.layers import Conv2D, MaxPooling2D, concatenate, Dropout, UpSampling2D, Input, AveragePooling2D
 from keras.models import Model
 from keras.optimizers import Adam
 
 
-def unet_rec(inputs, kernel_size=3, n_layers=1, layers_n_channels=1, layers_n_non_lins=1):
+def unet_rec(
+        inputs,
+        kernel_size=3,
+        n_layers=1,
+        layers_n_channels=1,
+        layers_n_non_lins=1,
+        pool='max',
+        non_relu_contract=False,
+    ):
     if n_layers == 1:
         last_conv = chained_convolutions(
             inputs,
@@ -19,13 +26,22 @@ def unet_rec(inputs, kernel_size=3, n_layers=1, layers_n_channels=1, layers_n_no
         # TODO: refactor the following
         n_non_lins = layers_n_non_lins[0]
         n_channels = layers_n_channels[0]
+        if non_relu_contract:
+            activation = 'linear'
+        else:
+            activation = 'relu'
         left_u = chained_convolutions(
             inputs,
             n_channels=n_channels,
             n_non_lins=n_non_lins,
             kernel_size=kernel_size,
+            activation=activation,
         )
-        rec_input = AveragePooling2D(pool_size=(2, 2))(left_u)
+        if pool == 'average':
+            pooling = AveragePooling2D
+        else:
+            pooling = MaxPooling2D
+        rec_input = pooling(pool_size=(2, 2))(left_u)
         rec_output = unet_rec(
             inputs=rec_input,
             kernel_size=kernel_size,
@@ -51,6 +67,8 @@ def unet(
         n_layers=1,
         layers_n_channels=1,
         layers_n_non_lins=1,
+        non_relu_contract=False,
+        pool='max',
     ):
     if isinstance(layers_n_channels, int):
         layers_n_channels = [layers_n_channels] * n_layers
@@ -67,6 +85,8 @@ def unet(
         n_layers=n_layers,
         layers_n_channels=layers_n_channels,
         layers_n_non_lins=layers_n_non_lins,
+        pool=pool,
+        non_relu_contract=non_relu_contract,
     )
     if with_extra_sigmoid:
         new_output = Conv2D(
@@ -118,13 +138,13 @@ def old_unet(pretrained_weights=None, input_size=(256, 256, 1), dropout=0.5, ker
     return model
 
 
-def chained_convolutions(inputs, n_channels=1, n_non_lins=1, kernel_size=3):
+def chained_convolutions(inputs, n_channels=1, n_non_lins=1, kernel_size=3, activation='relu'):
     conv = inputs
     for _ in range(n_non_lins):
         conv = Conv2D(
             n_channels,
             kernel_size,
-            activation='relu',
+            activation=activation,
             padding='same',
             kernel_initializer='he_normal',
         )(conv)
