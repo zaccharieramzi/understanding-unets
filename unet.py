@@ -1,7 +1,11 @@
 """Largely inspired by https://github.com/zhixuhao/unet/blob/master/model.py"""
+import os
+import tempfile
+
 from keras import activations
 from keras.layers import Conv2D, MaxPooling2D, concatenate, Dropout, UpSampling2D, Input, AveragePooling2D
 from keras.models import Model
+from keras.models import load_model
 from keras.optimizers import Adam
 
 
@@ -98,8 +102,18 @@ def unet(
         )(output)
         model = Model(inputs=inputs, outputs=new_output)
     else:
+        # inspired by https://github.com/raghakot/keras-vis/blob/master/vis/utils/utils.py
         model = Model(input=inputs, outputs=output)
         model.layers[-1].activation = activations.sigmoid
+        model_path = os.path.join(
+            tempfile.gettempdir(),
+            next(tempfile._get_candidate_names()) + '.h5',
+        )
+        try:
+            model.save(model_path)
+            model = load_model(model_path)
+        finally:
+            os.remove(model_path)
     model.compile(optimizer=Adam(lr=1e-4), loss='mean_squared_error')
 
     if pretrained_weights:
