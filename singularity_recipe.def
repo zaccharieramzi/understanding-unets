@@ -1,0 +1,27 @@
+Bootstrap: docker
+From: ubuntu:16.04
+
+%help
+  Need help
+
+
+%labels
+  Maintainer Zaccharie Ramzi <zaccharie.ramzi@cea.fr>
+
+%runscript
+  echo "Executing command in singularity container using Python3..."
+  exec python3 "$@"
+
+%files
+  requirements.txt requirements.txt
+  study.py study.py
+
+%post
+  mkdir /scratch
+  mv requirements.txt /scratch/
+  mv learned_primal_ellipses.py /scratch/
+  cd /scratch
+  apt-get update -y
+  apt-get install python3-pip -y
+  pip3 install -r requirements.txt
+  pip3 install tensorflow
