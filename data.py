@@ -46,6 +46,7 @@ def im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=10, v
     )
     for img in image_generator:
         noisy_img = img + np.random.normal(loc=noise_mean, scale=noise_std, size=img.shape)
+        img[img == 0] = 0
         img /= 255
         noisy_img /= 255
         yield (noisy_img, img)
