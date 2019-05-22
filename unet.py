@@ -113,7 +113,7 @@ def unet(
         )
         try:
             model.save(model_path)
-            K.clear_sesion()
+            K.clear_session()
             model = load_model(model_path)
         finally:
             os.remove(model_path)
