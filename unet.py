@@ -3,6 +3,7 @@ import os
 import tempfile
 
 from keras import activations
+from keras import backend as K
 from keras.layers import Conv2D, MaxPooling2D, concatenate, Dropout, UpSampling2D, Input, AveragePooling2D
 from keras.models import Model
 from keras.models import load_model
@@ -112,6 +113,7 @@ def unet(
         )
         try:
             model.save(model_path)
+            K.clear_sesion()
             model = load_model(model_path)
         finally:
             os.remove(model_path)
