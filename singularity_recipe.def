@@ -21,11 +21,12 @@ From: ubuntu:16.04
 %post
   mkdir /scratch
   mv requirements.txt /scratch/
-  mv learned_primal_ellipses.py /scratch/
+  mv study.py /scratch/
   mv unet.py /scratch/
   mv data.py /scratch/
   cd /scratch
   apt-get update -y
   apt-get install python3-pip -y
+  pip3 install --upgrade pip==9.0.3
   pip3 install -r requirements.txt
   pip3 install tensorflow
