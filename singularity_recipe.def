@@ -15,11 +15,15 @@ From: ubuntu:16.04
 %files
   requirements.txt requirements.txt
   study.py study.py
+  unet.py unet.py
+  data.py data.py
 
 %post
   mkdir /scratch
   mv requirements.txt /scratch/
   mv learned_primal_ellipses.py /scratch/
+  mv unet.py /scratch/
+  mv data.py /scratch/
   cd /scratch
   apt-get update -y
   apt-get install python3-pip -y
