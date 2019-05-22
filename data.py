@@ -11,6 +11,10 @@ def im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=10, v
         (x_train, _), (x_test, _) = cifar10.load_data()
     elif source == 'mnist':
         (x_train, _), (x_test, _) = mnist.load_data()
+    elif source == 'cifar_grey':
+        (x_train, _), (x_test, _) = cifar10.load_data()
+        x_train = np.mean(x_train, axis=-1)
+        x_test = np.mean(x_test, axis=-1)
     else:
         raise ValueError('Source unknown')
     if mode in train_modes:
