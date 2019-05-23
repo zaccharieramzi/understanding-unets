@@ -67,3 +67,7 @@ def run_study(params_id, epochs):
         callbacks=[tboard_cback],
     )
     K.clear_session()
+
+
+if __name__ == '__main__':
+    run_study()
