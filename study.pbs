@@ -6,4 +6,4 @@
 
 cd /neurospin/optimed/zramzi/understanding-unets/
 
-singularity run --cleanenv -B /neurospin/optimed/zramzi/understanding-unets/:/scratch study.simg study.py
+singularity run --cleanenv -B /neurospin/optimed/zramzi/understanding-unets/:/scratch study.simg /scratch/study.py
