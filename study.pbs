@@ -3,7 +3,8 @@
 #PBS -l select=1:ncpus=12:mem=5gb
 #PBS -l walltime=004:0:00
 #PBS -j oe
+#PBS -J 1-9
 
 cd /neurospin/optimed/zramzi/understanding-unets/
 
-singularity run --cleanenv -B /neurospin/optimed/zramzi/understanding-unets/:/scratch study.simg /scratch/study.py
+singularity run --cleanenv -B /neurospin/optimed/zramzi/understanding-unets/:/scratch study.simg /scratch/study.py -p $PBS_ARRAY_INDEX -e 1
