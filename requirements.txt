@@ -7,3 +7,4 @@ pylint
 keras-tqdm
 pydot
 tensorboard
+click
