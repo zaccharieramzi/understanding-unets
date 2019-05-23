@@ -1,12 +1,9 @@
 import os.path as op
-import time
 
-import matplotlib.pyplot as plt
 import numpy as np
 from keras import backend as K
 from keras.callbacks import TensorBoard
 from keras_tqdm import TQDMCallback
-import tensorflow as tf
 from tensorflow import set_random_seed
 from tqdm import tqdm_notebook
 
