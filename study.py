@@ -42,7 +42,7 @@ params = [
 ]
 
 @click.command()
-@click.argument('params_id', help='The id of the params in the list of params {}.'.format(params))
+@click.option('--params-id', '-p', help='The id of the params in the list of params {}.'.format(params), default=0)
 @click.option('--epochs', '-e', default=50, help='number of epochs to run.')
 def run_study(params_id, epochs):
     K.clear_session()
