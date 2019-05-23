@@ -66,6 +66,6 @@ for run_id, run_params in tqdm_notebook(params.items()):
         validation_data=im_gen_val,
         validation_steps=int(validation_split * n_samples_train / batch_size),
         verbose=0,
-        callbacks=[TQDMNotebookCallback(), tboard_cback],
+        callbacks=[TQDMCallback(), tboard_cback],
     )
     K.clear_session()
