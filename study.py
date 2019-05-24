@@ -63,7 +63,7 @@ def run_study(params_id, epochs):
         epochs=epochs,
         validation_data=im_gen_val,
         validation_steps=int(validation_split * n_samples_train / batch_size),
-        verbose=1,
+        verbose=0,
         callbacks=[tboard_cback],
     )
     K.clear_session()
