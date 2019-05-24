@@ -15,6 +15,15 @@ From: ubuntu:16.04
 %files
   requirements.txt requirements.txt
 
+%environment
+
+  LC_ALL=C.UTF-8
+  export LC_ALL
+  LANG=C.UTF-8
+  export LANG
+
+
+
 %post
   mkdir /scratch
   mv requirements.txt /scratch/
