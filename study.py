@@ -47,7 +47,7 @@ params = [
 def run_study(params_id, epochs):
     K.clear_session()
     run_id, run_params = params[params_id]
-    print(run_id)
+    print('Running {run_id}, for {epochs} epochs'.format(run_id, epochs))
     model = unet(input_size=(size, size, 1), with_extra_sigmoid=False, **run_params)
     log_dir = op.join('logs', run_id)
     tboard_cback = TensorBoard(
