@@ -1,4 +1,5 @@
 import os.path as op
+import time
 
 import click
 from keras import backend as K
@@ -45,6 +46,7 @@ params = [
 @click.option('--params-id', '-p', help='The id of the params in the list of params {}.'.format(params), default=0)
 @click.option('--epochs', '-e', default=50, help='number of epochs to run.')
 def run_study(params_id, epochs):
+    start = time.time()
     K.clear_session()
     run_id, run_params = params[params_id]
     print('Running {run_id}, for {epochs} epochs'.format(run_id=run_id, epochs=epochs))
@@ -67,6 +69,8 @@ def run_study(params_id, epochs):
         callbacks=[tboard_cback],
     )
     K.clear_session()
+    end = time.time()
+    print('Training took {dur} mins'.format(dur=(end-start)/60))
 
 
 if __name__ == '__main__':
