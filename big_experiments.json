@@ -15,8 +15,8 @@
     ["without_relu_contracting_3_n1248", {"n_layers": 4, "layers_n_channels": [1, 2, 4, 8], "non_relu_contract": "True"}],
     ["aver_pool_3_n1248", {"n_layers": 4, "layers_n_channels": [1, 2, 4, 8], "pool": "average"}],
     ["wo_non_linearities_3_n1248", {"n_layers": 4, "layers_n_channels": [1, 2, 4, 8], "pool": "average", "non_relu_contract": "True"}],
-    ["classic_3_n481632", {"n_layers": 4, "layers_n_channels": [4, 8, 16, 32]}],
-    ["without_relu_contracting_3_n481632", {"n_layers": 4, "layers_n_channels": [4, 8, 16, 32], "non_relu_contract": "True"}],
-    ["aver_pool_3_n481632", {"n_layers": 4, "layers_n_channels": [4, 8, 16, 32], "pool": "average"}],
-    ["wo_non_linearities_3_n481632", {"n_layers": 4, "layers_n_channels": [4, 8, 16, 32], "pool": "average", "non_relu_contract": "True"}]
+    ["classic_3_n481632", {"n_layers": 4, "layers_n_channels": [4, 8, 16, 32], "with_extra_sigmoid": "True"}],
+    ["without_relu_contracting_3_n481632", {"n_layers": 4, "layers_n_channels": [4, 8, 16, 32], "with_extra_sigmoid": "True", "non_relu_contract": "True"}],
+    ["aver_pool_3_n481632", {"n_layers": 4, "layers_n_channels": [4, 8, 16, 32], "with_extra_sigmoid": "True", "pool": "average"}],
+    ["wo_non_linearities_3_n481632", {"n_layers": 4, "layers_n_channels": [4, 8, 16, 32], "with_extra_sigmoid": "True", "pool": "average", "non_relu_contract": "True"}]
 ]
