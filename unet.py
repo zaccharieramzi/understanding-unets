@@ -66,7 +66,7 @@ def unet_rec(
 
 
 def unet(
-        with_extra_sigmoid=True,
+        with_extra_sigmoid=False,
         pretrained_weights=None,
         input_size=(256, 256, 1),
         kernel_size=3,
