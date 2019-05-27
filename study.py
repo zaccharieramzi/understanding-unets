@@ -65,7 +65,7 @@ def run_study(params_id, params_file, source, epochs):
     run_id, run_params = params[params_id]
     im_gen_train, im_gen_val, _, n_samples_train, size = handle_source(source, batch_size=batch_size, noise_std=30, validation_split=validation_split)
     print('Running {run_id}, for {epochs} epochs'.format(run_id=run_id, epochs=epochs))
-    model = unet(input_size=(size, size, 1), with_extra_sigmoid=False, **run_params)
+    model = unet(input_size=(size, size, 1), **run_params)
     log_dir = op.join('logs', run_id)
     tboard_cback = TensorBoard(
         log_dir=log_dir,
