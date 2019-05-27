@@ -7,4 +7,4 @@
 
 cd /neurospin/optimed/zramzi/understanding-unets/
 
-singularity run --cleanenv -B /neurospin/optimed/zramzi/understanding-unets/:/scratch study.simg /scratch/study.py -p $PBS_ARRAY_INDEX -e 50
+singularity run --cleanenv -B /neurospin/optimed/zramzi/understanding-unets/:/scratch study.simg /scratch/study.py -p $PBS_ARRAY_INDEX -e 50 -f big_experiments.json -s cifar_grey
