@@ -22,10 +22,14 @@ def handle_source(source, batch_size=32, noise_std=30, validation_split=0.1):
     elif 'mnist' in source:
         n_samples_train = 6*1e4
         size = 28
+    if source == 'cifar10':
+        n_channels = 3
+    else:
+        n_channels = 1
     im_gen_train = im_generator(mode='training', validation_split=validation_split, batch_size=batch_size, source=source, noise_std=noise_std)
     im_gen_val = im_generator(mode='validation', validation_split=validation_split, batch_size=batch_size, source=source, noise_std=noise_std)
     im_gen_test = im_generator(mode='testing', batch_size=batch_size, source=source, noise_std=noise_std)
-    return im_gen_train, im_gen_val, im_gen_test, n_samples_train, size
+    return im_gen_train, im_gen_val, im_gen_test, n_samples_train, size, n_channels
 
 
 def handle_params_file(params_file_path, source):
@@ -63,9 +67,9 @@ def run_study(params_id, params_file, source, epochs):
     else:
         params = handle_params_file(params_file, source)
     run_id, run_params = params[params_id]
-    im_gen_train, im_gen_val, _, n_samples_train, size = handle_source(source, batch_size=batch_size, noise_std=30, validation_split=validation_split)
+    im_gen_train, im_gen_val, _, n_samples_train, size, n_channels = handle_source(source, batch_size=batch_size, noise_std=30, validation_split=validation_split)
     print('Running {run_id}, for {epochs} epochs'.format(run_id=run_id, epochs=epochs))
-    model = unet(input_size=(size, size, 1), **run_params)
+    model = unet(input_size=(size, size, n_channels), **run_params)
     log_dir = op.join('logs', run_id)
     tboard_cback = TensorBoard(
         log_dir=log_dir,
