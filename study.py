@@ -51,7 +51,7 @@ default_params = [
 @click.command()
 @click.option('--params-id', '-p', help='The id of the params in the list of params.', default=0)
 @click.option('--params-file', '-f', help='File containing the list of params in a json format.', default=None, type=click.Path())
-@click.option('--source', '-s', help='Dataset on which to run the experiment.', type=click.Choice(['cifar_grey', 'cifar', 'mnist']), default='mnist')
+@click.option('--source', '-s', help='Dataset on which to run the experiment.', type=click.Choice(['cifar_grey', 'cifar10', 'mnist']), default='mnist')
 @click.option('--epochs', '-e', default=50, help='number of epochs to run.')
 def run_study(params_id, params_file, source, epochs):
     validation_split = 0.1
