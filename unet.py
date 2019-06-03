@@ -53,7 +53,8 @@ def unet_rec(
             n_layers=n_layers-1,
             layers_n_channels=layers_n_channels[1:],
             layers_n_non_lins=layers_n_non_lins[1:],
-            non_relu_contract=non_relu_contract
+            pool=pool,
+            non_relu_contract=non_relu_contract,
         )
         merge = concatenate([left_u, UpSampling2D(size=(2, 2))(rec_output)], axis=3)
         output = chained_convolutions(
