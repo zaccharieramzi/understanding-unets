@@ -8,3 +8,4 @@ keras-tqdm
 pydot
 tensorboard
 click
+scikit-image
