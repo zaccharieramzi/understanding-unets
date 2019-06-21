@@ -117,7 +117,7 @@ def div2k_im_to_patches(fname, patch_size=256):
     return subpatches
 
 
-def im_generator_DIV2K(path, grey=False, mode='training', batch_size=32, noise_mean=0.0, noise_std=10):
+def im_generator_DIV2K(path, grey=False, patch_size=256, mode='training', batch_size=32, noise_mean=0.0, noise_std=10):
     train_modes = ('training', 'validation')
     if mode in train_modes:
         pass
@@ -127,7 +127,7 @@ def im_generator_DIV2K(path, grey=False, mode='training', batch_size=32, noise_m
         raise ValueError('Mode {mode} not recognised'.format(mode=mode))
     filelist = glob.glob(path + '/*')
     while True:
-        x = (patch for fname in filelist for patch in div2k_im_to_patches(fname))
+        x = (patch for fname in filelist for patch in div2k_im_to_patches(fname, patch_size=patch_size))
         image_datagen = ImageDataGenerator(
             rotation_range=20,
             width_shift_range=0.1,
