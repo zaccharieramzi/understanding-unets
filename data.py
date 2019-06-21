@@ -103,6 +103,9 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
 
 
 def div2k_im_to_patches(fname, patch_size=256):
+    # with patch size of 1 (no padding):
+    # train has 27958 patches
+    # valid has 3598 patches
     x = np.array(plt.imread(fname))
     subpatches = list()
     for i in range(int(x.shape[0] / patch_size)):
@@ -117,34 +120,37 @@ def div2k_im_to_patches(fname, patch_size=256):
 def im_generator_DIV2K(path, grey=False, mode='training', batch_size=32, noise_mean=0.0, noise_std=10):
     train_modes = ('training', 'validation')
     if mode in train_modes:
-        subset = mode
+        pass
     elif mode == 'testing':
         raise ValueError('Mode {mode} not used in DIV2K'.format(mode=mode))
     else:
         raise ValueError('Mode {mode} not recognised'.format(mode=mode))
     filelist = glob.glob(path + '/*')
-    x = np.array([patch for fname in filelist for patch in div2k_im_to_patches(fname)])
-    if grey:
-        x = np.mean(x, axis=-1)
-        x = x[:, :, :, None]
-    image_datagen = ImageDataGenerator(
-        rotation_range=20,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
-        horizontal_flip=True,
-        vertical_flip=True,
-    )
-    image_generator = image_datagen.flow(
-        x,
-        batch_size=batch_size,
-        save_to_dir=None,
-        save_prefix="gen",
-        seed=1,
-        subset=subset,
-    )
-    for img in image_generator:
-        noisy_img = img + np.random.normal(loc=noise_mean, scale=noise_std, size=img.shape)
-        img[img == 0] = 0
-        img /= 255
-        noisy_img /= 255
-        yield (noisy_img, img)
+    while True:
+        x = (patch for fname in filelist for patch in div2k_im_to_patches(fname))
+        image_datagen = ImageDataGenerator(
+            rotation_range=20,
+            width_shift_range=0.1,
+            height_shift_range=0.1,
+            horizontal_flip=True,
+            vertical_flip=True,
+        )
+        current_batch_noisy = []
+        current_batch = []
+        for img_idx, img in enumerate(x):
+            if grey:
+                img = np.mean(img, axis=-1)
+                img = img[:, :, None]
+            img = image_datagen.random_transform(img)
+            noisy_img = img + np.random.normal(loc=noise_mean, scale=noise_std, size=img.shape)
+            img[img == 0] = 0
+            img /= 255
+            noisy_img /= 255
+            current_batch_noisy.append(noisy_img)
+            current_batch.append(img)
+            if (img_idx + 1) % batch_size == 0:
+                noisy_img_batch = np.array(current_batch_noisy)
+                img_batch = np.array(current_batch)
+                current_batch = []
+                current_batch_noisy = []
+                yield (noisy_img_batch, img_batch)
