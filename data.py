@@ -103,7 +103,7 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
 
 
 def div2k_im_to_patches(fname, patch_size=256):
-    # with patch size of 1 (no padding):
+    # with patch size of 256 (no padding):
     # train has 27958 patches
     # valid has 3598 patches
     x = np.array(plt.imread(fname))
