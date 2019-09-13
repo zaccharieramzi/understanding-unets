@@ -9,3 +9,4 @@ pydot
 tensorboard
 click
 scikit-image
+Pillow
