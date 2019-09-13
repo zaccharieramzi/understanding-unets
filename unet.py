@@ -1,13 +1,8 @@
 """Largely inspired by https://github.com/zhixuhao/unet/blob/master/model.py"""
-import os
-import tempfile
-
-from keras import activations
-from keras import backend as K
-from keras.layers import Conv2D, MaxPooling2D, concatenate, Dropout, UpSampling2D, Input, AveragePooling2D
+from keras.layers import Conv2D, MaxPooling2D, concatenate, Dropout, UpSampling2D, Input, AveragePooling2D, BatchNormalization, Lambda
 from keras.models import Model
-from keras.models import load_model
 from keras.optimizers import Adam
+import tensorflow as tf
 
 
 def unet_rec(
@@ -56,7 +51,16 @@ def unet_rec(
             pool=pool,
             non_relu_contract=non_relu_contract,
         )
-        merge = concatenate([left_u, UpSampling2D(size=(2, 2))(rec_output)], axis=3)
+        merge = concatenate([
+            left_u,
+            Conv2D(
+                n_channels,
+                kernel_size - 1,
+                activation='relu',
+                padding='same',
+                kernel_initializer='he_normal',
+            )(UpSampling2D(size=(2, 2))(rec_output))  # up-conv
+        ], axis=3)
         output = chained_convolutions(
             merge,
             n_channels=n_channels,
@@ -67,7 +71,6 @@ def unet_rec(
 
 
 def unet(
-        with_extra_sigmoid=False,
         pretrained_weights=None,
         input_size=(256, 256, 1),
         kernel_size=3,
@@ -76,6 +79,7 @@ def unet(
         layers_n_non_lins=1,
         non_relu_contract=False,
         pool='max',
+        lr=1e-3,
     ):
     if isinstance(layers_n_channels, int):
         layers_n_channels = [layers_n_channels] * n_layers
@@ -95,35 +99,30 @@ def unet(
         pool=pool,
         non_relu_contract=non_relu_contract,
     )
-    if with_extra_sigmoid:
-        new_output = Conv2D(
-            input_size[-1],
-            kernel_size,
-            activation='sigmoid',
-            padding='same',
-            kernel_initializer='he_normal',
-        )(output)
-        model = Model(inputs=inputs, outputs=new_output)
-    else:
-        # inspired by https://github.com/raghakot/keras-vis/blob/master/vis/utils/utils.py
-        model = Model(input=inputs, outputs=output)
-        model.layers[-1].activation = activations.sigmoid
-        model_path = os.path.join(
-            tempfile.gettempdir(),
-            next(tempfile._get_candidate_names()) + '.h5',
-        )
-        try:
-            model.save(model_path)
-            K.clear_session()
-            model = load_model(model_path)
-        finally:
-            os.remove(model_path)
-    model.compile(optimizer=Adam(lr=1e-4), loss='mean_squared_error')
+    output = Conv2D(
+        4,
+        1,
+        activation='linear',
+        padding='same',
+        kernel_initializer='he_normal',
+    )(output)
+    output = Conv2D(
+        input_size[-1],
+        1,
+        activation='linear',
+        padding='same',
+        kernel_initializer='he_normal',
+    )(output)
+    model = Model(inputs=inputs, outputs=output)
+    model.compile(optimizer=Adam(lr=lr), loss='mse')
 
     if pretrained_weights:
         model.load_weights(pretrained_weights)
 
     return model
+
+
+
 
 
 def old_unet(pretrained_weights=None, input_size=(256, 256, 1), dropout=0.5, kernel_size=3):
@@ -166,4 +165,5 @@ def chained_convolutions(inputs, n_channels=1, n_non_lins=1, kernel_size=3, acti
             padding='same',
             kernel_initializer='he_normal',
         )(conv)
+        # conv = BatchNormalization()(conv)
     return conv
