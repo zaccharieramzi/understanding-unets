@@ -8,7 +8,45 @@ import numpy as np
 np.random.seed(1)
 
 
-def im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=10, validation_split=0.1, source='cifar10'):
+def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.1):
+    if noise:
+        def add_noise(image):
+            noisy_img = image + np.random.normal(loc=noise_mean, scale=noise_std, size=image.shape)
+            return noisy_img
+        preprocessing_function = add_noise
+    else:
+        preprocessing_function = None
+    return ImageDataGenerator(
+        samplewise_center=True,
+        samplewise_std_normalization=True,
+        rotation_range=20,
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        horizontal_flip=True,
+        vertical_flip=True,
+        validation_split=validation_split,
+        preprocessing_function=preprocessing_function,
+    )
+
+def generator_couple(x, validation_split=0.1, batch_size=32, seed=0, subset=None, noise_mean=0.0, noise_std=0.1):
+    gt_image_datagen = im_generator(validation_split, noise=False)
+    noisy_image_datagen = im_generator(validation_split, noise=True, noise_mean=noise_mean, noise_std=noise_std)
+    gt_image_generator = gt_image_datagen.flow(
+        x,
+        batch_size=batch_size,
+        seed=seed,
+        subset=subset,
+    )
+    noisy_image_generator = noisy_image_datagen.flow(
+        x,
+        batch_size=batch_size,
+        seed=seed,
+        subset=subset,
+    )
+    return zip(gt_image_generator, noisy_image_generator)
+
+
+def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, source='cifar10', seed=0):
     train_modes = ('training', 'validation')
     if source == 'cifar10':
         (x_train, _), (x_test, _) = cifar10.load_data()
@@ -16,8 +54,8 @@ def im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=10, v
         (x_train, _), (x_test, _) = mnist.load_data()
     elif source == 'cifar_grey':
         (x_train, _), (x_test, _) = cifar10.load_data()
-        x_train = np.mean(x_train, axis=-1)
-        x_test = np.mean(x_test, axis=-1)
+        x_train = np.mean(x_train, axis=-1, keepdims=True)
+        x_test = np.mean(x_test, axis=-1, keepdims=True)
     else:
         raise ValueError('Source unknown')
     if mode in train_modes:
@@ -29,30 +67,18 @@ def im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=10, v
         subset = None
     else:
         raise ValueError('Mode {mode} not recognised'.format(mode=mode))
-    image_datagen = ImageDataGenerator(
-        rotation_range=20,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
-        horizontal_flip=True,
-        vertical_flip=True,
-        validation_split=validation_split,
-    )
-    if len(x.shape) == 3:
-        x = x[:, :, :, None]
-    image_generator = image_datagen.flow(
+    return generator_couple(
         x,
+        validation_split=validation_split,
         batch_size=batch_size,
-        save_to_dir=None,
-        save_prefix="gen",
-        seed=1,
-        subset=subset
+        seed=seed,
+        subset=subset,
+        noise_mean=noise_mean,
+        noise_std=noise_std,
     )
-    for img in image_generator:
-        noisy_img = img + np.random.normal(loc=noise_mean, scale=noise_std, size=img.shape)
-        img[img == 0] = 0
-        img /= 255
-        noisy_img /= 255
-        yield (noisy_img, img)
+
+
+
 
 
 def bds_im_to_array(fname):
@@ -62,7 +88,7 @@ def bds_im_to_array(fname):
     return x
 
 
-def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_mean=0.0, noise_std=10, validation_split=0.1):
+def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, seed=0):
     train_modes = ('training', 'validation')
     if mode in train_modes:
         subset = mode
@@ -71,35 +97,21 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
         subset = None
     else:
         raise ValueError('Mode {mode} not recognised'.format(mode=mode))
-    filelist = glob.glob(path + '/*')
+    filelist = glob.glob(path + '/*.jpg')
     x = np.array([bds_im_to_array(fname) for fname in filelist])
     if grey:
-        x = np.mean(x, axis=-1)
-        x = x[:, :, :, None]
+        x = np.mean(x, axis=-1, keepdims=True)
     # padding
     x = np.pad(x, ((0, 0), (15, 16), (95, 96), (0, 0)), 'edge')
-    image_datagen = ImageDataGenerator(
-        # rotation_range=20,
-        # width_shift_range=0.1,
-        # height_shift_range=0.1,
-        # horizontal_flip=True,
-        # vertical_flip=True,
-        validation_split=validation_split,
-    )
-    image_generator = image_datagen.flow(
+    return generator_couple(
         x,
+        validation_split=validation_split,
         batch_size=batch_size,
-        save_to_dir=None,
-        save_prefix="gen",
-        seed=1,
+        seed=seed,
         subset=subset,
+        noise_mean=noise_mean,
+        noise_std=noise_std,
     )
-    for img in image_generator:
-        noisy_img = img + np.random.normal(loc=noise_mean, scale=noise_std, size=img.shape)
-        img[img == 0] = 0
-        img /= 255
-        noisy_img /= 255
-        yield (noisy_img, img)
 
 
 def div2k_im_to_patches(fname, patch_size=256):
