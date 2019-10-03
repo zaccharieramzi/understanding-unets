@@ -2,7 +2,8 @@
 from keras.layers import Conv2D, MaxPooling2D, concatenate, Dropout, UpSampling2D, Input, AveragePooling2D, BatchNormalization, Lambda
 from keras.models import Model
 from keras.optimizers import Adam
-import tensorflow as tf
+
+from evaluate import keras_psnr, keras_ssim
 
 
 def unet_rec(
@@ -114,16 +115,15 @@ def unet(
         kernel_initializer='he_normal',
     )(output)
     model = Model(inputs=inputs, outputs=output)
-    model.compile(optimizer=Adam(lr=lr), loss='mse')
-
+    model.compile(
+        optimizer=Adam(lr=lr, clipnorm=1.),
+        loss='mean_squared_error',
+        metrics=[keras_psnr, keras_ssim],
+    )
     if pretrained_weights:
         model.load_weights(pretrained_weights)
 
     return model
-
-
-
-
 
 def old_unet(pretrained_weights=None, input_size=(256, 256, 1), dropout=0.5, kernel_size=3):
     inputs = Input(input_size)
