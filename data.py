@@ -78,9 +78,6 @@ def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std
     )
 
 
-
-
-
 def bds_im_to_array(fname):
     x = np.array(plt.imread(fname))
     if x.shape[1] > x.shape[0]:
@@ -130,6 +127,8 @@ def div2k_im_to_patches(fname, patch_size=256):
 
 
 def im_generator_DIV2K(path, grey=False, patch_size=256, mode='training', batch_size=32, noise_mean=0.0, noise_std=10):
+    # TODO: have that in a sequence that will get the file rather than loading everything in memory
+    # this will allow patch handling and all the bla bla
     train_modes = ('training', 'validation')
     if mode in train_modes:
         pass
