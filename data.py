@@ -103,7 +103,7 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
     to_pad = ((im_shape / 2**n_pooling).astype(int) + 1) * 2**n_pooling - im_shape
     # the + 1 is necessary because the images have odd shapes
     pad_seq = [(0, 0), (to_pad[0]//2, to_pad[0]//2 + 1), (to_pad[1]//2, to_pad[1]//2 + 1), (0, 0)]
-    x = np.pad(x, pad_seq, 'edge')
+    x = np.pad(x, pad_seq, 'constant')
     return generator_couple(
         x,
         validation_split=validation_split,
