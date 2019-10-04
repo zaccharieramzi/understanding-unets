@@ -85,7 +85,7 @@ def bds_im_to_array(fname):
     return x
 
 
-def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, seed=0):
+def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, seed=0, n_pooling=3):
     train_modes = ('training', 'validation')
     if mode in train_modes:
         subset = mode
@@ -99,7 +99,11 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
     if grey:
         x = np.mean(x, axis=-1, keepdims=True)
     # padding
-    x = np.pad(x, ((0, 0), (15, 16), (95, 96), (0, 0)), 'edge')
+    im_shape = np.array(x.shape[1:3])
+    to_pad = ((im_shape / 2**n_pooling).astype(int) + 1) * 2**n_pooling - im_shape
+    # the + 1 is necessary because the images have odd shapes
+    pad_seq = [(0, 0), (to_pad[0]//2, to_pad[0]//2 + 1), (to_pad[1]//2, to_pad[1]//2 + 1), (0, 0)]
+    x = np.pad(x, pad_seq, 'edge')
     return generator_couple(
         x,
         validation_split=validation_split,
