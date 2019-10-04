@@ -5,7 +5,7 @@ from keras.optimizers import Adam
 from evaluate import keras_psnr, keras_ssim
 
 def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=3):
-    n_channel = image.shape[-1]
+    n_channel = int(image.shape[-1])
     details_thresholded = Conv2D(
         n_details,
         3,
@@ -20,14 +20,14 @@ def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=
         padding='same',
         kernel_initializer='he_normal',
     )(image)
-    coarse_down_sampled = AveragePooling2D()(coarse)
     if n_scales > 1:
+        coarse_down_sampled = AveragePooling2D()(coarse)
         denoised_coarse = learned_wavelet_rec(coarse_down_sampled, n_scales=n_scales-1)
+        denoised_coarse_upsampled = UpSampling2D(size=(2, 2))(denoised_coarse)
     else:
         # NOTE: potentially allow to have thresholding (i.e. non linearity) also on the coarse
         # scale
-        denoised_coarse = coarse_down_sampled
-    denoised_coarse_upsampled = UpSampling2D(size=(2, 2))(denoised_coarse)
+        denoised_coarse_upsampled = coarse
     denoised_image = Conv2D(
         n_groupping * n_channel,
         3,
