@@ -92,6 +92,8 @@ def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std
 
 def bds_im_to_array(fname):
     x = np.array(plt.imread(fname))
+    if x.shape[1] > x.shape[0]:
+        x = np.rot90(x)
     return x
 
 
