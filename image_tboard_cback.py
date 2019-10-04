@@ -3,6 +3,7 @@ import io
 
 from keras.callbacks import Callback
 from PIL import Image
+from skimage.util import img_as_ubyte
 import tensorflow as tf
 
 def make_image(tensor):
@@ -10,8 +11,12 @@ def make_image(tensor):
     Convert an numpy representation image to Image protobuf.
     Copied from https://github.com/lanpa/tensorboard-pytorch/
     """
-    height, width, channel = tensor.shape
-    image = Image.fromarray(tensor)
+    _, height, width, channel = tensor.shape
+    tensor = tensor[0]
+    tensor_normalized = tensor - tensor.min()
+    tensor_normalized /= tensor_normalized.max()
+    tensor_normalized = img_as_ubyte(tensor_normalized)
+    image = Image.fromarray(tensor_normalized)
     output = io.BytesIO()
     image.save(output, format='PNG')
     image_string = output.getvalue()
