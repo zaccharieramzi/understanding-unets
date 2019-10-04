@@ -2,10 +2,22 @@ import glob
 
 from keras.datasets import cifar10, mnist
 from keras.preprocessing.image import ImageDataGenerator
+from keras.utils import  Sequence
 import matplotlib.pyplot as plt
 import numpy as np
 
 np.random.seed(1)
+
+class MergedGenerators(Sequence):
+    def __init__(self, *generators):
+        self.generators = generators
+        # TODO add a check to verify that all generators have the same length
+
+    def __len__(self):
+        return len(self.generators[0])
+
+    def __getitem__(self, index):
+        return [generator[index] for generator in self.generators]
 
 
 def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.1):
@@ -43,7 +55,7 @@ def generator_couple(x, validation_split=0.1, batch_size=32, seed=0, subset=None
         seed=seed,
         subset=subset,
     )
-    return zip(gt_image_generator, noisy_image_generator)
+    return MergedGenerators(gt_image_generator, noisy_image_generator)
 
 
 def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, source='cifar10', seed=0):
@@ -80,8 +92,6 @@ def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std
 
 def bds_im_to_array(fname):
     x = np.array(plt.imread(fname))
-    if x.shape[1] > x.shape[0]:
-        x = np.rot90(x)
     return x
 
 
