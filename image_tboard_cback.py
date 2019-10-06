@@ -33,15 +33,24 @@ class TensorBoardImage(Callback):
     def __init__(self, log_dir, image, noisy_image):
         super().__init__()
         self.log_dir = log_dir
+        self.image = image
         self.noisy_image = noisy_image
-        self.write_image(image, 'Original Image', 0)
+
+    def set_model(self, model):
+        self.model = model
+        self.writer = tf.summary.FileWriter(self.log_dir, filename_suffix='images')
+
+    def on_train_begin(self, _):
+        self.write_image(self.image, 'Original Image', 0)
+
+    def on_train_end(self, _):
+        self.writer.close()
 
     def write_image(self, image, tag, epoch):
         image = make_image(image)
         summary = tf.Summary(value=[tf.Summary.Value(tag=tag, image=image)])
-        writer = tf.summary.FileWriter(self.log_dir)
-        writer.add_summary(summary, epoch)
-        writer.close()
+        self.writer.add_summary(summary, epoch)
+        self.writer.flush()
 
     def on_epoch_end(self, epoch, logs={}):
         denoised_image = self.model.predict_on_batch(self.noisy_image)
