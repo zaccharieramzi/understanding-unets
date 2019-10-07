@@ -11,14 +11,14 @@ def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=
         3,
         activation='relu',
         padding='same',
-        kernel_initializer='he_normal',
+        kernel_initializer='glorot_uniform',
     )(image)
     coarse = Conv2D(
         n_coarse,
         3,
         activation='linear',
         padding='same',
-        kernel_initializer='he_normal',
+        kernel_initializer='glorot_uniform',
     )(image)
     if n_scales > 1:
         coarse_down_sampled = AveragePooling2D()(coarse)
@@ -39,14 +39,14 @@ def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=
         3,
         activation='linear',
         padding='same',
-        kernel_initializer='he_normal',
+        kernel_initializer='glorot_uniform',
     )(concatenate([denoised_coarse_upsampled, details_thresholded]))
     denoised_image = Conv2D(
         n_channel,
         1,
         activation='linear',
         padding='same',
-        kernel_initializer='he_normal',
+        kernel_initializer='glorot_uniform',
     )(denoised_image)
     return denoised_image
 
