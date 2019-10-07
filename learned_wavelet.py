@@ -51,7 +51,7 @@ def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=
     return denoised_image
 
 
-def learned_wavelet(input_size, lr, n_scales=4, n_details=3, n_coarse=1, n_groupping=3):
+def learned_wavelet(input_size, lr=1e-4, n_scales=4, n_details=3, n_coarse=1, n_groupping=3):
     image = Input(input_size)
     denoised_image = learned_wavelet_rec(
         image,
