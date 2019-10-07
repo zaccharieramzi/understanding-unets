@@ -59,7 +59,7 @@ def unet_rec(
                 kernel_size - 1,
                 activation='relu',
                 padding='same',
-                kernel_initializer='he_normal',
+                kernel_initializer='glorot_uniform',
             )(UpSampling2D(size=(2, 2))(rec_output))  # up-conv
         ], axis=3)
         output = chained_convolutions(
@@ -105,14 +105,14 @@ def unet(
         1,
         activation='linear',
         padding='same',
-        kernel_initializer='he_normal',
+        kernel_initializer='glorot_uniform',
     )(output)
     output = Conv2D(
         input_size[-1],
         1,
         activation='linear',
         padding='same',
-        kernel_initializer='he_normal',
+        kernel_initializer='glorot_uniform',
     )(output)
     model = Model(inputs=inputs, outputs=output)
     model.compile(
@@ -127,19 +127,19 @@ def unet(
 
 def old_unet(pretrained_weights=None, input_size=(256, 256, 1), dropout=0.5, kernel_size=3):
     inputs = Input(input_size)
-    conv1 = Conv2D(1, kernel_size , activation='relu', padding='same', kernel_initializer='he_normal')(inputs)
-    # conv1 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv1)
+    conv1 = Conv2D(1, kernel_size , activation='relu', padding='same', kernel_initializer='glorot_uniform')(inputs)
+    # conv1 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='glorot_uniform')(conv1)
     # pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
     pool1 = AveragePooling2D(pool_size=(2, 2))(conv1)
 
-    conv5 = Conv2D(1, kernel_size , activation='relu', padding='same', kernel_initializer='he_normal')(pool1)
-    # conv5 = Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv5)
+    conv5 = Conv2D(1, kernel_size , activation='relu', padding='same', kernel_initializer='glorot_uniform')(pool1)
+    # conv5 = Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='glorot_uniform')(conv5)
     drop5 = Dropout(dropout)(conv5)
 
-    up6 = Conv2D(1, kernel_size , activation='relu', padding='same', kernel_initializer='he_normal')(UpSampling2D(size=(2, 2))(drop5))
+    up6 = Conv2D(1, kernel_size , activation='relu', padding='same', kernel_initializer='glorot_uniform')(UpSampling2D(size=(2, 2))(drop5))
     merge6 = concatenate([conv1,up6], axis=3)
-    # conv6 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge6)
-    conv6 = Conv2D(input_size[-1], kernel_size , activation='sigmoid', padding='same', kernel_initializer='he_normal')(merge6)
+    # conv6 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='glorot_uniform')(merge6)
+    conv6 = Conv2D(input_size[-1], kernel_size , activation='sigmoid', padding='same', kernel_initializer='glorot_uniform')(merge6)
 
 
 
@@ -163,7 +163,7 @@ def chained_convolutions(inputs, n_channels=1, n_non_lins=1, kernel_size=3, acti
             kernel_size,
             activation=activation,
             padding='same',
-            kernel_initializer='he_normal',
+            kernel_initializer='glorot_uniform',
         )(conv)
         # conv = BatchNormalization()(conv)
     return conv
