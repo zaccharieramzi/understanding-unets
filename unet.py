@@ -101,7 +101,7 @@ def unet(
         non_relu_contract=non_relu_contract,
     )
     output = Conv2D(
-        4,
+        4 * input_size[-1],
         1,
         activation='linear',
         padding='same',
