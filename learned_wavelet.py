@@ -1,4 +1,4 @@
-from keras.layers import Conv2D, MaxPooling2D, concatenate, Dropout, UpSampling2D, Input, AveragePooling2D, BatchNormalization, Lambda
+from keras.layers import Conv2D, concatenate, UpSampling2D, Input, AveragePooling2D
 from keras.models import Model
 from keras.optimizers import Adam
 
