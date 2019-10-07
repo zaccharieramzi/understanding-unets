@@ -22,7 +22,13 @@ def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=
     )(image)
     if n_scales > 1:
         coarse_down_sampled = AveragePooling2D()(coarse)
-        denoised_coarse = learned_wavelet_rec(coarse_down_sampled, n_scales=n_scales-1)
+        denoised_coarse = learned_wavelet_rec(
+            coarse_down_sampled,
+            n_scales=n_scales-1,
+            n_details=n_details,
+            n_coarse=n_coarse,
+            n_groupping=n_groupping,
+        )
         denoised_coarse_upsampled = UpSampling2D(size=(2, 2))(denoised_coarse)
     else:
         # NOTE: potentially allow to have thresholding (i.e. non linearity) also on the coarse
