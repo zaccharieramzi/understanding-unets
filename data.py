@@ -55,7 +55,7 @@ def generator_couple(x, validation_split=0.1, batch_size=32, seed=0, subset=None
         seed=seed,
         subset=subset,
     )
-    return MergedGenerators(gt_image_generator, noisy_image_generator)
+    return MergedGenerators(noisy_image_generator, gt_image_generator)
 
 
 def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, source='cifar10', seed=0):
