@@ -3,6 +3,7 @@ numba
 jupyter
 matplotlib
 keras
+runstats
 pylint
 keras-tqdm
 pydot
@@ -10,3 +11,4 @@ tensorboard
 click
 scikit-image
 Pillow
+pandas
