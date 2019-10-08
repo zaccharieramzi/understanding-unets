@@ -41,7 +41,7 @@ def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.
         preprocessing_function=preprocessing_function,
     )
 
-def generator_couple(x, validation_split=0.1, batch_size=32, seed=0, subset=None, noise_mean=0.0, noise_std=0.1):
+def generator_couple_from_array(x, validation_split=0.1, batch_size=32, seed=0, subset=None, noise_mean=0.0, noise_std=0.1):
     gt_image_datagen = im_generator(validation_split, noise=False)
     noisy_image_datagen = im_generator(validation_split, noise=True, noise_mean=noise_mean, noise_std=noise_std)
     gt_image_generator = gt_image_datagen.flow(
@@ -80,7 +80,7 @@ def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std
         subset = None
     else:
         raise ValueError('Mode {mode} not recognised'.format(mode=mode))
-    return generator_couple(
+    return generator_couple_from_array(
         x,
         validation_split=validation_split,
         batch_size=batch_size,
@@ -117,7 +117,7 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
     # the + 1 is necessary because the images have odd shapes
     pad_seq = [(0, 0), (to_pad[0]//2, to_pad[0]//2 + 1), (to_pad[1]//2, to_pad[1]//2 + 1), (0, 0)]
     x = np.pad(x, pad_seq, 'constant')
-    return generator_couple(
+    return generator_couple_from_array(
         x,
         validation_split=validation_split,
         batch_size=batch_size,
