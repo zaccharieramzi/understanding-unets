@@ -11,6 +11,21 @@ np.random.seed(1)
 
 
 # general keras utilities
+class ConcatenateGenerators(Sequence):
+    def __init__(self, *generators):
+        self.generators = generators
+        self.gen_lengths = [len(generator) for generator in self.generators]
+        self.cum_gen_lengths = np.roll(np.cumsum(self.gen_lengths), 1)
+        self.cum_gen_lengths[0] = 0
+
+    def __len__(self):
+        return np.sum(self.gen_lengths)
+
+    def __getitem__(self, index):
+        generator_index = np.where(self.cum_gen_lengths - index <= 0)[0][-1]
+        index_in_generator = index - self.cum_gen_lengths[generator_index]
+        return self.generators[generator_index][index_in_generator]
+
 class MergedGenerators(Sequence):
     def __init__(self, *generators):
         self.generators = generators
