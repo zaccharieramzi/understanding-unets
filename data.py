@@ -2,7 +2,7 @@ import glob
 import random
 
 from keras.datasets import cifar10, mnist
-from keras.preprocessing.image import ImageDataGenerator
+from keras_preprocessing.image import ImageDataGenerator
 from keras.utils import  Sequence
 import matplotlib.pyplot as plt
 import numpy as np
@@ -175,21 +175,6 @@ def resize_div2k_image_random_patch(div2k_imag, patch_size=256):
     return random_patch
 
 
-def div2k_im_to_patches(fname, patch_size=256):
-    # with patch size of 256 (no padding):
-    # train has 27958 patches
-    # valid has 3598 patches
-    x = np.array(plt.imread(fname))
-    subpatches = list()
-    for i in range(int(x.shape[0] / patch_size)):
-        for j in range(int(x.shape[1] / patch_size)):
-            slice_i = slice(i*patch_size, (i+1)*patch_size)
-            slice_j = slice(j*patch_size, (j+1)*patch_size)
-            patch = x[slice_i, slice_j]
-            subpatches.append(patch)
-    return subpatches
-
-
 def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noise_mean=0.0, noise_std=10, validation_split=0.1, seed=0):
     train_modes = ('training', 'validation')
     if mode in train_modes:
@@ -200,7 +185,7 @@ def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noi
     else:
         raise ValueError('Mode {mode} not recognised'.format(mode=mode))
     def resizing_function(image):
-        return div2k_im_to_patches(image, patch_size=patch_size)
+        return resize_div2k_image_random_patch(image, patch_size=patch_size)
 
     return generator_couple_from_dir(
         path,
