@@ -162,7 +162,11 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
     )
 
 
-def resize_div2k_image_random_patch(div2k_imag, patch_size=256):
+def resize_div2k_image_random_patch(div2k_imag, patch_size=256, seed=None):
+    # NOTE: not the best solution because it will always select the same patch
+    # but it will require some very ad hoc stuff in iterator to increase the
+    # seed like in l59 of iterator
+    random.seed(seed)
     subpatches_slices = list()
     for i in range(int(div2k_imag.shape[0] / patch_size)):
         slice_i = slice(i*patch_size, (i+1)*patch_size)
@@ -185,7 +189,7 @@ def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noi
     else:
         raise ValueError('Mode {mode} not recognised'.format(mode=mode))
     def resizing_function(image):
-        return resize_div2k_image_random_patch(image, patch_size=patch_size)
+        return resize_div2k_image_random_patch(image, patch_size=patch_size, seed=seed)
 
     return generator_couple_from_dir(
         path,
