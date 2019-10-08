@@ -190,42 +190,26 @@ def div2k_im_to_patches(fname, patch_size=256):
     return subpatches
 
 
-def im_generator_DIV2K(path, grey=False, patch_size=256, mode='training', batch_size=32, noise_mean=0.0, noise_std=10):
-    # TODO: have that in a sequence that will get the file rather than loading everything in memory
-    # this will allow patch handling and all the bla bla
+def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noise_mean=0.0, noise_std=10,validation_split=0.1, seed=0):
     train_modes = ('training', 'validation')
     if mode in train_modes:
-        pass
+        subset = mode
     elif mode == 'testing':
-        raise ValueError('Mode {mode} not used in DIV2K'.format(mode=mode))
+        validation_split = 0.0
+        subset = None
     else:
         raise ValueError('Mode {mode} not recognised'.format(mode=mode))
-    filelist = glob.glob(path + '/*')
-    while True:
-        x = (patch for fname in filelist for patch in div2k_im_to_patches(fname, patch_size=patch_size))
-        image_datagen = ImageDataGenerator(
-            rotation_range=20,
-            width_shift_range=0.1,
-            height_shift_range=0.1,
-            horizontal_flip=True,
-            vertical_flip=True,
-        )
-        current_batch_noisy = []
-        current_batch = []
-        for img_idx, img in enumerate(x):
-            if grey:
-                img = np.mean(img, axis=-1)
-                img = img[:, :, None]
-            img = image_datagen.random_transform(img)
-            noisy_img = img + np.random.normal(loc=noise_mean, scale=noise_std, size=img.shape)
-            img[img == 0] = 0
-            img /= 255
-            noisy_img /= 255
-            current_batch_noisy.append(noisy_img)
-            current_batch.append(img)
-            if (img_idx + 1) % batch_size == 0:
-                noisy_img_batch = np.array(current_batch_noisy)
-                img_batch = np.array(current_batch)
-                current_batch = []
-                current_batch_noisy = []
-                yield (noisy_img_batch, img_batch)
+    def resizing_function(image):
+        return div2k_im_to_patches(image, patch_size=patch_size))
+
+    return generator_couple_from_dir(
+        path,
+        validation_split=validation_split,
+        batch_size=batch_size,
+        seed=seed,
+        subset=subset,
+        noise_mean=noise_mean,
+        noise_std=noise_std,
+        target_size=patch_size,
+        resizing_function=resizing_function,
+    )
