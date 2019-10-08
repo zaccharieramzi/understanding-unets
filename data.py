@@ -45,7 +45,9 @@ def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.
         preprocessing_function = add_noise
     else:
         preprocessing_function = None
-    if not no_augment:
+    if no_augment:
+        augment_kwargs = {}
+    else:
         augment_kwargs = {
             'rotation_range': 20,
             'width_shift_range': 0.1,
