@@ -37,7 +37,7 @@ class MergedGenerators(Sequence):
     def __getitem__(self, index):
         return [generator[index] for generator in self.generators]
 
-def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.1):
+def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.1, no_augment=False):
     if noise:
         def add_noise(image):
             noisy_img = image + np.random.normal(loc=noise_mean, scale=noise_std, size=image.shape)
@@ -45,22 +45,26 @@ def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.
         preprocessing_function = add_noise
     else:
         preprocessing_function = None
+    if not no_augment:
+        augment_kwargs = {
+            'rotation_range': 20,
+            'width_shift_range': 0.1,
+            'height_shift_range': 0.1,
+            'horizontal_flip': True,
+            'vertical_flip': True,
+        }
     return ImageDataGenerator(
         samplewise_center=True,
         samplewise_std_normalization=True,
-        rotation_range=20,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
-        horizontal_flip=True,
-        vertical_flip=True,
         fill_mode='constant',
         validation_split=validation_split,
         preprocessing_function=preprocessing_function,
+        **augment_kwargs,
     )
 
-def generator_couple_from_array(x, validation_split=0.1, batch_size=32, seed=0, subset=None, noise_mean=0.0, noise_std=0.1):
-    gt_image_datagen = im_generator(validation_split, noise=False)
-    noisy_image_datagen = im_generator(validation_split, noise=True, noise_mean=noise_mean, noise_std=noise_std)
+def generator_couple_from_array(x, validation_split=0.1, batch_size=32, seed=0, subset=None, noise_mean=0.0, noise_std=0.1, no_augment=False):
+    gt_image_datagen = im_generator(validation_split, noise=False, no_augment=no_augment)
+    noisy_image_datagen = im_generator(validation_split, noise=True, noise_mean=noise_mean, noise_std=noise_std, no_augment=no_augment)
     gt_image_generator = gt_image_datagen.flow(
         x,
         batch_size=batch_size,
@@ -85,9 +89,10 @@ def generator_couple_from_dir(
         noise_std=0.1,
         target_size=256,
         resizing_function=None,
+        no_augment=False,
     ):
-    gt_image_datagen = im_generator(validation_split, noise=False)
-    noisy_image_datagen = im_generator(validation_split, noise=True, noise_mean=noise_mean, noise_std=noise_std)
+    gt_image_datagen = im_generator(validation_split, noise=False, no_augment=no_augment)
+    noisy_image_datagen = im_generator(validation_split, noise=True, noise_mean=noise_mean, noise_std=noise_std, no_augment=no_augment)
     gt_image_generator = gt_image_datagen.flow_from_directory(
         dir_path,
         target_size=(target_size, target_size),
@@ -109,7 +114,7 @@ def generator_couple_from_dir(
     return MergedGenerators(noisy_image_generator, gt_image_generator)
 
 # generator for keras datasets (cifar, mnist)
-def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, source='cifar10', seed=0):
+def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, source='cifar10', seed=0, no_augment=False):
     train_modes = ('training', 'validation')
     if source == 'cifar10':
         (x_train, _), (x_test, _) = cifar10.load_data()
@@ -138,6 +143,7 @@ def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std
         subset=subset,
         noise_mean=noise_mean,
         noise_std=noise_std,
+        no_augment=no_augment
     )
 
 # BSD68 utilities
@@ -147,7 +153,7 @@ def bsd68_im_to_array(fname):
         x = np.rot90(x)
     return x
 
-def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, seed=0, n_pooling=3):
+def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, seed=0, n_pooling=3, no_augment=False):
     train_modes = ('training', 'validation')
     if mode in train_modes:
         subset = mode
@@ -174,6 +180,7 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
         subset=subset,
         noise_mean=noise_mean,
         noise_std=noise_std,
+        no_augment=no_augment,
     )
 
 # div2k utilities
@@ -193,7 +200,7 @@ def resize_div2k_image_random_patch(div2k_imag, patch_size=256, seed=None):
     random_patch = div2k_imag[random_patch_slices[0], random_patch_slices[1]]
     return random_patch
 
-def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noise_mean=0.0, noise_std=10, validation_split=0.1, seed=0):
+def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noise_mean=0.0, noise_std=10, validation_split=0.1, seed=0, no_augment=False):
     train_modes = ('training', 'validation')
     if mode in train_modes:
         subset = mode
@@ -215,4 +222,5 @@ def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noi
         noise_std=noise_std,
         target_size=patch_size,
         resizing_function=resizing_function,
+        no_augment=no_augment,
     )
