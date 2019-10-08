@@ -37,6 +37,7 @@ def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.
         height_shift_range=0.1,
         horizontal_flip=True,
         vertical_flip=True,
+        fill_mode='constant',
         validation_split=validation_split,
         preprocessing_function=preprocessing_function,
     )
