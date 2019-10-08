@@ -2,7 +2,7 @@ from keras.layers import Conv2D, concatenate, UpSampling2D, Input, AveragePoolin
 from keras.models import Model
 from keras.optimizers import Adam
 
-from evaluate import keras_psnr, keras_ssim
+from .evaluate import keras_psnr, keras_ssim
 
 def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=3):
     n_channel = int(image.shape[-1])
