@@ -200,7 +200,7 @@ def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noi
     else:
         raise ValueError('Mode {mode} not recognised'.format(mode=mode))
     def resizing_function(image):
-        return div2k_im_to_patches(image, patch_size=patch_size))
+        return div2k_im_to_patches(image, patch_size=patch_size)
 
     return generator_couple_from_dir(
         path,
