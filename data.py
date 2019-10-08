@@ -59,6 +59,40 @@ def generator_couple_from_array(x, validation_split=0.1, batch_size=32, seed=0, 
     return MergedGenerators(noisy_image_generator, gt_image_generator)
 
 
+def generator_couple_from_dir(
+        dir_path,
+        validation_split=0.1,
+        batch_size=32,
+        seed=0,
+        subset=None,
+        noise_mean=0.0,
+        noise_std=0.1,
+        target_size=256,
+        resizing_function=None,
+    ):
+    gt_image_datagen = im_generator(validation_split, noise=False)
+    noisy_image_datagen = im_generator(validation_split, noise=True, noise_mean=noise_mean, noise_std=noise_std)
+    gt_image_generator = gt_image_datagen.flow_from_directory(
+        dir_path,
+        target_size=(target_size, target_size),
+        batch_size=batch_size,
+        class_mode=None,
+        seed=seed,
+        subset=subset,
+        resizing_function=resizing_function,
+    )
+    noisy_image_generator = noisy_image_datagen.flow_from_directory(
+        dir_path,
+        target_size=(target_size, target_size),
+        batch_size=batch_size,
+        class_mode=None,
+        seed=seed,
+        subset=subset,
+        resizing_function=resizing_function,
+    )
+    return MergedGenerators(noisy_image_generator, gt_image_generator)
+
+
 def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, source='cifar10', seed=0):
     train_modes = ('training', 'validation')
     if source == 'cifar10':
