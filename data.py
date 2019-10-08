@@ -226,3 +226,104 @@ def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noi
         resizing_function=resizing_function,
         no_augment=no_augment,
     )
+
+# common API
+def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False, noise_std=30):
+    if 'cifar' in source:
+        n_samples_train = 5*1e4
+        size = 32
+    elif 'mnist' in source:
+        n_samples_train = 6*1e4
+        size = 28
+    elif source == 'bsd68':
+        bsd_dir_train = 'BSDS300/images/train'
+        bsd_dir_test = 'BSDS300/images/test'
+        n_samples_train = 200
+        size = None
+    elif source == 'div2k':
+        div_2k_dir_train = 'DIV2K_train_HR/'
+        div_2k_dir_val = 'DIV2K_val_HR/'
+        n_samples_train = 800
+        size = 256
+    if source in ['cifar', 'cifar_grey', 'mnist']:
+        im_gen_train = keras_im_generator(
+            mode='training',
+            validation_split=validation_split,
+            batch_size=batch_size,
+            source=source,
+            noise_std=noise_std,
+            no_augment=no_augment,
+        )
+        im_gen_val = keras_im_generator(
+            mode='validation',
+            validation_split=validation_split,
+            batch_size=batch_size,
+            source=source,
+            noise_std=noise_std,
+            no_augment=no_augment,
+        )
+        im_gen_test = keras_im_generator(
+            mode='testing',
+            validation_split=validation_split,
+            batch_size=batch_size,
+            source=source,
+            noise_std=noise_std,
+            no_augment=no_augment,
+        )
+    elif source == 'bsd68':
+        im_gen_train = im_generator_BSD68(
+            path=bsd_dir_train,
+            mode='training',
+            validation_split=validation_split,
+            batch_size=batch_size,
+            noise_std=noise_std,
+            n_pooling=4,
+            no_augment=no_augment,
+        )
+        im_gen_val = im_generator_BSD68(
+            path=bsd_dir_train,
+            mode='validation',
+            validation_split=validation_split,
+            batch_size=batch_size,
+            noise_std=noise_std,
+            n_pooling=4,
+            no_augment=no_augment,
+        )
+        im_gen_test = im_generator_BSD68(
+            path=bsd_dir_test,
+            mode='testing',
+            validation_split=0,
+            batch_size=batch_size,
+            noise_std=noise_std,
+            n_pooling=4,
+            no_augment=no_augment,
+        )
+    elif source == 'div2k':
+        im_gen_train = im_generator_DIV2K(
+            path=div_2k_dir_train,
+            patch_size=size,
+            mode='training',
+            validation_split=validation_split,
+            batch_size=batch_size,
+            noise_std=noise_std,
+            no_augment=no_augment,
+        )
+        im_gen_val = im_generator_DIV2K(
+            path=div_2k_dir_train,
+            patch_size=size,
+            mode='validation',
+            validation_split=validation_split,
+            batch_size=batch_size,
+            noise_std=noise_std,
+            no_augment=no_augment,
+        )
+        im_gen_test = im_generator_DIV2K(
+            path=div_2k_dir_val,
+            patch_size=size,
+            mode='testing',
+            validation_split=validation_split,
+            batch_size=batch_size,
+            noise_std=noise_std,
+            no_augment=no_augment,
+        )
+    return im_gen_train, im_gen_val, im_gen_test, size, n_samples_train
