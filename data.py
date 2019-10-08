@@ -166,7 +166,7 @@ def resize_div2k_image_random_patch(div2k_imag, patch_size=256, seed=None):
     # NOTE: not the best solution because it will always select the same patch
     # but it will require some very ad hoc stuff in iterator to increase the
     # seed like in l59 of iterator
-    random.seed(seed)
+    random.seed(seed + int(100 * div2k_imag[0, 0, 0]))
     subpatches_slices = list()
     for i in range(int(div2k_imag.shape[0] / patch_size)):
         slice_i = slice(i*patch_size, (i+1)*patch_size)
