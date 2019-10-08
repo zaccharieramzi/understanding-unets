@@ -1,4 +1,5 @@
 import glob
+import random
 
 from keras.datasets import cifar10, mnist
 from keras.preprocessing.image import ImageDataGenerator
@@ -125,6 +126,19 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
         noise_mean=noise_mean,
         noise_std=noise_std,
     )
+
+
+def resize_div2k_image_random_patch(div2k_imag, patch_size=256):
+    subpatches_slices = list()
+    for i in range(int(div2k_imag.shape[0] / patch_size)):
+        slice_i = slice(i*patch_size, (i+1)*patch_size)
+        for j in range(int(div2k_imag.shape[1] / patch_size)):
+            slice_j = slice(j*patch_size, (j+1)*patch_size)
+            patch_slices = [slice_i, slice_j]
+            subpatches_slices.append(patch_slices)
+    random_patch_slices = random.choice(subpatches_slices)
+    random_patch = div2k_imag[random_patch_slices[0], random_patch_slices[1]]
+    return random_patch
 
 
 def div2k_im_to_patches(fname, patch_size=256):
