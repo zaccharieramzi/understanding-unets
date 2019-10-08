@@ -9,6 +9,8 @@ import numpy as np
 
 np.random.seed(1)
 
+
+# general keras utilities
 class MergedGenerators(Sequence):
     def __init__(self, *generators):
         self.generators = generators
@@ -19,7 +21,6 @@ class MergedGenerators(Sequence):
 
     def __getitem__(self, index):
         return [generator[index] for generator in self.generators]
-
 
 def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.1):
     if noise:
@@ -59,7 +60,6 @@ def generator_couple_from_array(x, validation_split=0.1, batch_size=32, seed=0, 
     )
     return MergedGenerators(noisy_image_generator, gt_image_generator)
 
-
 def generator_couple_from_dir(
         dir_path,
         validation_split=0.1,
@@ -93,7 +93,7 @@ def generator_couple_from_dir(
     )
     return MergedGenerators(noisy_image_generator, gt_image_generator)
 
-
+# generator for keras datasets (cifar, mnist)
 def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, source='cifar10', seed=0):
     train_modes = ('training', 'validation')
     if source == 'cifar10':
@@ -125,13 +125,12 @@ def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std
         noise_std=noise_std,
     )
 
-
-def bds_im_to_array(fname):
+# BSD68 utilities
+def bsd68_im_to_array(fname):
     x = np.array(plt.imread(fname))
     if x.shape[1] > x.shape[0]:
         x = np.rot90(x)
     return x
-
 
 def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, seed=0, n_pooling=3):
     train_modes = ('training', 'validation')
@@ -143,7 +142,7 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
     else:
         raise ValueError('Mode {mode} not recognised'.format(mode=mode))
     filelist = glob.glob(path + '/*.jpg')
-    x = np.array([bds_im_to_array(fname) for fname in filelist])
+    x = np.array([bsd68_im_to_array(fname) for fname in filelist])
     if grey:
         x = np.mean(x, axis=-1, keepdims=True)
     # padding
@@ -162,7 +161,7 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
         noise_std=noise_std,
     )
 
-
+# div2k utilities
 def resize_div2k_image_random_patch(div2k_imag, patch_size=256, seed=None):
     # NOTE: not the best solution because it will always select the same patch
     # but it will require some very ad hoc stuff in iterator to increase the
@@ -178,7 +177,6 @@ def resize_div2k_image_random_patch(div2k_imag, patch_size=256, seed=None):
     random_patch_slices = random.choice(subpatches_slices)
     random_patch = div2k_imag[random_patch_slices[0], random_patch_slices[1]]
     return random_patch
-
 
 def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noise_mean=0.0, noise_std=10, validation_split=0.1, seed=0):
     train_modes = ('training', 'validation')
