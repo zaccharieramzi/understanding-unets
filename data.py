@@ -190,7 +190,7 @@ def div2k_im_to_patches(fname, patch_size=256):
     return subpatches
 
 
-def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noise_mean=0.0, noise_std=10,validation_split=0.1, seed=0):
+def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noise_mean=0.0, noise_std=10, validation_split=0.1, seed=0):
     train_modes = ('training', 'validation')
     if mode in train_modes:
         subset = mode
