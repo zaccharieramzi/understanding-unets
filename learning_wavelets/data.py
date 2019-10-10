@@ -186,7 +186,7 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
     )
 
 # div2k utilities
-def resize_div2k_image_random_patch(div2k_imag, patch_size=256, seed=None):
+def resize_div2k_image_random_patch(div2k_imag, patch_size=256, seed=None, grey=False):
     # NOTE: not the best solution because it will always select the same patch
     # but it will require some very ad hoc stuff in iterator to increase the
     # seed like in l59 of iterator
@@ -200,9 +200,11 @@ def resize_div2k_image_random_patch(div2k_imag, patch_size=256, seed=None):
             subpatches_slices.append(patch_slices)
     random_patch_slices = random.choice(subpatches_slices)
     random_patch = div2k_imag[random_patch_slices[0], random_patch_slices[1]]
+    if grey:
+        random_patch = np.mean(random_patch, axis=-1, keepdims=True)
     return random_patch
 
-def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noise_mean=0.0, noise_std=10, validation_split=0.1, seed=0, no_augment=False):
+def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noise_mean=0.0, noise_std=10, validation_split=0.1, seed=0, no_augment=False, grey=False):
     train_modes = ('training', 'validation')
     if mode in train_modes:
         subset = mode
@@ -212,7 +214,7 @@ def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noi
     else:
         raise ValueError('Mode {mode} not recognised'.format(mode=mode))
     def resizing_function(image):
-        return resize_div2k_image_random_patch(image, patch_size=patch_size, seed=seed)
+        return resize_div2k_image_random_patch(image, patch_size=patch_size, seed=seed, grey=grey)
 
     return generator_couple_from_dir(
         path,
@@ -228,7 +230,8 @@ def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noi
     )
 
 # common API
-def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False, noise_std=30):
+def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False, noise_std=30, n_pooling=4, grey=False):
+    # TODO: add number of pooling, and possibility to use grey for images
     if 'cifar' in source:
         n_samples_train = 5*1e4
         size = 32
@@ -277,8 +280,9 @@ def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False,
             validation_split=validation_split,
             batch_size=batch_size,
             noise_std=noise_std,
-            n_pooling=4,
             no_augment=no_augment,
+            n_pooling=n_pooling,
+            grey=grey,
         )
         im_gen_val = im_generator_BSD68(
             path=bsd_dir_train,
@@ -286,8 +290,9 @@ def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False,
             validation_split=validation_split,
             batch_size=batch_size,
             noise_std=noise_std,
-            n_pooling=4,
             no_augment=no_augment,
+            n_pooling=n_pooling,
+            grey=grey,
         )
         im_gen_test = im_generator_BSD68(
             path=bsd_dir_test,
@@ -295,8 +300,9 @@ def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False,
             validation_split=0,
             batch_size=batch_size,
             noise_std=noise_std,
-            n_pooling=4,
             no_augment=no_augment,
+            n_pooling=n_pooling,
+            grey=grey,
         )
     elif source == 'div2k':
         im_gen_train = im_generator_DIV2K(
@@ -307,6 +313,7 @@ def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False,
             batch_size=batch_size,
             noise_std=noise_std,
             no_augment=no_augment,
+            grey=grey,
         )
         im_gen_val = im_generator_DIV2K(
             path=div_2k_dir_train,
@@ -316,6 +323,7 @@ def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False,
             batch_size=batch_size,
             noise_std=noise_std,
             no_augment=no_augment,
+            grey=grey,
         )
         im_gen_test = im_generator_DIV2K(
             path=div_2k_dir_val,
@@ -325,5 +333,6 @@ def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False,
             batch_size=batch_size,
             noise_std=noise_std,
             no_augment=no_augment,
+            grey=grey,
         )
     return im_gen_train, im_gen_val, im_gen_test, size, n_samples_train
