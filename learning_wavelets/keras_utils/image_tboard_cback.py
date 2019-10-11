@@ -2,6 +2,7 @@
 import io
 
 from keras.callbacks import Callback
+import numpy as np
 from PIL import Image
 from skimage.util import img_as_ubyte
 import tensorflow as tf
@@ -16,7 +17,8 @@ def make_image(tensor):
     tensor_normalized = tensor - tensor.min()
     tensor_normalized /= tensor_normalized.max()
     tensor_normalized = img_as_ubyte(tensor_normalized)
-    image = Image.fromarray(tensor_normalized)
+    tensor_squeezed = np.squeeze(tensor_normalized)
+    image = Image.fromarray(tensor_squeezed)
     output = io.BytesIO()
     image.save(output, format='PNG')
     image_string = output.getvalue()
