@@ -92,9 +92,13 @@ def generator_couple_from_dir(
         target_size=256,
         resizing_function=None,
         no_augment=False,
+        grey=False,
     ):
     gt_image_datagen = im_generator(validation_split, noise=False, no_augment=no_augment)
     noisy_image_datagen = im_generator(validation_split, noise=True, noise_mean=noise_mean, noise_std=noise_std, no_augment=no_augment)
+    color_mode = 'rgb'
+    if grey:
+        color_mode = 'grayscale'
     gt_image_generator = gt_image_datagen.flow_from_directory(
         dir_path,
         target_size=(target_size, target_size),
@@ -103,6 +107,7 @@ def generator_couple_from_dir(
         seed=seed,
         subset=subset,
         resizing_function=resizing_function,
+        color_mode=color_mode,
     )
     noisy_image_generator = noisy_image_datagen.flow_from_directory(
         dir_path,
@@ -112,6 +117,7 @@ def generator_couple_from_dir(
         seed=seed,
         subset=subset,
         resizing_function=resizing_function,
+        color_mode=color_mode,
     )
     return MergedGenerators(noisy_image_generator, gt_image_generator)
 
@@ -227,6 +233,7 @@ def im_generator_DIV2K(path, patch_size=256, mode='training', batch_size=32, noi
         target_size=patch_size,
         resizing_function=resizing_function,
         no_augment=no_augment,
+        grey=grey,
     )
 
 # common API
