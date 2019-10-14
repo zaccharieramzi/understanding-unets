@@ -1,6 +1,7 @@
 from keras.layers import Activation, Conv2D, AveragePooling, UpSampling2D
 import numpy as np
 
+
 def conv_2d(image, n_channels, kernel_size=3, activation='relu'):
     image = Conv2D(
         n_channels,

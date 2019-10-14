@@ -5,6 +5,7 @@ from keras.optimizers import Adam, SGD
 from .evaluate import keras_psnr, keras_ssim
 from .keras_utils.conv import conv_2d
 
+
 def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=3, denoising_activation='relu'):
     n_channel = int(image.shape[-1])
     details_thresholded = conv_2d(image, n_details, activation=denoising_activation)
@@ -30,7 +31,6 @@ def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=
     )
     denoised_image = conv_2d(denoised_image, n_channel, kernel_size=1, activation='linear')
     return denoised_image
-
 
 def learned_wavelet(input_size, lr=1e-4, n_scales=4, n_details=3, n_coarse=1, n_groupping=3, denoising_activation='relu'):
     image = Input(input_size)
