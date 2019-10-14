@@ -11,7 +11,7 @@ def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=
     if wav_pooling:
         low_freqs, high_freqs = wavelet_pooling(image)
         coarse = low_freqs
-        details_thresholded = conv_2d(high_freqs, n_details, activation=denoising_activation)
+        details_thresholded = conv_2d(high_freqs, n_details, activation=denoising_activation, bias=False)
     else:
         details_thresholded = conv_2d(image, n_details, activation=denoising_activation)
         coarse = conv_2d(image, n_coarse, activation='linear')

@@ -2,13 +2,14 @@ from keras.layers import Activation, Conv2D, AveragePooling, UpSampling2D
 import numpy as np
 
 
-def conv_2d(image, n_channels, kernel_size=3, activation='relu'):
+def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True):
     image = Conv2D(
         n_channels,
         kernel_size,
         activation='linear',
         padding='same',
         kernel_initializer='glorot_uniform',
+        bias=bias,
     )(image)
     image = Activation(activation)(image)
     return image
