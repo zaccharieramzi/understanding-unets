@@ -38,5 +38,5 @@ def wavelet_pooling(image, wav_h_filter=None):
     low_freqs = conv_h(image)
     low_freqs_downsampled = AveragePooling2D()(low_freqs)
     low_freqs_down_up = UpSampling2D()(low_freqs_downsampled)
-    high_freqs = image - low_freqs_down_up
+    high_freqs = Lambda(lambda x: x[0] - x[1])([image, low_freqs_down_up])
     return [low_freqs, high_freqs]
