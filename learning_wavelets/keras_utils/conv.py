@@ -17,7 +17,8 @@ def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True):
 def wavelet_pooling(image, wav_h_filter=None):
     # TODO: refactor to have it as a shared weight in the network
     # less memory (even if not very large)
-    def kernel_initializer():
+    def kernel_initializer(shape):
+        # TODO: check that shape is correspdonding
         return wav_h_filter[None, None, ...]
     if wav_h_filter is None:
         base_filter = [1/16, 1/4, 3/8, 1/4, 1/16]
