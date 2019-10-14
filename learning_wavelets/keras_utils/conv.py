@@ -19,7 +19,7 @@ def wavelet_pooling(image, wav_h_filter=None):
     # less memory (even if not very large)
     def kernel_initializer(shape):
         # TODO: check that shape is correspdonding
-        return wav_h_filter[None, None, ...]
+        return wav_h_filter[..., None, None]
     if wav_h_filter is None:
         base_filter = [1/16, 1/4, 3/8, 1/4, 1/16]
         wav_h_filter = np.array([
