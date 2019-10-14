@@ -1,4 +1,4 @@
-from keras.layers import Activation, Conv2D, AveragePooling2D, UpSampling2D
+from keras.layers import Activation, Conv2D, AveragePooling2D, UpSampling2D, Lambda
 import numpy as np
 
 
