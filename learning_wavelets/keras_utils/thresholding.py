@@ -2,6 +2,8 @@ from keras.layers import Layer, ThresholdedReLU, ReLU
 from keras import backend as K
 
 class SoftThresholding(Layer):
+    __name__ = 'soft_thresholding'
+
     def __init__(self, threshold, **kwargs):
         super(SoftThresholding, self).__init__(**kwargs)
         self.threshold = K.cast_to_floatx(threshold)
@@ -13,9 +15,9 @@ class SoftThresholding(Layer):
         return soft_thresh
 
     def get_config(self):
-        config = {'threshold': float(self.threshold)}
-        base_config = super(SoftThresholding, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        config = super(SoftThresholding, self).get_config()
+        config.update({'threshold': float(self.threshold)})
+        return config
 
     def compute_output_shape(self, input_shape):
         return input_shape
