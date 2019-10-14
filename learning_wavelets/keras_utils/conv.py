@@ -33,6 +33,7 @@ def wavelet_pooling(image, wav_h_filter=None):
         activation='linear',
         padding='same',
         kernel_initializer=kernel_initializer,
+        bias=False,
     )
     conv_h.trainable = False
     low_freqs = conv_h(image)
