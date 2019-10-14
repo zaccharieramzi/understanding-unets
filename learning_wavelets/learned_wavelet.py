@@ -3,7 +3,7 @@ from keras.models import Model
 from keras.optimizers import Adam, SGD
 
 from .evaluate import keras_psnr, keras_ssim
-from .net_utils import conv_2d
+from .keras_utils.conv import conv_2d
 
 def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=3, denoising_activation='relu'):
     n_channel = int(image.shape[-1])
