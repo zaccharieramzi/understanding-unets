@@ -44,8 +44,7 @@ def learned_wavelet(input_size, lr=1e-4, n_scales=4, n_details=3, n_coarse=1, n_
     )
     model = Model(inputs=image, outputs=denoised_image)
     model.compile(
-        # optimizer=Adam(lr=lr, clipnorm=1.),
-        optimizer=SGD(lr=lr, momentum=0.0, nesterov=False, clipnorm=1.),
+        optimizer=Adam(lr=lr, clipnorm=1.),
         loss='mean_squared_error',
         metrics=[keras_psnr, keras_ssim],
     )
