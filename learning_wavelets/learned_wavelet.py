@@ -1,15 +1,20 @@
 from keras.layers import concatenate, UpSampling2D, Input, AveragePooling2D
 from keras.models import Model
-from keras.optimizers import Adam, SGD
+from keras.optimizers import Adam
 
 from .evaluate import keras_psnr, keras_ssim
-from .keras_utils.conv import conv_2d
+from .keras_utils.conv import conv_2d, wavelet_pooling
 
 
-def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=3, denoising_activation='relu'):
+def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=3, denoising_activation='relu', wav_pooling=False):
     n_channel = int(image.shape[-1])
-    details_thresholded = conv_2d(image, n_details, activation=denoising_activation)
-    coarse = conv_2d(image, n_coarse, activation='linear')
+    if wav_pooling:
+        low_freqs, high_freqs = wavelet_pooling(image)
+        coarse = low_freqs
+        details_thresholded = conv_2d(high_freqs, n_details, activation=denoising_activation)
+    else:
+        details_thresholded = conv_2d(image, n_details, activation=denoising_activation)
+        coarse = conv_2d(image, n_coarse, activation='linear')
     if n_scales > 1:
         coarse_down_sampled = AveragePooling2D()(coarse)
         denoised_coarse = learned_wavelet_rec(
@@ -32,7 +37,7 @@ def learned_wavelet_rec(image, n_scales=1, n_details=3, n_coarse=1, n_groupping=
     denoised_image = conv_2d(denoised_image, n_channel, kernel_size=1, activation='linear')
     return denoised_image
 
-def learned_wavelet(input_size, lr=1e-4, n_scales=4, n_details=3, n_coarse=1, n_groupping=3, denoising_activation='relu'):
+def learned_wavelet(input_size, lr=1e-4, n_scales=4, n_details=3, n_coarse=1, n_groupping=3, denoising_activation='relu', wav_pooling=False):
     image = Input(input_size)
     denoised_image = learned_wavelet_rec(
         image,
@@ -41,6 +46,7 @@ def learned_wavelet(input_size, lr=1e-4, n_scales=4, n_details=3, n_coarse=1, n_
         n_coarse=n_coarse,
         n_groupping=n_groupping,
         denoising_activation=denoising_activation,
+        wav_pooling=wav_pooling,
     )
     model = Model(inputs=image, outputs=denoised_image)
     model.compile(
