@@ -1,5 +1,5 @@
 from keras.callbacks import Callback
-from keras.layers import Layer, ThresholdedReLU, ReLU
+from keras.layers import Layer, ThresholdedReLU, ReLU, Activation
 from keras.models import Model
 from keras import backend as K
 import numpy as np
@@ -42,22 +42,23 @@ class ThresholdAdjustment(Callback):
 
     def set_model(self, model):
         self.model = model
-        self.soft_thresholds = list()  # list the soft thresh layers
-        soft_threshold_input_model_outputs = list()
+        self.sts = list()  # list the soft thresh layers
+        st_input_model_outputs = list()
         for layer in model.layers:
-            if isinstance(layer, SoftThresholding):
-                self.soft_thresholds.append(layer)
+            if isinstance(layer, Activation) and isinstance(layer.activation, SoftThresholding):
+                self.sts.append(layer)
                 # this is from https://stackoverflow.com/a/50858709/4332585
-                soft_threshold_input = layer._inbound_nodes[0].inbound_layers[0]
-                soft_threshold_input_model_outputs.append(soft_threshold_input)
-        self.soft_thresholds_input_model = Model(model.input, soft_threshold_input_model_outputs)
+                st_input = layer._inbound_nodes[0].inbound_layers[0]
+                st_input_model_outputs.append(st_input)
+        self.sts_input_model = Model(model.input, st_input_model_outputs)
 
     def on_batch_end(self, batch, logs={}):
         image_shape = list(self.model.input_shape[1:])
         image_shape = [1] + image_shape
         noise = np.random.normal(scale=self.noise_std, size=image_shape)
-        soft_threshold_inputs = self.soft_thresholds_input_model.predict_on_batch(noise)
-        for soft_threshold_layer, soft_threshold_input in zip(self.soft_thresholds, soft_threshold_inputs):
-            # TODO: compute the input average std and set the new threshold to
-            # be n times that
-            pass
+        st_inputs = self.sts_input_model.predict_on_batch(noise)
+        for st_layer, st_input in zip(self.sts, st_inputs):
+            st_input = st_input[0]
+            n_channels = st_input.shape[-1]
+            average_std = np.mean([np.std(st_input[..., i]) for i in range(n_channels)])
+            st_layer.activation.threshold = self.n * average_std
