@@ -1,8 +1,12 @@
+from keras.constraints import UnitNorm
 from keras.layers import Activation, Conv2D, AveragePooling2D, UpSampling2D, Lambda
 import numpy as np
 
 
-def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True):
+def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True, norm=False):
+    constraint = None
+    if norm:
+        constraint = UnitNorm(axis=[0, 1, 2])
     image = Conv2D(
         n_channels,
         kernel_size,
@@ -10,6 +14,7 @@ def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True):
         padding='same',
         kernel_initializer='glorot_uniform',
         bias=bias,
+        kernel_constraint=constraint,
     )(image)
     image = Activation(activation)(image)
     return image
