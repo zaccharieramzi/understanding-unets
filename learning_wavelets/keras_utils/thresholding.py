@@ -48,7 +48,7 @@ class ThresholdAdjustment(Callback):
             if isinstance(layer, Activation) and isinstance(layer.activation, SoftThresholding):
                 self.sts.append(layer)
                 # this is from https://stackoverflow.com/a/50858709/4332585
-                st_input = layer._inbound_nodes[0].inbound_layers[0]
+                st_input = layer._inbound_nodes[0].inbound_layers[0].output
                 st_input_model_outputs.append(st_input)
         self.sts_input_model = Model(model.input, st_input_model_outputs)
 
