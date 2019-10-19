@@ -35,10 +35,13 @@ class SoftThresholding(Layer):
         return input_shape
 
 class ThresholdAdjustment(Callback):
-    def __init__(self, noise_std, n=2):
+    def __init__(self, noise_std, n=2, n_pooling=4):
         super().__init__()
         self.noise_std = noise_std
         self.n = n
+        # 4 as a minimum just to make sure we have enough samples to compute
+        # a reliable std
+        self.n_pooling = min(n_pooling, 4)
 
     def set_model(self, model):
         self.model = model
@@ -53,8 +56,9 @@ class ThresholdAdjustment(Callback):
         self.sts_input_model = Model(model.input, st_input_model_outputs)
 
     def on_batch_end(self, batch, logs={}):
-        image_shape = list(self.model.input_shape[1:])
-        image_shape = [1] + image_shape
+        n_channels = list(self.model.input_shape[-1])
+        image_shape = [1, self.n_pooling, self.n_pooling]
+        image_shape.append(n_channels)
         noise = np.random.normal(scale=self.noise_std, size=image_shape)
         st_inputs = self.sts_input_model.predict_on_batch(noise)
         for st_layer, st_input in zip(self.sts, st_inputs):
