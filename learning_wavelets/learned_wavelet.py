@@ -44,6 +44,7 @@ def learned_wavelet_rec(
             n_coarse=n_coarse,
             n_groupping=n_groupping,
             denoising_activation=denoising_activation,
+            filters_normed=filters_normed,
         )
         denoised_coarse_upsampled = UpSampling2D(size=(2, 2))(denoised_coarse)
     else:
