@@ -56,7 +56,7 @@ class ThresholdAdjustment(Callback):
         self.sts_input_model = Model(model.input, st_input_model_outputs)
 
     def on_batch_end(self, batch, logs={}):
-        n_channels = list(self.model.input_shape[-1])
+        n_channels = self.model.input_shape[-1]
         image_shape = [1, self.n_pooling, self.n_pooling]
         image_shape.append(n_channels)
         noise = np.random.normal(scale=self.noise_std, size=image_shape)
