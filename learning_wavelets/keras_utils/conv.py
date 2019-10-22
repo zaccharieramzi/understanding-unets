@@ -1,6 +1,6 @@
-from keras.constraints import UnitNorm
-from keras.layers import Activation, Conv2D, AveragePooling2D, UpSampling2D, Lambda
 import numpy as np
+from tensorflow.keras.constraints import UnitNorm
+from tensorflow.keras.layers import Activation, Conv2D, AveragePooling2D, UpSampling2D, Lambda
 
 
 def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True, norm=False):
