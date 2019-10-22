@@ -1,8 +1,8 @@
-from keras.callbacks import Callback
-from keras.layers import Layer, ThresholdedReLU, ReLU, Activation
-from keras.models import Model
-from keras import backend as K
 import numpy as np
+from tensorflow.keras.callbacks import Callback
+from tensorflow.keras.layers import Layer, ThresholdedReLU, ReLU, Activation
+from tensorflow.keras.models import Model
+import tensorflow.keras.backend as K
 
 
 class SoftThresholding(Layer):
