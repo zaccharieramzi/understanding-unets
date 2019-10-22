@@ -9,14 +9,18 @@ from .keras_utils.conv import conv_2d, wavelet_pooling
 def learned_wavelet_rec(
         image,
         n_scales=1,
-        n_details=3,
+        list_n_details=None,
         n_coarse=1,
-        n_groupping=3,
+        list_n_groupping=None,
         denoising_activation='relu',
         wav_pooling=False,
         filters_normed=[],
     ):
     n_channel = int(image.shape[-1])
+    n_details = list_n_details[0]
+    n_groupping = list_n_groupping[0]
+    list_n_details = list_n_details[1:]
+    list_n_groupping = list_n_groupping[1:]
     if filters_normed is None:
         filters_normed = ['details', 'coarse', 'groupping']
     if wav_pooling:
@@ -40,12 +44,11 @@ def learned_wavelet_rec(
         denoised_coarse = learned_wavelet_rec(
             coarse_down_sampled,
             n_scales=n_scales-1,
-            n_details=n_details,
+            list_n_details=list_n_details,
             n_coarse=n_coarse,
-            n_groupping=n_groupping,
+            list_n_groupping=list_n_groupping,
             denoising_activation=denoising_activation,
             filters_normed=filters_normed,
-            wav_pooling=wav_pooling,
         )
         denoised_coarse_upsampled = UpSampling2D(size=(2, 2))(denoised_coarse)
     else:
@@ -68,20 +71,24 @@ def learned_wavelet(
         input_size,
         lr=1e-4,
         n_scales=4,
-        n_details=3,
+        list_n_details=3,
         n_coarse=1,
-        n_groupping=3,
+        list_n_groupping=3,
         denoising_activation='relu',
         wav_pooling=False,
         filters_normed=[],
     ):
     image = Input(input_size)
+    if isinstance(list_n_details, int):
+        list_n_details = [list_n_details] * n_scales
+    if isinstance(list_n_groupping, int):
+        list_n_groupping = [list_n_groupping] * n_scales
     denoised_image = learned_wavelet_rec(
         image,
         n_scales=n_scales,
-        n_details=n_details,
+        list_n_details=list_n_details,
         n_coarse=n_coarse,
-        n_groupping=n_groupping,
+        list_n_groupping=list_n_groupping,
         denoising_activation=denoising_activation,
         wav_pooling=wav_pooling,
         filters_normed=filters_normed,
