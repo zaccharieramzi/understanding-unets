@@ -1,11 +1,11 @@
 import glob
 import random
 
-from keras.datasets import cifar10, mnist
-from keras_preprocessing.image import ImageDataGenerator
-from keras.utils import  Sequence
 import matplotlib.pyplot as plt
 import numpy as np
+from tensorflow.keras.datasets import cifar10, mnist
+from tensorflow.keras.utils import  Sequence
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 np.random.seed(1)
 
