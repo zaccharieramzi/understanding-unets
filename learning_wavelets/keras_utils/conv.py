@@ -1,7 +1,7 @@
-import keras.backend as K
-from keras.constraints import UnitNorm
-from keras.layers import Activation, Conv2D
 import numpy as np
+import tensorflow.keras.backend as K
+from tensorflow.keras.constraints import UnitNorm
+from tensorflow.keras.layers import Activation, Conv2D, AveragePooling2D, UpSampling2D, Lambda
 
 from .normalisation import Normalisation
 
