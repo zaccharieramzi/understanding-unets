@@ -1,5 +1,5 @@
-from keras.callbacks import Callback
 import numpy as np
+from tensorflow.keras.callbacks import Callback
 
 
 class NormalizeWeights(Callback):
