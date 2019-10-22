@@ -1,6 +1,6 @@
-from keras.layers import concatenate, UpSampling2D, Input, AveragePooling2D
-from keras.models import Model
-from keras.optimizers import Adam
+from tensorflow.keras.layers import concatenate, UpSampling2D, Input, AveragePooling2D
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
 
 from .evaluate import keras_psnr, keras_ssim
 from .keras_utils.conv import conv_2d, wavelet_pooling
