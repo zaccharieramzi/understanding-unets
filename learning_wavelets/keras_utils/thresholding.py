@@ -34,6 +34,36 @@ class SoftThresholding(Layer):
     def compute_output_shape(self, input_shape):
         return input_shape
 
+class HardThresholding(Layer):
+    __name__ = 'hard_thresholding'
+
+    def __init__(self, threshold, **kwargs):
+        super(HardThresholding, self).__init__(**kwargs)
+        self.threshold = threshold
+
+    @property
+    def threshold(self):
+        return self._threshold
+
+    @threshold.setter
+    def threshold(self, threshold):
+        self._threshold = K.cast_to_floatx(threshold)
+
+    def call(self, inputs):
+        input_sign = K.sign(inputs)
+        hard_thresh_unsigned = ThresholdedReLU(self.threshold)(input_sign * inputs)
+        hard_thresh = hard_thresh_unsigned * input_sign
+        return hard_thresh
+
+    def get_config(self):
+        config = super(HardThresholding, self).get_config()
+        config.update({'threshold': float(self.threshold)})
+        return config
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+
 class ThresholdAdjustment(Callback):
     def __init__(self, noise_std, n=2, n_pooling=4):
         super().__init__()
