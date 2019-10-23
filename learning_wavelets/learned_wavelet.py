@@ -14,13 +14,14 @@ def learned_wavelet_rec(
         n_groupping=3,
         denoising_activation='relu',
         wav_pooling=False,
+        wav_normed=False,
         filters_normed=[],
     ):
     n_channel = int(image.shape[-1])
     if filters_normed is None:
         filters_normed = ['details', 'coarse', 'groupping']
     if wav_pooling:
-        low_freqs, high_freqs = wavelet_pooling(image)
+        low_freqs, high_freqs = wavelet_pooling(image, normalized=wav_normed)
         coarse = low_freqs
         norm = False
         if 'details' in filters_normed:
@@ -46,6 +47,7 @@ def learned_wavelet_rec(
             denoising_activation=denoising_activation,
             filters_normed=filters_normed,
             wav_pooling=wav_pooling,
+            wav_normed=wav_normed,
         )
         denoised_coarse_upsampled = UpSampling2D(size=(2, 2))(denoised_coarse)
     else:
@@ -73,6 +75,7 @@ def learned_wavelet(
         n_groupping=3,
         denoising_activation='relu',
         wav_pooling=False,
+        wav_normed=False,
         filters_normed=[],
     ):
     image = Input(input_size)
@@ -84,6 +87,7 @@ def learned_wavelet(
         n_groupping=n_groupping,
         denoising_activation=denoising_activation,
         wav_pooling=wav_pooling,
+        wav_normed=wav_normed,
         filters_normed=filters_normed,
     )
     model = Model(inputs=image, outputs=denoised_image)
