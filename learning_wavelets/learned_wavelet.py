@@ -1,9 +1,9 @@
-from keras.layers import concatenate, UpSampling2D, Input, AveragePooling2D
+from keras.layers import concatenate, UpSampling2D, Input, AveragePooling2D, Lambda
 from keras.models import Model
 from keras.optimizers import Adam
 
 from .evaluate import keras_psnr, keras_ssim
-from .keras_utils.conv import conv_2d, wavelet_pooling
+from .keras_utils.conv import conv_2d, wavelet_pooling, H_normalisation, G_normalisation
 
 
 def learned_wavelet_rec(
@@ -57,6 +57,9 @@ def learned_wavelet_rec(
     norm = False
     if 'groupping' in filters_normed:
         norm = True
+    if wav_normed:
+        denoised_coarse_upsampled = Lambda(lambda x: x * H_normalisation)(denoised_coarse_upsampled)
+        details_thresholded = Lambda(lambda x: x * G_normalisation)(details_thresholded)
     denoised_image = conv_2d(
         concatenate([denoised_coarse_upsampled, details_thresholded]),
         n_groupping * n_channel,

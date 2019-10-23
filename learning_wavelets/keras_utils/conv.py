@@ -3,6 +3,9 @@ from keras.layers import Activation, Conv2D, AveragePooling2D, UpSampling2D, Lam
 import numpy as np
 
 
+G_normalisation =  0.8907963
+H_normalisation = 0.2734375
+
 def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True, norm=False):
     constraint = None
     if norm:
