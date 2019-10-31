@@ -26,16 +26,35 @@ def learned_wavelet_rec(
         norm = False
         if 'details' in filters_normed:
             norm = True
-        details_thresholded = conv_2d(high_freqs, n_details, activation=denoising_activation, bias=True, norm=norm)
+        details_thresholded = conv_2d(
+            high_freqs,
+            n_details,
+            activation=denoising_activation,
+            bias=True,
+            norm=norm,
+            name='details_tiling',
+        )
     else:
         norm = False
         if 'details' in filters_normed:
             norm = True
-        details_thresholded = conv_2d(image, n_details, activation=denoising_activation, norm=norm)
+        details_thresholded = conv_2d(
+            image,
+            n_details,
+            activation=denoising_activation,
+            norm=norm,
+            name='high_pass_filtering',
+        )
         norm = False
         if 'coarse' in filters_normed:
             norm = True
-        coarse = conv_2d(image, n_coarse, activation='linear', norm=norm)
+        coarse = conv_2d(
+            image,
+            n_coarse,
+            activation='linear',
+            norm=norm,
+            name='low_pass_filtering',
+        )
     if n_scales > 1:
         coarse_down_sampled = AveragePooling2D()(coarse)
         denoised_coarse = learned_wavelet_rec(
@@ -65,6 +84,7 @@ def learned_wavelet_rec(
         n_groupping * n_channel,
         activation='linear',
         norm=norm,
+        name='groupping_conv',
     )
     denoised_image = conv_2d(denoised_image, n_channel, kernel_size=1, activation='linear', norm=norm)
     return denoised_image

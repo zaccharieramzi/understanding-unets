@@ -1,15 +1,19 @@
+import keras.backend as K
 from keras.constraints import UnitNorm
-from keras.layers import Activation, Conv2D, AveragePooling2D, UpSampling2D, Lambda
+from keras.layers import Activation, Conv2D
 import numpy as np
 
 
 G_normalisation =  0.8907963
 H_normalisation = 0.2734375
 
-def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True, norm=False):
+def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True, norm=False, name=None):
     constraint = None
     if norm:
         constraint = UnitNorm(axis=[0, 1, 2])
+    prefix = name
+    if name:
+        name = f'{prefix}_{str(K.get_uid(prefix))}'
     image = Conv2D(
         n_channels,
         kernel_size,
@@ -18,6 +22,7 @@ def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True, norm
         kernel_initializer='glorot_uniform',
         bias=bias,
         kernel_constraint=constraint,
+        name=name,
     )(image)
     image = Activation(activation)(image)
     return image
@@ -46,6 +51,7 @@ def wavelet_pooling(image, wav_h_filter=None, wav_g_filter=None, normalized=Fals
     def g_kernel_initializer(shape, **kwargs):
         # TODO: check that shape is correspdonding
         return wav_g_filter[..., None, None]
+    h_prefix = 'low_pass_filtering'
     conv_h = Conv2D(
         1,
         # TODO: check that wav_h_filter is square
@@ -54,8 +60,10 @@ def wavelet_pooling(image, wav_h_filter=None, wav_g_filter=None, normalized=Fals
         padding='same',
         kernel_initializer=h_kernel_initializer,
         bias=False,
+        name=f'{h_prefix}_{str(K.get_uid(h_prefix))}',
     )
     conv_h.trainable = False
+    g_prefix = 'high_pass_filtering'
     conv_g = Conv2D(
         1,
         # TODO: check that wav_g_filter is square
@@ -64,6 +72,7 @@ def wavelet_pooling(image, wav_h_filter=None, wav_g_filter=None, normalized=Fals
         padding='same',
         kernel_initializer=g_kernel_initializer,
         bias=False,
+        name=f'{g_prefix}_{str(K.get_uid(g_prefix))}',
     )
     conv_g.trainable = False
     low_freqs = conv_h(image)
