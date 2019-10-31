@@ -15,6 +15,7 @@ def learned_wavelet_rec(
         denoising_activation='relu',
         wav_pooling=False,
         wav_normed=False,
+        wav_use_bias=True,
         filters_normed=[],
     ):
     n_channel = int(image.shape[-1])
@@ -30,7 +31,7 @@ def learned_wavelet_rec(
             high_freqs,
             n_details,
             activation=denoising_activation,
-            bias=True,
+            bias=wav_use_bias,
             norm=norm,
             name='details_tiling',
         )
@@ -66,6 +67,7 @@ def learned_wavelet_rec(
             denoising_activation=denoising_activation,
             filters_normed=filters_normed,
             wav_pooling=wav_pooling,
+            wav_use_bias=wav_use_bias,
             wav_normed=wav_normed,
         )
         denoised_coarse_upsampled = UpSampling2D(size=(2, 2))(denoised_coarse)
@@ -79,14 +81,19 @@ def learned_wavelet_rec(
     if wav_normed:
         denoised_coarse_upsampled = Lambda(lambda x: x * H_normalisation)(denoised_coarse_upsampled)
         details_thresholded = Lambda(lambda x: x * G_normalisation)(details_thresholded)
+    if wav_pooling:
+        bias = wav_use_bias
+    else:
+        bias = True
     denoised_image = conv_2d(
         concatenate([denoised_coarse_upsampled, details_thresholded]),
         n_groupping * n_channel,
         activation='linear',
         norm=norm,
         name='groupping_conv',
+        bias=bias,
     )
-    denoised_image = conv_2d(denoised_image, n_channel, kernel_size=1, activation='linear', norm=norm)
+    denoised_image = conv_2d(denoised_image, n_channel, kernel_size=1, activation='linear', norm=norm, bias=bias)
     return denoised_image
 
 def learned_wavelet(
@@ -98,6 +105,7 @@ def learned_wavelet(
         n_groupping=3,
         denoising_activation='relu',
         wav_pooling=False,
+        wav_use_bias=True,
         wav_normed=False,
         filters_normed=[],
     ):
@@ -110,6 +118,7 @@ def learned_wavelet(
         n_groupping=n_groupping,
         denoising_activation=denoising_activation,
         wav_pooling=wav_pooling,
+        wav_use_bias=wav_use_bias,
         wav_normed=wav_normed,
         filters_normed=filters_normed,
     )
