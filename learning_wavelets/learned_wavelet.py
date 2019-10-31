@@ -81,10 +81,7 @@ def learned_wavelet_rec(
     if wav_normed:
         denoised_coarse_upsampled = Lambda(lambda x: x * H_normalisation)(denoised_coarse_upsampled)
         details_thresholded = Lambda(lambda x: x * G_normalisation)(details_thresholded)
-    if wav_pooling:
-        bias = wav_use_bias
-    else:
-        bias = True
+    bias = not wav_pooling or (wav_pooling and wav_use_bias)
     denoised_image = conv_2d(
         concatenate([denoised_coarse_upsampled, details_thresholded]),
         n_groupping * n_channel,
