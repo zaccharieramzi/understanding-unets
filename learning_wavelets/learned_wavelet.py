@@ -101,7 +101,10 @@ def learned_wavelet_rec(
 
 def get_wavelet_filters_normalisation(input_size, n_scales):
     wavelet_id = '2'
-    wav_filters = get_mr_filters(input_size[:-1], opt=[f'-t {wavelet_id}', '-n {n_scales+1}'], coarse=False)
+    try:
+        wav_filters = get_mr_filters(input_size[:-1], opt=[f'-t {wavelet_id}', '-n {n_scales+1}'], coarse=False)
+    except TypeError:
+        wav_filters = get_mr_filters((512, 512), opt=[f'-t {wavelet_id}', '-n {n_scales+1}'], coarse=False)
     wav_filters_norm = [np.linalg.norm(wav_filter) for wav_filter in wav_filters]
     return wav_filters_norm
 
