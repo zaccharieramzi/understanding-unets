@@ -1,6 +1,8 @@
 from keras.layers import concatenate, UpSampling2D, Input, AveragePooling2D, Lambda
 from keras.models import Model
 from keras.optimizers import Adam
+from modopt.signal.wavelet import get_mr_filters
+import numpy as np
 
 from .evaluate import keras_psnr, keras_ssim
 from .keras_utils.conv import conv_2d, wavelet_pooling, H_normalisation, G_normalisation
@@ -14,19 +16,24 @@ def learned_wavelet_rec(
         n_groupping=3,
         denoising_activation='relu',
         wav_pooling=False,
-        wav_normed=False,
         wav_use_bias=True,
+        wav_filters_norm=None,
         filters_normed=[],
     ):
     n_channel = int(image.shape[-1])
     if filters_normed is None:
         filters_normed = ['details', 'coarse', 'groupping']
     if wav_pooling:
-        low_freqs, high_freqs = wavelet_pooling(image, normalized=wav_normed)
+        low_freqs, high_freqs = wavelet_pooling(image)
         coarse = low_freqs
         norm = False
         if 'details' in filters_normed:
             norm = True
+        if wav_filters_norm:
+            wav_norm = wav_filters_norm.pop(0)
+            high_freqs = Lambda(lambda x: x / wav_norm)(high_freqs)
+        else:
+            wav_norm = None
         details_thresholded = conv_2d(
             high_freqs,
             n_details,
@@ -35,6 +42,8 @@ def learned_wavelet_rec(
             norm=norm,
             name='details_tiling',
         )
+        if wav_norm is not None:
+            details_thresholded = Lambda(lambda x: x * wav_norm)(high_freqs)
     else:
         norm = False
         if 'details' in filters_normed:
@@ -67,8 +76,8 @@ def learned_wavelet_rec(
             denoising_activation=denoising_activation,
             filters_normed=filters_normed,
             wav_pooling=wav_pooling,
+            wav_filters_norm=wav_filters_norm,
             wav_use_bias=wav_use_bias,
-            wav_normed=wav_normed,
         )
         denoised_coarse_upsampled = UpSampling2D(size=(2, 2))(denoised_coarse)
     else:
@@ -78,9 +87,6 @@ def learned_wavelet_rec(
     norm = False
     if 'groupping' in filters_normed:
         norm = True
-    if wav_normed:
-        denoised_coarse_upsampled = Lambda(lambda x: x * H_normalisation)(denoised_coarse_upsampled)
-        details_thresholded = Lambda(lambda x: x * G_normalisation)(details_thresholded)
     bias = not wav_pooling or (wav_pooling and wav_use_bias)
     denoised_image = conv_2d(
         concatenate([denoised_coarse_upsampled, details_thresholded]),
@@ -92,6 +98,12 @@ def learned_wavelet_rec(
     )
     denoised_image = conv_2d(denoised_image, n_channel, kernel_size=1, activation='linear', norm=norm, bias=bias)
     return denoised_image
+
+def get_wavelet_filters_normalisation(input_size, n_scales):
+    wavelet_id = '2'
+    wav_filters = get_mr_filters(input_size[:-1], opt=[f'-t {wavelet_id}', '-n {n_scales+1}'], coarse=False)
+    wav_filters_norm = [np.linalg.norm(wav_filter) for wav_filter in wav_filters]
+    return wav_filters_norm
 
 def learned_wavelet(
         input_size,
@@ -107,6 +119,9 @@ def learned_wavelet(
         filters_normed=[],
     ):
     image = Input(input_size)
+    wav_filters_norm = None
+    if wav_normed:
+        wav_filters_norm = get_wavelet_filters_normalisation(input_size, n_scales)
     denoised_image = learned_wavelet_rec(
         image,
         n_scales=n_scales,
@@ -116,7 +131,7 @@ def learned_wavelet(
         denoising_activation=denoising_activation,
         wav_pooling=wav_pooling,
         wav_use_bias=wav_use_bias,
-        wav_normed=wav_normed,
+        wav_filters_norm=wav_filters_norm,
         filters_normed=filters_normed,
     )
     model = Model(inputs=image, outputs=denoised_image)
