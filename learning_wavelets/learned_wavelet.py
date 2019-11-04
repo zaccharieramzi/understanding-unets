@@ -5,7 +5,7 @@ from modopt.signal.wavelet import get_mr_filters
 import numpy as np
 
 from .evaluate import keras_psnr, keras_ssim
-from .keras_utils.conv import conv_2d, wavelet_pooling, H_normalisation, G_normalisation
+from .keras_utils.conv import conv_2d, wavelet_pooling
 
 
 def learned_wavelet_rec(
