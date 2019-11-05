@@ -43,7 +43,7 @@ def learned_wavelet_rec(
             name='details_tiling',
         )
         if wav_norm is not None:
-            details_thresholded = Lambda(lambda x: x * wav_norm)(high_freqs)
+            details_thresholded = Lambda(lambda x: x * wav_norm)(details_thresholded)
     else:
         norm = False
         if 'details' in filters_normed:
