@@ -7,6 +7,7 @@ import numpy as np
 from .evaluate import keras_psnr, keras_ssim
 from .keras_utils.conv import conv_2d, wavelet_pooling
 
+WAV_STDS = [0.10474847, 0.01995609, 0.008383126, 0.004030478, 0.0020313154]
 
 def learned_wavelet_rec(
         image,
@@ -99,12 +100,17 @@ def learned_wavelet_rec(
     denoised_image = conv_2d(denoised_image, n_channel, kernel_size=1, activation='linear', norm=norm, bias=bias)
     return denoised_image
 
-def wav_analysis_model(input_size, n_scales=4, coarse=False):
+def wav_analysis_model(input_size, n_scales=4, coarse=False, normalize=False):
     image = Input(input_size)
     low_freqs = image
     wav_coeffs = list()
+    if normalize:
+        wav_filters_norm = get_wavelet_filters_normalisation(n_scales)
     for i_scale in range(n_scales):
         low_freqs, high_freqs = wavelet_pooling(low_freqs)
+        if normalize:
+            wav_norm = wav_filters_norm[i_scale]
+            high_freqs = Lambda(lambda x: x / wav_norm)(high_freqs)
         wav_coeffs.append(high_freqs)
         if i_scale < n_scales - 1:
             low_freqs = AveragePooling2D()(low_freqs)
@@ -114,13 +120,10 @@ def wav_analysis_model(input_size, n_scales=4, coarse=False):
     model.compile(optimizer='adam', loss='mse')
     return model
 
-def get_wavelet_filters_normalisation(input_size, n_scales):
-    wavelet_id = '2'
-    try:
-        wav_filters = get_mr_filters(input_size[:-1], opt=[f'-t {wavelet_id}', f'-n {n_scales+1}'], coarse=False)
-    except TypeError:
-        wav_filters = get_mr_filters((512, 512), opt=[f'-t {wavelet_id}', f'-n {n_scales+1}'], coarse=False)
-    wav_filters_norm = [np.linalg.norm(wav_filter) for wav_filter in wav_filters]
+def get_wavelet_filters_normalisation(n_scales):
+    if n_scales > len(WAV_STDS):
+        raise ValueError('The number of scales is higher than the number of pre-computed normalisation factors')
+    wav_filters_norm = WAV_STDS[:n_scales]
     return wav_filters_norm
 
 def learned_wavelet(
