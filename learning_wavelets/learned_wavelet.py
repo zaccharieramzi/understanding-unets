@@ -99,6 +99,21 @@ def learned_wavelet_rec(
     denoised_image = conv_2d(denoised_image, n_channel, kernel_size=1, activation='linear', norm=norm, bias=bias)
     return denoised_image
 
+def wav_analysis_model(input_size, n_scales=4, coarse=False):
+    image = Input(input_size)
+    low_freqs = image
+    wav_coeffs = list()
+    for i_scale in range(n_scales):
+        low_freqs, high_freqs = wavelet_pooling(low_freqs)
+        wav_coeffs.append(high_freqs)
+        if i_scale < n_scales - 1:
+            low_freqs = AveragePooling2D()(low_freqs)
+    if coarse:
+        wav_coeffs.append(low_freqs)
+    model = Model(image, wav_coeffs)
+    model.compile(optimizer='adam', loss='mse')
+    return model
+
 def get_wavelet_filters_normalisation(input_size, n_scales):
     wavelet_id = '2'
     try:
