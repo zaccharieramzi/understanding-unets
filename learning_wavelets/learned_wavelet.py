@@ -1,3 +1,4 @@
+import keras.backend as K
 from keras.layers import concatenate, UpSampling2D, Input, AveragePooling2D, Lambda
 from keras.models import Model
 from keras.optimizers import Adam
@@ -31,8 +32,10 @@ def learned_wavelet_rec(
         if 'details' in filters_normed:
             norm = True
         if wav_filters_norm:
+            prefix = 'normalisation'
+            name = f'{prefix}_{str(K.get_uid(prefix))}'
             wav_norm = wav_filters_norm.pop(0)
-            high_freqs = Lambda(lambda x: x / wav_norm)(high_freqs)
+            high_freqs = Lambda(lambda x: x / wav_norm, name=name)(high_freqs)
         else:
             wav_norm = None
         details_thresholded = conv_2d(
@@ -44,7 +47,9 @@ def learned_wavelet_rec(
             name='details_tiling',
         )
         if wav_norm is not None:
-            details_thresholded = Lambda(lambda x: x * wav_norm)(details_thresholded)
+            prefix = 'denormalisation'
+            name = f'{prefix}_{str(K.get_uid(prefix))}'
+            details_thresholded = Lambda(lambda x: x * wav_norm, name=name)(details_thresholded)
     else:
         norm = False
         if 'details' in filters_normed:
@@ -142,7 +147,7 @@ def learned_wavelet(
     image = Input(input_size)
     wav_filters_norm = None
     if wav_normed:
-        wav_filters_norm = get_wavelet_filters_normalisation(input_size, n_scales)
+        wav_filters_norm = get_wavelet_filters_normalisation(n_scales)
     denoised_image = learned_wavelet_rec(
         image,
         n_scales=n_scales,
