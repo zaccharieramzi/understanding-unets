@@ -32,7 +32,7 @@ def learned_wavelet_rec(
         if 'details' in filters_normed:
             norm = True
         if wav_filters_norm:
-            prefix = 'normalisation'
+            prefix = 'wav_normalisation'
             name = f'{prefix}_{str(K.get_uid(prefix))}'
             wav_norm = wav_filters_norm.pop(0)
             high_freqs = Lambda(lambda x: x / wav_norm, name=name)(high_freqs)
@@ -47,7 +47,7 @@ def learned_wavelet_rec(
             name='details_tiling',
         )
         if wav_norm is not None:
-            prefix = 'denormalisation'
+            prefix = 'wav_denormalisation'
             name = f'{prefix}_{str(K.get_uid(prefix))}'
             details_thresholded = Lambda(lambda x: x * wav_norm, name=name)(details_thresholded)
     else:
