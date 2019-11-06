@@ -1,4 +1,3 @@
-from keras import backend as K
 from keras.callbacks import Callback
 from keras.layers import Layer
 from keras.models import Model
