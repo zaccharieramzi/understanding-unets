@@ -1,13 +1,13 @@
 from keras.layers import concatenate, UpSampling2D, Input, AveragePooling2D, Lambda
 from keras.models import Model
 from keras.optimizers import Adam
-from modopt.signal.wavelet import get_mr_filters
-import numpy as np
 
 from .evaluate import keras_psnr, keras_ssim
 from .keras_utils.conv import conv_2d, wavelet_pooling
 
+# those stds were computed with a noise of std 30/255
 WAV_STDS = [0.10474847, 0.01995609, 0.008383126, 0.004030478, 0.0020313154]
+WAV_STDS = [wav_std / (30 / 255) for wav_std in WAV_STDS]
 
 def learned_wavelet_rec(
         image,
