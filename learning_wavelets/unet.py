@@ -1,7 +1,7 @@
 """Largely inspired by https://github.com/zhixuhao/unet/blob/master/model.py"""
-from keras.layers import Conv2D, MaxPooling2D, concatenate, Dropout, UpSampling2D, Input, AveragePooling2D, BatchNormalization, Lambda
-from keras.models import Model
-from keras.optimizers import Adam
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, concatenate, Dropout, UpSampling2D, Input, AveragePooling2D, BatchNormalization, Lambda
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
 
 from .evaluate import keras_psnr, keras_ssim
 

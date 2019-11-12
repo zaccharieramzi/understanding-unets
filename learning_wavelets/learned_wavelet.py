@@ -1,7 +1,7 @@
-import keras.backend as K
-from keras.layers import concatenate, UpSampling2D, Input, AveragePooling2D, Lambda
-from keras.models import Model
-from keras.optimizers import Adam
+import tensorflow.keras.backend as K
+from tensorflow.keras.layers import concatenate, UpSampling2D, Input, AveragePooling2D, Lambda
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
 
 from .evaluate import keras_psnr, keras_ssim
 from .keras_utils.conv import conv_2d, wavelet_pooling

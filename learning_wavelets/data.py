@@ -1,11 +1,11 @@
 import glob
 import random
 
-from keras.datasets import cifar10, mnist
-from keras_preprocessing.image import ImageDataGenerator
-from keras.utils import  Sequence
 import matplotlib.pyplot as plt
 import numpy as np
+from tensorflow.keras.datasets import cifar10, mnist
+from tensorflow.keras.utils import  Sequence
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 np.random.seed(1)
 
@@ -35,7 +35,7 @@ class MergedGenerators(Sequence):
         return len(self.generators[0])
 
     def __getitem__(self, index):
-        return [generator[index] for generator in self.generators]
+        return tuple([generator[index] for generator in self.generators])
 
 def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.1, no_augment=False):
     if noise:
