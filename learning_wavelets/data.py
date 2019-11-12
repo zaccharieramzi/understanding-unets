@@ -35,7 +35,7 @@ class MergedGenerators(Sequence):
         return len(self.generators[0])
 
     def __getitem__(self, index):
-        return [generator[index] for generator in self.generators]
+        return tuple([generator[index] for generator in self.generators])
 
 def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.1, no_augment=False):
     if noise:
