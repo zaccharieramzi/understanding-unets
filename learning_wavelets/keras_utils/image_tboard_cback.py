@@ -1,4 +1,5 @@
 """Inspired by https://github.com/sicara/tf-explain/blob/master/tf_explain/callbacks/grad_cam.py"""
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import Callback
 
@@ -21,8 +22,11 @@ class TensorBoardImage(Callback):
         self.writer.close()
 
     def write_image(self, image, tag, epoch):
+        image_to_write = np.copy(image)
+        image_to_write -= image_to_write.min()
+        image_to_write /= image_to_write.max()
         with self.writer.as_default():
-            tf.summary.image(tag, image, step=epoch)
+            tf.summary.image(tag, image_to_write, step=epoch)
 
     def on_epoch_end(self, epoch, logs={}):
         denoised_image = self.model.predict_on_batch(self.noisy_image)
