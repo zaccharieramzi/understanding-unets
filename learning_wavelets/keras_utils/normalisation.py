@@ -1,7 +1,7 @@
-from keras.callbacks import Callback
-from keras.layers import Layer
-from keras.models import Model
 import numpy as np
+from tensorflow.keras.callbacks import Callback
+from tensorflow.keras.layers import Layer
+from tensorflow.keras.models import Model
 
 
 class Normalisation(Layer):
