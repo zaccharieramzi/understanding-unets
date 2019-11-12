@@ -15,6 +15,7 @@ def learned_wavelet_rec(
         n_scales=1,
         n_details=3,
         n_coarse=1,
+        mixing_details=False,
         denoising_activation='relu',
         wav_pooling=False,
         wav_use_bias=True,
@@ -27,9 +28,6 @@ def learned_wavelet_rec(
     if wav_pooling:
         low_freqs, high_freqs = wavelet_pooling(image)
         coarse = low_freqs
-        norm = False
-        if 'details' in filters_normed:
-            norm = True
         if wav_filters_norm:
             prefix = 'wav_normalisation'
             name = f'{prefix}_{str(K.get_uid(prefix))}'
@@ -37,37 +35,45 @@ def learned_wavelet_rec(
             high_freqs = Lambda(lambda x: x / wav_norm, name=name)(high_freqs)
         else:
             wav_norm = None
+        details_activation = denoising_activation
+        if mixing_details:
+            details_activation = 'linear'
         details_thresholded = conv_2d(
             high_freqs,
             n_details,
-            activation=denoising_activation,
+            activation=details_activation,
             bias=wav_use_bias,
-            norm=norm,
+            unit_norm='details' in filters_normed,
+            noise_std_norm=not mixing_details,
             name='details_tiling',
         )
+        if mixing_details:
+            details_thresholded = conv_2d(
+                details_thresholded,
+                n_details,
+                activation=denoising_activation,
+                bias=wav_use_bias,
+                unit_norm='details' in filters_normed,
+                noise_std_norm=True,
+                name='details_mixing',
+            )
         if wav_norm is not None:
             prefix = 'wav_denormalisation'
             name = f'{prefix}_{str(K.get_uid(prefix))}'
             details_thresholded = Lambda(lambda x: x * wav_norm, name=name)(details_thresholded)
     else:
-        norm = False
-        if 'details' in filters_normed:
-            norm = True
         details_thresholded = conv_2d(
             image,
             n_details,
             activation=denoising_activation,
-            norm=norm,
+            unit_norm='details' in filters_normed,
             name='high_pass_filtering',
         )
-        norm = False
-        if 'coarse' in filters_normed:
-            norm = True
         coarse = conv_2d(
             image,
             n_coarse,
             activation='linear',
-            norm=norm,
+            unit_norm='coarse' in filters_normed,
             name='low_pass_filtering',
         )
     if n_scales > 1:
@@ -88,15 +94,12 @@ def learned_wavelet_rec(
         # NOTE: potentially allow to have thresholding (i.e. non linearity) also on the coarse
         # scale
         denoised_coarse_upsampled = coarse
-    norm = False
-    if 'groupping' in filters_normed:
-        norm = True
     bias = not wav_pooling or (wav_pooling and wav_use_bias)
     denoised_image = conv_2d(
         concatenate([denoised_coarse_upsampled, details_thresholded]),
         n_channel,
         activation='linear',
-        norm=norm,
+        unit_norm='groupping' in filters_normed,
         name='groupping_conv',
         bias=bias,
     )
