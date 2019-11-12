@@ -5,9 +5,9 @@ from tensorflow.keras.layers import Activation, Conv2D, AveragePooling2D, UpSamp
 
 from .normalisation import Normalisation
 
-def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True, norm=False, name=None):
+def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True, unit_norm=False, noise_std_norm=False, name=None):
     constraint = None
-    if norm:
+    if unit_norm:
         constraint = UnitNorm(axis=[0, 1, 2])
     prefix = name
     if name:
@@ -22,11 +22,11 @@ def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True, norm
         kernel_constraint=constraint,
         name=name,
     )(image)
-    if norm:
+    if noise_std_norm:
         normalisation_layer = Normalisation(1.0)
         image = normalisation_layer(image, mode='normal')
     image = Activation(activation)(image)
-    if norm:
+    if noise_std_norm:
         image = normalisation_layer(image, mode='inv')
     return image
 
