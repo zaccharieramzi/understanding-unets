@@ -15,7 +15,6 @@ def learned_wavelet_rec(
         n_scales=1,
         n_details=3,
         n_coarse=1,
-        n_groupping=3,
         denoising_activation='relu',
         wav_pooling=False,
         wav_use_bias=True,
@@ -78,7 +77,6 @@ def learned_wavelet_rec(
             n_scales=n_scales-1,
             n_details=n_details,
             n_coarse=n_coarse,
-            n_groupping=n_groupping,
             denoising_activation=denoising_activation,
             filters_normed=filters_normed,
             wav_pooling=wav_pooling,
@@ -96,13 +94,12 @@ def learned_wavelet_rec(
     bias = not wav_pooling or (wav_pooling and wav_use_bias)
     denoised_image = conv_2d(
         concatenate([denoised_coarse_upsampled, details_thresholded]),
-        n_groupping * n_channel,
+        n_channel,
         activation='linear',
         norm=norm,
         name='groupping_conv',
         bias=bias,
     )
-    denoised_image = conv_2d(denoised_image, n_channel, kernel_size=1, activation='linear', norm=norm, bias=bias)
     return denoised_image
 
 def wav_analysis_model(input_size, n_scales=4, coarse=False, normalize=False):
@@ -137,7 +134,6 @@ def learned_wavelet(
         n_scales=4,
         n_details=3,
         n_coarse=1,
-        n_groupping=3,
         denoising_activation='relu',
         wav_pooling=False,
         wav_use_bias=True,
@@ -153,7 +149,6 @@ def learned_wavelet(
         n_scales=n_scales,
         n_details=n_details,
         n_coarse=n_coarse,
-        n_groupping=n_groupping,
         denoising_activation=denoising_activation,
         wav_pooling=wav_pooling,
         wav_use_bias=wav_use_bias,
