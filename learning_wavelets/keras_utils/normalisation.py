@@ -23,8 +23,13 @@ class Normalisation(Layer):
         )
         super(Normalisation, self).build(input_shape)
 
-    def call(self, x):
-        return x / self.norm
+    def call(self, x, mode='normal'):
+        if mode == 'normal':
+            return x / self.norm
+        elif mode == 'inv':
+            return x * self.norm
+        else:
+            raise ValueError('Mode not recognized')
 
     def compute_output_shape(self, input_shape):
         return input_shape
@@ -44,7 +49,7 @@ class NormalisationAdjustment(Callback):
         self.normalisation_layers = list()  # list the soft thresh layers
         norm_input_model_outputs = list()
         for layer in model.layers:
-            if isinstance(layer, Normalisation):
+            if isinstance(layer, Normalisation) and layer not in self.normalisation_layers:
                 self.normalisation_layers.append(layer)
                 # this is from https://stackoverflow.com/a/50858709/4332585
                 norm_input = layer._inbound_nodes[0].inbound_layers[0].output
