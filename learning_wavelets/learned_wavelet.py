@@ -162,7 +162,7 @@ def learned_wavelet(
     )
     model = Model(inputs=image, outputs=denoised_image)
     model.compile(
-        optimizer=Adam(lr=lr, clipnorm=1.),
+        optimizer=Adam(lr=lr),
         loss='mean_squared_error',
         metrics=[keras_psnr, keras_ssim],
     )
