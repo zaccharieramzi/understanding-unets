@@ -18,7 +18,7 @@ def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True, norm
         activation='linear',
         padding='same',
         kernel_initializer='glorot_uniform',
-        bias=bias,
+        use_bias=bias,
         kernel_constraint=constraint,
         name=name,
     )(image)
@@ -59,7 +59,7 @@ def wavelet_pooling(image, wav_h_filter=None, wav_g_filter=None):
         activation='linear',
         padding='same',
         kernel_initializer=h_kernel_initializer,
-        bias=False,
+        use_bias=False,
         name=f'{h_prefix}_{str(K.get_uid(h_prefix))}',
     )
     conv_h.trainable = False
@@ -71,7 +71,7 @@ def wavelet_pooling(image, wav_h_filter=None, wav_g_filter=None):
         activation='linear',
         padding='same',
         kernel_initializer=g_kernel_initializer,
-        bias=False,
+        use_bias=False,
         name=f'{g_prefix}_{str(K.get_uid(g_prefix))}',
     )
     conv_g.trainable = False
