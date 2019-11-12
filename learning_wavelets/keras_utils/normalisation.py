@@ -52,7 +52,7 @@ class NormalisationAdjustment(Callback):
             if isinstance(layer, Normalisation) and layer not in self.normalisation_layers:
                 self.normalisation_layers.append(layer)
                 # this is from https://stackoverflow.com/a/50858709/4332585
-                norm_input = layer._inbound_nodes[0].inbound_layers[0].output
+                norm_input = layer._inbound_nodes[0].inbound_layers.output
                 norm_input_model_outputs.append(norm_input)
                 self.current_stds.append(None)
                 self.stds_lists.append(list())
