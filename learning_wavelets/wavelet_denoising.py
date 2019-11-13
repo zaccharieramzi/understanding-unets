@@ -10,11 +10,11 @@ def wavelet_denoising_pysap(noisy_images, noise_std, wavelet_id='2', n_scales=2,
         type_of_filtering = 1
     flt = Filter(
         type_of_filtering=type_of_filtering,
-        type_of_multiresolution_transform=float(wavelet_id),
+        type_of_multiresolution_transform=int(wavelet_id),
         sigma_noise=noise_std,
         number_of_scales=n_scales,
         verbose=0,
-        tab_n_sigma=n_sigma,
+        tab_n_sigma=[n_sigma],
     )
     denoised_images = list()
     for noisy_image in noisy_images:
