@@ -64,7 +64,7 @@ def learnlet_analysis(
                 activation=None,
                 bias=tiling_use_bias,
                 unit_norm=tiling_unit_norm,
-                noise_std_norm=False,coarse
+                noise_std_norm=False,
                 name='details_mixing',
             )
         outputs_list.append(details_tiled)
