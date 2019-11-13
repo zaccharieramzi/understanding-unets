@@ -33,7 +33,6 @@ def wav_analysis_model(input_size, n_scales=4, coarse=False, normalize=False):
 
 def learnlet_analysis(
         input_size,
-        coarse=False,
         n_tiling=3,
         tiling_use_bias=False,
         tiling_unit_norm=True,
@@ -41,14 +40,10 @@ def learnlet_analysis(
         **wav_analysis_kwargs,
     ):
     image = Input(input_size)
-    wav_analysis_net = wav_analysis_model(input_size, coarse=coarse, **wav_analysis_kwargs)
+    wav_analysis_net = wav_analysis_model(input_size, coarse=True, **wav_analysis_kwargs)
     wav_coeffs = wav_analysis_net(image)
-    if coarse:
-        wav_details = wav_coeffs[:-1]
-        wav_coarse = wav_coeffs[-1]
-    else:
-        wav_details = wav_coeffs
-        wav_coarse = None
+    wav_details = wav_coeffs[:-1]
+    wav_coarse = wav_coeffs[-1]
     outputs_list = []
     for wav_detail in wav_details:
         details_tiled = conv_2d(
@@ -71,10 +66,12 @@ def learnlet_analysis(
                 name='details_mixing',
             )
         outputs_list.append(details_tiled)
-    if wav_coarse is not None:
-        outputs_list.append(wav_coarse)
+    outputs_list.append(wav_coarse)
     model = Model(image, outputs_list)
     return wav_analysis_net, model
+
+def learnlet_synthesis(analysis_coeffs, ):
+    pass
 
 
 def get_wavelet_filters_normalisation(n_scales):
