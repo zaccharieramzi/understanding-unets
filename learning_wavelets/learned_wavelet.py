@@ -11,7 +11,7 @@ WAV_STDS = [0.10474847, 0.01995609, 0.008383126, 0.004030478, 0.0020313154]
 WAV_STDS = [wav_std / (30 / 255) for wav_std in WAV_STDS]
 
 
-def wav_analysis_model(input_size, n_scales=4, coarse=False, normalize=False):
+def wav_analysis_model(input_size, n_scales=4, coarse=False, normalize=True):
     image = Input(input_size)
     low_freqs = image
     wav_coeffs = list()
@@ -21,7 +21,9 @@ def wav_analysis_model(input_size, n_scales=4, coarse=False, normalize=False):
         low_freqs, high_freqs = wavelet_pooling(low_freqs)
         if normalize:
             wav_norm = wav_filters_norm[i_scale]
-            high_freqs = Lambda(lambda x: x / wav_norm)(high_freqs)
+            prefix = 'wav_normalisation'
+            name = f'{prefix}_{str(K.get_uid(prefix))}'
+            high_freqs = Lambda(lambda x: x / wav_norm, name=name)(high_freqs)
         wav_coeffs.append(high_freqs)
         if i_scale < n_scales - 1:
             low_freqs = AveragePooling2D()(low_freqs)
@@ -62,7 +64,7 @@ def learnlet_analysis(
                 activation=None,
                 bias=tiling_use_bias,
                 unit_norm=tiling_unit_norm,
-                noise_std_norm=False,
+                noise_std_norm=False,coarse
                 name='details_mixing',
             )
         outputs_list.append(details_tiled)
@@ -70,13 +72,30 @@ def learnlet_analysis(
     model = Model(image, outputs_list)
     return wav_analysis_net, model
 
-def learnlet_synthesis(analysis_coeffs, normalize):
+def learnlet_synthesis(analysis_coeffs, normalize=True, synthesis_use_bias=False, groupping_norm=False):
     details = analysis_coeffs[:-1]
     coarse = analysis_coeffs[-1]
-    for detail in details:
-        pass
-
-
+    image = coarse
+    n_channels = image.shape[-1]
+    if normalize:
+        wav_filters_norm = get_wavelet_filters_normalisation(len(analysis_coeffs))
+    for i_scale, detail in enumerate(details):
+        if normalize:
+            wav_norm = wav_filters_norm[i_scale]
+            prefix = 'wav_denormalisation'
+            name = f'{prefix}_{str(K.get_uid(prefix))}'
+            detail = Lambda(lambda x: x * wav_norm, name=name)(detail)
+        image = conv_2d(
+            concatenate([image, detail]),
+            n_channels,
+            activation=None,
+            bias=synthesis_use_bias,
+            name='groupping_conv',
+            unit_norm=groupping_norm,
+        )
+        image = UpSampling2D(size=(2, 2))(image)
+    model = Model(analysis_coeffs, image)
+    return model
 
 def get_wavelet_filters_normalisation(n_scales):
     if n_scales > len(WAV_STDS):
