@@ -25,7 +25,8 @@ def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True, unit
     if noise_std_norm:
         normalisation_layer = Normalisation(1.0)
         image = normalisation_layer(image, mode='normal')
-    image = Activation(activation)(image)
+    if activation is not None:
+        image = Activation(activation)(image)
     if noise_std_norm:
         image = normalisation_layer(image, mode='inv')
     return image
