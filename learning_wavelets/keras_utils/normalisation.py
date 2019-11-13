@@ -51,16 +51,22 @@ class NormalisationAdjustment(Callback):
     def set_model(self, model):
         self.model = model
         self.normalisation_layers = list()  # list the soft thresh layers
-        norm_input_model_outputs = list()
+        try:
+            self.norms_input_model = model.get_layer(name='learnlet_analysis')
+        except ValueError:
+            self.norms_input_model = None
+            norm_input_model_outputs = list()
         for layer in model.layers:
             if isinstance(layer, Normalisation) and layer not in self.normalisation_layers:
                 self.normalisation_layers.append(layer)
-                # this is from https://stackoverflow.com/a/50858709/4332585
-                norm_input = layer._inbound_nodes[0].inbound_layers.output
-                norm_input_model_outputs.append(norm_input)
+                if self.norms_input_model is None:
+                    # this is from https://stackoverflow.com/a/50858709/4332585
+                    norm_input = layer._inbound_nodes[0].inbound_layers.output
+                    norm_input_model_outputs.append(norm_input)
                 self.current_stds.append(None)
                 self.stds_lists.append(list())
-        self.norms_input_model = Model(model.input, norm_input_model_outputs)
+        if self.norms_input_model is None:
+            self.norms_input_model = Model(model.input, norm_input_model_outputs)
 
     def on_batch_end(self, batch, logs={}):
         n_channels = self.model.input_shape[-1]
