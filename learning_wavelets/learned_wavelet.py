@@ -96,7 +96,8 @@ def learnlet_synthesis(input_sizes, normalize=True, synthesis_use_bias=False, gr
             name='groupping_conv',
             unit_norm=groupping_norm,
         )
-        image = UpSampling2D(size=(2, 2))(image)
+        if i_scale < len(details) - 1:
+            image = UpSampling2D(size=(2, 2))(image)
     model = Model(analysis_coeffs, image, name='learnlet_synthesis')
     return model
 
