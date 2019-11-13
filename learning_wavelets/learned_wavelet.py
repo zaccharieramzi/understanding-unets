@@ -110,8 +110,8 @@ def learnlet(
     image_noisy = Input(input_size)
     if learnlet_analysis_kwargs is None:
         learnlet_analysis_kwargs = {}
-    if learnlet_analysis_kwargs is None:
-        learnlet_analysis_kwargs = {}
+    if learnlet_synthesis_kwargs is None:
+        learnlet_synthesis_kwargs = {}
     wav_analysis_net, learnlet_analysis_net = learnlet_analysis(input_size, normalize=normalize, **learnlet_analysis_kwargs)
     learnlet_synthesis_net = learnlet_synthesis(normalize=normalize, **learnlet_synthesis_kwargs)
     learnlet_analysis_coeffs = learnlet_analysis_net(image_noisy)
