@@ -28,8 +28,54 @@ def wav_analysis_model(input_size, n_scales=4, coarse=False, normalize=False):
     if coarse:
         wav_coeffs.append(low_freqs)
     model = Model(image, wav_coeffs)
-    model.compile(optimizer='adam', loss='mse')
+    # model.compile(optimizer='adam', loss='mse')
     return model
+
+def learnlet_analysis(
+        input_size,
+        coarse=False,
+        n_tiling=3,
+        tiling_use_bias=False,
+        tiling_unit_norm=True,
+        mixing_details=False,
+        **wav_analysis_kwargs,
+    ):
+    image = Input(input_size)
+    wav_analysis_net = wav_analysis_model(input_size, coarse=coarse, **wav_analysis_kwargs)
+    wav_coeffs = wav_analysis_net(image)
+    if coarse:
+        wav_details = wav_coeffs[:-1]
+        wav_coarse = wav_coeffs[-1]
+    else:
+        wav_details = wav_coeffs
+        wav_coarse = None
+    outputs_list = []
+    for wav_detail in wav_details:
+        details_tiled = conv_2d(
+            wav_detail,
+            n_tiling,
+            activation=None,
+            bias=tiling_use_bias,
+            unit_norm=tiling_unit_norm,
+            noise_std_norm=not mixing_details,
+            name='details_tiling',
+        )
+        if mixing_details:
+            details_tiled = conv_2d(
+                details_tiled,
+                n_tiling,
+                activation=None,
+                bias=tiling_use_bias,
+                unit_norm=tiling_unit_norm,
+                noise_std_norm=True,
+                name='details_mixing',
+            )
+        outputs_list.append(details_tiled)
+    if wav_coarse is not None:
+        outputs_list.append(wav_coarse)
+    model = Model(image, outputs_list)
+    return wav_analysis_net, model
+
 
 def get_wavelet_filters_normalisation(n_scales):
     if n_scales > len(WAV_STDS):
