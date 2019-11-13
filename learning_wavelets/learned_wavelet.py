@@ -52,7 +52,7 @@ def learnlet_analysis(
             activation=None,
             bias=tiling_use_bias,
             unit_norm=tiling_unit_norm,
-            noise_std_norm=not mixing_details,
+            noise_std_norm=False,
             name='details_tiling',
         )
         if mixing_details:
@@ -62,7 +62,7 @@ def learnlet_analysis(
                 activation=None,
                 bias=tiling_use_bias,
                 unit_norm=tiling_unit_norm,
-                noise_std_norm=True,
+                noise_std_norm=False,
                 name='details_mixing',
             )
         outputs_list.append(details_tiled)
@@ -70,8 +70,12 @@ def learnlet_analysis(
     model = Model(image, outputs_list)
     return wav_analysis_net, model
 
-def learnlet_synthesis(analysis_coeffs, ):
-    pass
+def learnlet_synthesis(analysis_coeffs, normalize):
+    details = analysis_coeffs[:-1]
+    coarse = analysis_coeffs[-1]
+    for detail in details:
+        pass
+
 
 
 def get_wavelet_filters_normalisation(n_scales):
