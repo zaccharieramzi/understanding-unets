@@ -75,11 +75,13 @@ def learnlet_analysis(
 def learnlet_synthesis(input_sizes, normalize=True, synthesis_use_bias=False, groupping_norm=False):
     analysis_coeffs = [Input(input_size) for input_size in input_sizes]
     details = analysis_coeffs[:-1]
+    details.reverse()
     coarse = analysis_coeffs[-1]
     image = coarse
     n_channels = image.shape[-1]
     if normalize:
         wav_filters_norm = get_wavelet_filters_normalisation(len(details))
+        wav_filters_norm.reverse()
     for i_scale, detail in enumerate(details):
         if normalize:
             wav_norm = wav_filters_norm[i_scale]
