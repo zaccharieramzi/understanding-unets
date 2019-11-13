@@ -1,10 +1,10 @@
 import tensorflow.keras.backend as K
-from tensorflow.keras.layers import concatenate, UpSampling2D, Input, AveragePooling2D, Lambda
+from tensorflow.keras.layers import Activation, concatenate, UpSampling2D, Input, AveragePooling2D, Lambda
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
 from .evaluate import keras_psnr, keras_ssim
-from .keras_utils.conv import conv_2d, wavelet_pooling
+from .keras_utils import Normalisation, conv_2d, wavelet_pooling
 
 # those stds were computed with a noise of std 30/255
 WAV_STDS = [0.10474847, 0.01995609, 0.008383126, 0.004030478, 0.0020313154]
@@ -96,6 +96,60 @@ def learnlet_synthesis(analysis_coeffs, normalize=True, synthesis_use_bias=False
         image = UpSampling2D(size=(2, 2))(image)
     model = Model(analysis_coeffs, image)
     return model
+
+def learnlet(
+        input_size,
+        lr=1e-3,
+        denoising_activation='relu',
+        noise_std_norm=True,
+        normalize=True,
+        exact_reconstruction_weight=0,
+        learnlet_analysis_kwargs=None,
+        learnlet_synthesis_kwargs=None,
+    ):
+    image_noisy = Input(input_size)
+    if learnlet_analysis_kwargs is None:
+        learnlet_analysis_kwargs = {}
+    if learnlet_analysis_kwargs is None:
+        learnlet_analysis_kwargs = {}
+    wav_analysis_net, learnlet_analysis_net = learnlet_analysis(normalize=normalize, **learnlet_analysis_kwargs)
+    learnlet_synthesis_net = learnlet_synthesis(normalize=normalize, **learnlet_synthesis_kwargs)
+    learnlet_analysis_coeffs = learnlet_analysis_net(image_noisy)
+    details = learnlet_analysis_coeffs[:-1]
+    coarse = learnlet_analysis_coeffs[-1]
+    thresholding_layer = Activation(denoising_activation, name='thresholding')
+    learnlet_analysis_coeffs_thresholded = list()
+    for detail in details:
+        if noise_std_norm:
+            normalisation_layer = Normalisation(1.0)
+            detail = normalisation_layer(detail, mode='normal')
+        detail = thresholding_layer(detail)
+        if noise_std_norm:
+            detail = normalisation_layer(detail, mode='inv')
+        learnlet_analysis_coeffs_thresholded.append(detail)
+    learnlet_analysis_coeffs_thresholded.append(coarse)
+    denoised_image = learnlet_synthesis_net(learnlet_analysis_coeffs_thresholded)
+    learnlet_model = Model(image_noisy, denoised_image)
+    if exact_reconstruction_weight:
+        image = Input(input_size)
+        learnlet_analysis_coeffs_exact = learnlet_analysis_net(image)
+        reconstructed_image = learnlet_synthesis_net(learnlet_analysis_coeffs_exact)
+        learnlet_model = Model([image_noisy, image], [denoised_image, reconstructed_image])
+        learnlet_model.compile(
+            optimizer=Adam(lr=lr),
+            loss=['mse', 'mse'],
+            loss_weights=[1, exact_reconstruction_weight],
+            metrics=[[keras_psnr, keras_ssim]]*2,
+        )
+    else:
+        learnlet_model.compile(
+            optimizer=Adam(lr=lr),
+            loss='mse',
+            metrics=[keras_psnr, keras_ssim],
+        )
+    return wav_analysis_net, learnlet_analysis_net, learnlet_synthesis_net, learnlet_model
+
+
 
 def get_wavelet_filters_normalisation(n_scales):
     if n_scales > len(WAV_STDS):
