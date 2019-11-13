@@ -10,6 +10,35 @@ from .keras_utils.conv import conv_2d, wavelet_pooling
 WAV_STDS = [0.10474847, 0.01995609, 0.008383126, 0.004030478, 0.0020313154]
 WAV_STDS = [wav_std / (30 / 255) for wav_std in WAV_STDS]
 
+
+def wav_analysis_model(input_size, n_scales=4, coarse=False, normalize=False):
+    image = Input(input_size)
+    low_freqs = image
+    wav_coeffs = list()
+    if normalize:
+        wav_filters_norm = get_wavelet_filters_normalisation(n_scales)
+    for i_scale in range(n_scales):
+        low_freqs, high_freqs = wavelet_pooling(low_freqs)
+        if normalize:
+            wav_norm = wav_filters_norm[i_scale]
+            high_freqs = Lambda(lambda x: x / wav_norm)(high_freqs)
+        wav_coeffs.append(high_freqs)
+        if i_scale < n_scales - 1:
+            low_freqs = AveragePooling2D()(low_freqs)
+    if coarse:
+        wav_coeffs.append(low_freqs)
+    model = Model(image, wav_coeffs)
+    model.compile(optimizer='adam', loss='mse')
+    return model
+
+def get_wavelet_filters_normalisation(n_scales):
+    if n_scales > len(WAV_STDS):
+        raise ValueError('The number of scales is higher than the number of pre-computed normalisation factors')
+    wav_filters_norm = WAV_STDS[:n_scales]
+    return wav_filters_norm
+
+
+# legacy learned wavelet
 def learned_wavelet_rec(
         image,
         n_scales=1,
@@ -107,32 +136,6 @@ def learned_wavelet_rec(
         bias=bias,
     )
     return denoised_image
-
-def wav_analysis_model(input_size, n_scales=4, coarse=False, normalize=False):
-    image = Input(input_size)
-    low_freqs = image
-    wav_coeffs = list()
-    if normalize:
-        wav_filters_norm = get_wavelet_filters_normalisation(n_scales)
-    for i_scale in range(n_scales):
-        low_freqs, high_freqs = wavelet_pooling(low_freqs)
-        if normalize:
-            wav_norm = wav_filters_norm[i_scale]
-            high_freqs = Lambda(lambda x: x / wav_norm)(high_freqs)
-        wav_coeffs.append(high_freqs)
-        if i_scale < n_scales - 1:
-            low_freqs = AveragePooling2D()(low_freqs)
-    if coarse:
-        wav_coeffs.append(low_freqs)
-    model = Model(image, wav_coeffs)
-    model.compile(optimizer='adam', loss='mse')
-    return model
-
-def get_wavelet_filters_normalisation(n_scales):
-    if n_scales > len(WAV_STDS):
-        raise ValueError('The number of scales is higher than the number of pre-computed normalisation factors')
-    wav_filters_norm = WAV_STDS[:n_scales]
-    return wav_filters_norm
 
 def learned_wavelet(
         input_size,
