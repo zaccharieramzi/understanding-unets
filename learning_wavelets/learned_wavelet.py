@@ -128,7 +128,7 @@ def learnlet(
             detail = normalisation_layer(detail, mode='inv')
         learnlet_analysis_coeffs_thresholded.append(detail)
     learnlet_analysis_coeffs_thresholded.append(coarse)
-    synthesis_input_sizes = [coeff.shape for coeff in learnlet_analysis_coeffs_thresholded]
+    synthesis_input_sizes = [coeff.shape[1:] for coeff in learnlet_analysis_coeffs_thresholded]
     learnlet_synthesis_net = learnlet_synthesis(synthesis_input_sizes, normalize=normalize, **learnlet_synthesis_kwargs)
     denoised_image = learnlet_synthesis_net(learnlet_analysis_coeffs_thresholded)
     learnlet_model = Model(image_noisy, denoised_image)
