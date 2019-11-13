@@ -72,7 +72,8 @@ def learnlet_analysis(
     model = Model(image, outputs_list, name='learnlet_analysis')
     return wav_analysis_net, model
 
-def learnlet_synthesis(analysis_coeffs, normalize=True, synthesis_use_bias=False, groupping_norm=False):
+def learnlet_synthesis(input_sizes, normalize=True, synthesis_use_bias=False, groupping_norm=False):
+    analysis_coeffs = [Input(input_size) for input_size in input_sizes]
     details = analysis_coeffs[:-1]
     coarse = analysis_coeffs[-1]
     image = coarse
@@ -113,7 +114,6 @@ def learnlet(
     if learnlet_synthesis_kwargs is None:
         learnlet_synthesis_kwargs = {}
     wav_analysis_net, learnlet_analysis_net = learnlet_analysis(input_size, normalize=normalize, **learnlet_analysis_kwargs)
-    learnlet_synthesis_net = learnlet_synthesis(normalize=normalize, **learnlet_synthesis_kwargs)
     learnlet_analysis_coeffs = learnlet_analysis_net(image_noisy)
     details = learnlet_analysis_coeffs[:-1]
     coarse = learnlet_analysis_coeffs[-1]
@@ -128,6 +128,8 @@ def learnlet(
             detail = normalisation_layer(detail, mode='inv')
         learnlet_analysis_coeffs_thresholded.append(detail)
     learnlet_analysis_coeffs_thresholded.append(coarse)
+    synthesis_input_sizes = [coeff.shape for coeff in learnlet_analysis_coeffs_thresholded]
+    learnlet_synthesis_net = learnlet_synthesis(synthesis_input_sizes, normalize=normalize, **learnlet_synthesis_kwargs)
     denoised_image = learnlet_synthesis_net(learnlet_analysis_coeffs_thresholded)
     learnlet_model = Model(image_noisy, denoised_image)
     if exact_reconstruction_weight:
