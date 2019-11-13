@@ -29,7 +29,7 @@ def wav_analysis_model(input_size, n_scales=4, coarse=False, normalize=True):
             low_freqs = AveragePooling2D()(low_freqs)
     if coarse:
         wav_coeffs.append(low_freqs)
-    model = Model(image, wav_coeffs)
+    model = Model(image, wav_coeffs, name='wav_analysis')
     # model.compile(optimizer='adam', loss='mse')
     return model
 
@@ -69,7 +69,7 @@ def learnlet_analysis(
             )
         outputs_list.append(details_tiled)
     outputs_list.append(wav_coarse)
-    model = Model(image, outputs_list)
+    model = Model(image, outputs_list, name='learnlet_analysis')
     return wav_analysis_net, model
 
 def learnlet_synthesis(analysis_coeffs, normalize=True, synthesis_use_bias=False, groupping_norm=False):
@@ -94,7 +94,7 @@ def learnlet_synthesis(analysis_coeffs, normalize=True, synthesis_use_bias=False
             unit_norm=groupping_norm,
         )
         image = UpSampling2D(size=(2, 2))(image)
-    model = Model(analysis_coeffs, image)
+    model = Model(analysis_coeffs, image, name='learnlet_synthesis')
     return model
 
 def learnlet(
