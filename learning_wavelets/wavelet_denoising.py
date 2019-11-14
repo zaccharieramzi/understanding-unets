@@ -18,7 +18,7 @@ def wavelet_denoising_pysap(noisy_images, noise_std, wavelet_id='2', n_scales=2,
     )
     denoised_images = list()
     for noisy_image in noisy_images:
-        if (noisy_images < 0).any():
+        if (noisy_image < 0).any():
             bias = noisy_image.min()
             noisy_image -= bias
         else:
