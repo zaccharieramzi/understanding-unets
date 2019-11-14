@@ -38,13 +38,13 @@ class MergedGenerators(Sequence):
         return tuple([generator[index] for generator in self.generators])
 
 def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.1, no_augment=False):
-    if noise:
-        def add_noise(image):
-            noisy_img = image + np.random.normal(loc=noise_mean, scale=noise_std, size=image.shape)
-            return noisy_img
-        preprocessing_function = add_noise
-    else:
-        preprocessing_function = None
+    def preprocessing_function(image):
+        preprocessed_img = np.copy(image)
+        if noise:
+            preprocessed_img = image + np.random.normal(loc=noise_mean, scale=noise_std, size=image.shape)
+        preprocessed_img /= 255
+        preprocessed_img -= 0.5
+        return preprocessed_img
     if no_augment:
         augment_kwargs = {}
     else:
@@ -56,8 +56,8 @@ def im_generator(validation_split=0.1, noise=False, noise_mean=0.0, noise_std=0.
             'vertical_flip': True,
         }
     return ImageDataGenerator(
-        samplewise_center=True,
-        samplewise_std_normalization=True,
+        samplewise_center=False,
+        samplewise_std_normalization=False,
         fill_mode='constant',
         validation_split=validation_split,
         preprocessing_function=preprocessing_function,
