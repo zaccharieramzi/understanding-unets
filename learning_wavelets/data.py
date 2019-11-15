@@ -253,7 +253,7 @@ def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False,
     elif source == 'div2k':
         div_2k_dir_train = 'DIV2K_train_HR/'
         div_2k_dir_val = 'DIV2K_valid_HR/'
-        n_samples_train = 800
+        n_samples_train = 720
         size = 256
     if source in ['cifar', 'cifar_grey', 'mnist']:
         im_gen_train = keras_im_generator(
