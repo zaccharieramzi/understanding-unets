@@ -34,6 +34,10 @@ class Normalisation(Layer):
     def compute_output_shape(self, input_shape):
         return input_shape
 
+    def get_config(self):
+        return {'norm_init': self.norm_init}
+
+
 class NormalisationAdjustment(Callback):
     def __init__(self, n_pooling=4, momentum=0.9):
         super().__init__()
@@ -75,6 +79,3 @@ class NormalisationAdjustment(Callback):
             norm_layer.set_weights([update_stds])
             self.stds_lists[i_scale].append(update_stds)
             self.current_stds[i_scale] = update_stds
-
-    def get_config(self):
-        return {'n_pooling': self.n_pooling, 'momentum': self.momentum}
