@@ -75,3 +75,6 @@ class NormalisationAdjustment(Callback):
             norm_layer.set_weights([update_stds])
             self.stds_lists[i_scale].append(update_stds)
             self.current_stds[i_scale] = update_stds
+
+    def get_config(self):
+        return {'n_pooling': self.n_pooling, 'momentum': self.momentum}
