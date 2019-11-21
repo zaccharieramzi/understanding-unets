@@ -4,18 +4,14 @@ from skimage.measure import compare_psnr, compare_ssim
 import tensorflow as tf
 
 def keras_psnr(y_true, y_pred):
-    max_pixel = tf.math.reduce_max(y_true)
-    min_pixel = tf.math.reduce_min(y_true)
-    return tf.image.psnr(y_true, y_pred, max_pixel - min_pixel)
+    return tf.image.psnr(y_true, y_pred, 1)
 
 def keras_ssim(y_true, y_pred):
-    max_pixel = tf.math.reduce_max(y_true)
-    min_pixel = tf.math.reduce_min(y_true)
-    return tf.image.ssim(y_true, y_pred, max_pixel - min_pixel)
+    return tf.image.ssim(y_true, y_pred, 1)
 
 def psnr_single_image(gt, pred):
     """ Compute Peak Signal to Noise Ratio metric (PSNR) """
-    return compare_psnr(gt, pred, data_range=gt.max() - gt.min())
+    return compare_psnr(gt, pred, data_range=1)
 
 
 def ssim_single_image(gt, pred):
@@ -24,7 +20,7 @@ def ssim_single_image(gt, pred):
     The images must be in HWC format
     """
     return compare_ssim(
-        gt, pred, multichannel=True, data_range=gt.max() - gt.min()
+        gt, pred, multichannel=True, data_range=1
     )
 
 def psnr(gts, preds):
