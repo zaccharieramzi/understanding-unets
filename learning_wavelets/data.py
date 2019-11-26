@@ -174,6 +174,7 @@ def im_generator_BSD(path, file_type='jpg', grey=False, mode='training', batch_s
     x = np.array([bsd_im_to_array(fname) for fname in filelist])
     if len(x.shape) < 4:
         x = x[..., None]
+        x *= 255
     if grey:
         x = np.mean(x, axis=-1, keepdims=True)
     # padding
