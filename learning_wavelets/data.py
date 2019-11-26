@@ -253,7 +253,7 @@ def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False,
         n_samples_train = 200
         size = None
     elif source == 'bsd68':
-        bsd_dir_test = 'BSDS68'
+        bsd_dir_test = 'BSD68'
         n_samples_train = 0
         size = None
     elif source == 'div2k':
