@@ -22,3 +22,11 @@ def normalize_float_images(ref_image, *images):
             (image - im_min) / im_max
         )
     return normalized_images
+
+
+def trim_zero_padding(*images, ref_index=0, zero_value=0):
+    ref_image = images[ref_index]
+    cols_to_remove = ~(np.squeeze(ref_image) == zero_value).all(axis=0)
+    lines_to_remove = ~(np.squeeze(ref_image) == zero_value).all(axis=1)
+    trimmed_images = [image[lines_to_remove][:, cols_to_remove] for image in images]
+    return trimmed_images
