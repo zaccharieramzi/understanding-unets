@@ -41,6 +41,7 @@ def learned_wavelet_rec(
         details_thresholded = conv_2d(
             high_freqs,
             n_details,
+            kernel_size=5,
             activation=details_activation,
             bias=wav_use_bias,
             unit_norm='details' in filters_normed,
@@ -100,6 +101,7 @@ def learned_wavelet_rec(
         concatenate([denoised_coarse_upsampled, details_thresholded]),
         n_channel,
         activation='linear',
+        kernel_size=5,
         unit_norm='groupping' in filters_normed,
         name='groupping_conv',
         bias=bias,
