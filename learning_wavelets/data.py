@@ -154,14 +154,14 @@ def keras_im_generator(mode='training', batch_size=32, noise_mean=0.0, noise_std
         no_augment=no_augment
     )
 
-# BSD68 utilities
-def bsd68_im_to_array(fname):
+# BSD utilities
+def bsd_im_to_array(fname):
     x = np.array(plt.imread(fname))
     if x.shape[1] > x.shape[0]:
         x = np.rot90(x)
     return x
 
-def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, seed=0, n_pooling=3, no_augment=False):
+def im_generator_BSD(path, file_type='jpg', grey=False, mode='training', batch_size=32, noise_mean=0.0, noise_std=0.1, validation_split=0.1, seed=0, n_pooling=3, no_augment=False):
     train_modes = ('training', 'validation')
     if mode in train_modes:
         subset = mode
@@ -170,8 +170,8 @@ def im_generator_BSD68(path, grey=False, mode='training', batch_size=32, noise_m
         subset = None
     else:
         raise ValueError('Mode {mode} not recognised'.format(mode=mode))
-    filelist = glob.glob(path + '/*.jpg')
-    x = np.array([bsd68_im_to_array(fname) for fname in filelist])
+    filelist = glob.glob(path + f'/*.{file_type}')
+    x = np.array([bsd_im_to_array(fname) for fname in filelist])
     if grey:
         x = np.mean(x, axis=-1, keepdims=True)
     # padding
@@ -245,10 +245,14 @@ def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False,
     elif 'mnist' in source:
         n_samples_train = 6*1e4
         size = 28
-    elif source == 'bsd68':
+    elif source == 'bsd300':
         bsd_dir_train = 'BSDS300/images/train'
         bsd_dir_test = 'BSDS300/images/test'
         n_samples_train = 200
+        size = None
+    elif source == 'bsd68':
+        bsd_dir_test = 'BSDS68'
+        n_samples_train = 0
         size = None
     elif source == 'div2k':
         div_2k_dir_train = 'DIV2K_train_HR/'
@@ -281,7 +285,21 @@ def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False,
             no_augment=no_augment,
         )
     elif source == 'bsd68':
-        im_gen_train = im_generator_BSD68(
+        im_gen_train = None
+        im_gen_val = None
+        im_gen_test = im_generator_BSD(
+            path=bsd_dir_test,
+            file_type='png',
+            mode='testing',
+            validation_split=0,
+            batch_size=batch_size,
+            noise_std=noise_std,
+            no_augment=True,
+            n_pooling=n_pooling,
+            grey=grey,
+        )
+    elif source == 'bsd300':
+        im_gen_train = im_generator_BSD(
             path=bsd_dir_train,
             mode='training',
             validation_split=validation_split,
@@ -291,7 +309,7 @@ def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False,
             n_pooling=n_pooling,
             grey=grey,
         )
-        im_gen_val = im_generator_BSD68(
+        im_gen_val = im_generator_BSD(
             path=bsd_dir_train,
             mode='validation',
             validation_split=validation_split,
@@ -301,7 +319,7 @@ def im_generators(source, batch_size=32, validation_split=0.1, no_augment=False,
             n_pooling=n_pooling,
             grey=grey,
         )
-        im_gen_test = im_generator_BSD68(
+        im_gen_test = im_generator_BSD(
             path=bsd_dir_test,
             mode='testing',
             validation_split=0,
