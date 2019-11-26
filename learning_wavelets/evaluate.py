@@ -3,6 +3,9 @@ from runstats import Statistics
 from skimage.measure import compare_psnr, compare_ssim
 import tensorflow as tf
 
+from .image_utils import trim_zero_padding
+
+
 def keras_psnr(y_true, y_pred):
     return tf.image.psnr(y_true, y_pred, 1)
 
@@ -11,6 +14,7 @@ def keras_ssim(y_true, y_pred):
 
 def psnr_single_image(gt, pred):
     """ Compute Peak Signal to Noise Ratio metric (PSNR) """
+    gt, pred = trim_zero_padding(gt, pred, zero_value=-0.5)
     return compare_psnr(gt, pred, data_range=1)
 
 
@@ -19,6 +23,7 @@ def ssim_single_image(gt, pred):
 
     The images must be in HWC format
     """
+    gt, pred = trim_zero_padding(gt, pred, zero_value=-0.5)
     return compare_ssim(
         gt, pred, multichannel=True, data_range=1
     )
