@@ -51,6 +51,7 @@ def learnlet_analysis(
         details_tiled = conv_2d(
             wav_detail,
             n_tiling,
+            kernel_size=5,
             activation=None,
             bias=tiling_use_bias,
             unit_norm=tiling_unit_norm,
@@ -61,6 +62,7 @@ def learnlet_analysis(
             details_tiled = conv_2d(
                 details_tiled,
                 n_tiling,
+                kernel_size=5,
                 activation=None,
                 bias=tiling_use_bias,
                 unit_norm=tiling_unit_norm,
@@ -91,6 +93,7 @@ def learnlet_synthesis(input_sizes, normalize=True, synthesis_use_bias=False, gr
         image = conv_2d(
             concatenate([image, detail]),
             n_channels,
+            kernel_size=5,
             activation=None,
             bias=synthesis_use_bias,
             name='groupping_conv',
