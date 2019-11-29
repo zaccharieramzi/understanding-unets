@@ -52,10 +52,12 @@ class NormalisationAdjustment(Callback):
         self.model = model
         self.normalisation_layers = list()  # list the soft thresh layers
         try:
-            self.norms_input_model = model.get_layer(name='learnlet_analysis')
+            norms_input_layer = model.get_layer(name='learnlet_analysis')
         except ValueError:
             self.norms_input_model = None
             norm_input_model_outputs = list()
+        else:
+            self.norms_input_model = Model(model.input, norms_input_layer(model.input))
         for layer in model.layers:
             if isinstance(layer, Normalisation) and layer not in self.normalisation_layers:
                 self.normalisation_layers.append(layer)
