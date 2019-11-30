@@ -38,7 +38,10 @@ def add_noise_function(noise_std):
         return image + noise
     return add_noise
 
-def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30):
+def exact_recon_helper(image_noisy, image):
+    return (image_noisy, image), (image, image)
+
+def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30, exact_recon=False):
     if mode == 'training':
         path = 'DIV2K_train_HR'
     elif mode == 'validation':
@@ -63,5 +66,11 @@ def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30
     image_noisy_ds = image_patch_ds.map(
         lambda patch: (add_noise(patch), patch),
         num_parallel_calls=tf.data.experimental.AUTOTUNE,
-    ).batch(batch_size).repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+    )
+    if exact_recon:
+        image_noisy_ds = image_noisy_ds.map(
+            exact_recon_helper,
+            num_parallel_calls=tf.data.experimental.AUTOTUNE,
+        )
+    image_noisy_ds = image_noisy_ds.batch(batch_size).repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
