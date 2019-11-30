@@ -39,7 +39,7 @@ class Normalisation(Layer):
 
 
 class NormalisationAdjustment(Callback):
-    def __init__(self, n_pooling=4, momentum=0.9):
+    def __init__(self, n_pooling=4, momentum=0.9, exact_recon=False):
         super().__init__()
         # 4 as a minimum just to make sure we have enough samples to compute
         # a reliable std
@@ -47,6 +47,7 @@ class NormalisationAdjustment(Callback):
         self.current_stds = list()
         self.stds_lists = list()  # this is just for monitoring/ debugging
         self.momentum = momentum
+        self.exact_recon = exact_recon
 
     def set_model(self, model):
         self.model = model
@@ -57,7 +58,10 @@ class NormalisationAdjustment(Callback):
             self.norms_input_model = None
             norm_input_model_outputs = list()
         else:
-            self.norms_input_model = Model(model.input, norms_input_layer(model.input))
+            if self.exact_recon:
+                self.norms_input_model = Model(model.input[0], norms_input_layer(model.input[0]))
+            else:
+                self.norms_input_model = Model(model.input, norms_input_layer(model.input))
         for layer in model.layers:
             if isinstance(layer, Normalisation) and layer not in self.normalisation_layers:
                 self.normalisation_layers.append(layer)
@@ -71,7 +75,11 @@ class NormalisationAdjustment(Callback):
             self.norms_input_model = Model(model.input, norm_input_model_outputs)
 
     def on_batch_end(self, batch, logs={}):
-        n_channels = self.model.input_shape[-1]
+        if self.exact_recon:
+            # TODO: change this hack
+            n_channels = 1
+        else:
+            n_channels = self.model.input_shape[-1]
         image_shape = [1, 2**self.n_pooling, 2**self.n_pooling, n_channels]
         noise = np.random.normal(scale=1.0, size=image_shape)
         norm_inputs = self.norms_input_model.predict_on_batch(noise)
