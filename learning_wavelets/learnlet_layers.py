@@ -163,13 +163,14 @@ class LearnletAnalysis(Layer):
         return config
 
 class LearnletSynthesis(Layer):
-    def __init__(self, normalize=True, n_scales=4, n_channels=1, synthesis_use_bias=False, synthesis_norm=False):
+    def __init__(self, normalize=True, n_scales=4, n_channels=1, synthesis_use_bias=False, synthesis_norm=False, res=False):
         super(LearnletSynthesis, self).__init__()
         self.normalize = normalize
         self.n_scales = n_scales
         self.n_channels = n_channels
         self.synthesis_use_bias = synthesis_use_bias
         self.synthesis_norm = synthesis_norm
+        self.res = res
         if self.normalize:
             self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales)
             self.wav_filters_norm.reverse()
@@ -200,7 +201,10 @@ class LearnletSynthesis(Layer):
             if self.normalize:
                 wav_norm = self.wav_filters_norm[i_scale]
                 detail = detail * wav_norm
-            image = self.convs_groupping[i_scale](tf.concat([image, detail], axis=-1))
+            if self.res:
+                image = self.convs_groupping[i_scale](detail) + image
+            else:
+                image = self.convs_groupping[i_scale](tf.concat([image, detail], axis=-1))
             if i_scale < len(details) - 1:
                 image = self.upsampling(image)
         return image
