@@ -124,7 +124,7 @@ class LearnletAnalysis(Layer):
             ) for i in range(self.n_scales)
         ]
         if self.mixing_details:
-            mixing_prefix = 'details_tiling'
+            mixing_prefix = 'details_mixing'
             self.convs_detail_mixing = [
                 Conv2D(
                     n_tiling,
