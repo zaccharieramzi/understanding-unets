@@ -114,6 +114,7 @@ def learned_wavelet_rec(
             details_thresholded = conv_2d(
                 details_thresholded,
                 n_details,
+                kernel_size=5,
                 activation=denoising_activation,
                 bias=wav_use_bias,
                 unit_norm='details' in filters_normed,
