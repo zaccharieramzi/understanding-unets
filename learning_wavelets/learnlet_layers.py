@@ -98,6 +98,7 @@ class LearnletAnalysis(Layer):
             tiling_unit_norm=True,
             mixing_details=False,
             n_scales=4,
+            kernel_size=5,
             **wav_analysis_kwargs,
         ):
         super(LearnletAnalysis, self).__init__()
@@ -106,6 +107,7 @@ class LearnletAnalysis(Layer):
         self.tiling_unit_norm = tiling_unit_norm
         self.mixing_details = mixing_details
         self.n_scales = n_scales
+        self.kernel_size = kernel_size
         self.wav_analysis = WavAnalysis(coarse=True, n_scales=self.n_scales, **wav_analysis_kwargs)
         constraint = None
         if self.tiling_unit_norm:
@@ -114,7 +116,7 @@ class LearnletAnalysis(Layer):
         self.convs_detail_tiling = [
             Conv2D(
                 n_tiling,
-                5,
+                self.kernel_size,
                 activation='linear',
                 padding='same',
                 kernel_initializer='glorot_uniform',
@@ -128,7 +130,7 @@ class LearnletAnalysis(Layer):
             self.convs_detail_mixing = [
                 Conv2D(
                     n_tiling,
-                    5,
+                    self.kernel_size,
                     activation='linear',
                     padding='same',
                     kernel_initializer='glorot_uniform',
@@ -159,11 +161,12 @@ class LearnletAnalysis(Layer):
             'tiling_unit_norm': self.tiling_unit_norm,
             'mixing_details': self.mixing_details,
             'n_scales': self.n_scales,
+            'kernel_size': self.kernel_size,
         })
         return config
 
 class LearnletSynthesis(Layer):
-    def __init__(self, normalize=True, n_scales=4, n_channels=1, synthesis_use_bias=False, synthesis_norm=False, res=False):
+    def __init__(self, normalize=True, n_scales=4, n_channels=1, synthesis_use_bias=False, synthesis_norm=False, res=False, kernel_size=5):
         super(LearnletSynthesis, self).__init__()
         self.normalize = normalize
         self.n_scales = n_scales
@@ -171,6 +174,7 @@ class LearnletSynthesis(Layer):
         self.synthesis_use_bias = synthesis_use_bias
         self.synthesis_norm = synthesis_norm
         self.res = res
+        self.kernel_size = kernel_size
         if self.normalize:
             self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales)
             self.wav_filters_norm.reverse()
@@ -182,7 +186,7 @@ class LearnletSynthesis(Layer):
         self.convs_groupping = [
             Conv2D(
                 n_channels,
-                5,
+                self.kernel_size,
                 activation='linear',
                 padding='same',
                 kernel_initializer='glorot_uniform',
@@ -217,5 +221,7 @@ class LearnletSynthesis(Layer):
             'n_channels': self.n_channels,
             'synthesis_use_bias': self.synthesis_use_bias,
             'synthesis_norm': self.synthesis_norm,
+            'res': self.res,
+            'kernel_size': self.kernel_size,
         })
         return config
