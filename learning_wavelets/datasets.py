@@ -45,7 +45,7 @@ def add_noise_function(noise_std_range, return_noise_level=False):
         )
         noise = tf.random.normal(shape=tf.shape(image), mean=0.0, stddev=noise_std/255, dtype=tf.float32)
         if return_noise_level:
-            return (image + noise), noise_std
+            return (image + noise), noise_std/255
         else:
             return image + noise
     return add_noise
