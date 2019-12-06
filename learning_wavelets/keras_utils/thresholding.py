@@ -17,6 +17,7 @@ class DynamicSoftThresholding(Layer):
     def build(self, input_shape):
         def _alpha_intializer(shape, **kwargs):
             return tf.ones(shape) * self.alpha_init
+        # TODO: set constraints on alpha, and potentially have it be varying along the channels
         self.alpha = self.add_weight(
             shape=(1,),
             initializer=_alpha_intializer,
