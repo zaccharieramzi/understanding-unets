@@ -3,7 +3,44 @@ from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.layers import Layer, ThresholdedReLU, ReLU, Activation
 from tensorflow.keras.models import Model
 import tensorflow.keras.backend as K
+import tensorflow as tf
 
+
+class DynamicSoftThresholding(Layer):
+    __name__ = 'dynamic_soft_thresholding'
+
+    def __init__(self, alpha_init, trainable=False, **kwargs):
+        super(DynamicSoftThresholding, self).__init__(**kwargs)
+        self.alpha_init = alpha_init
+        self.trainable = trainable
+
+    def build(self, input_shape):
+        def _alpha_intializer(shape, **kwargs):
+            return tf.ones(shape) * self.alpha_init
+        self.alpha = self.add_weight(
+            shape=input_shape,
+            initializer=_alpha_intializer,
+            trainable=self.trainable,
+        )
+
+    def call(self, inputs):
+        image, noise_std = inputs
+        threshold = self.alpha * noise_std
+        input_sign = K.sign(image)
+        soft_thresh_unsigned = ReLU()(input_sign * inputs - threshold)
+        soft_thresh = soft_thresh_unsigned * input_sign
+        return soft_thresh
+
+    def get_config(self):
+        config = super(DynamicSoftThresholding, self).get_config()
+        config.update({
+            'alpha_init': self.alpha_init,
+            'trainable': self.trainable,
+        })
+        return config
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
 
 class SoftThresholding(Layer):
     __name__ = 'soft_thresholding'
