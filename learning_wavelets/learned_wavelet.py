@@ -4,7 +4,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
 from .evaluate import keras_psnr, keras_ssim
-from .keras_utils import Normalisation, conv_2d, wavelet_pooling
+from .keras_utils import Normalisation, conv_2d, wavelet_pooling, DynamicSoftThresholding
 from .learnlet_layers import LearnletAnalysis, LearnletSynthesis
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
@@ -25,6 +25,10 @@ def learnlet(
         learnlet_analysis_kwargs = {}
     if learnlet_synthesis_kwargs is None:
         learnlet_synthesis_kwargs = {}
+    dynamic_denoising = False
+    if isinstance(denoising_activation, DynamicSoftThresholding):
+        dynamic_denoising = True
+        noise_std = Input((1,))
     learnlet_analysis_layer = LearnletAnalysis(
         normalize=normalize,
         n_scales=n_scales,
@@ -39,7 +43,10 @@ def learnlet(
         if noise_std_norm:
             normalisation_layer = Normalisation(1.0)
             detail = normalisation_layer(detail, mode='normal')
-        detail_thresholded = thresholding_layer(detail)
+        if dynamic_denoising:
+            detail_thresholded = thresholding_layer([detail, noise_std])
+        else:
+            detail_thresholded = thresholding_layer(detail)
         if noise_std_norm:
             detail_thresholded = normalisation_layer(detail_thresholded, mode='inv')
         learnlet_analysis_coeffs_thresholded.append(detail_thresholded)
@@ -50,8 +57,12 @@ def learnlet(
         **learnlet_synthesis_kwargs,
     )
     denoised_image = learnlet_synthesis_layer(learnlet_analysis_coeffs_thresholded)
-    learnlet_model = Model(image_noisy, denoised_image)
+    if dynamic_denoising:
+        learnlet_model = Model([image_noisy, noise_std], denoised_image)
+    else:
+        learnlet_model = Model(image_noisy, denoised_image)
     if exact_reconstruction_weight:
+        # TODO: make exact reconstruction adaptable to dynamic denoising
         image = Input(input_size)
         learnlet_analysis_coeffs_exact = learnlet_analysis_layer(image)
         reconstructed_image = learnlet_synthesis_layer(learnlet_analysis_coeffs_exact)
