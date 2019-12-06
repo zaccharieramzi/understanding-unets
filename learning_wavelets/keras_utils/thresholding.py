@@ -27,7 +27,7 @@ class DynamicSoftThresholding(Layer):
         image, noise_std = inputs
         threshold = self.alpha * noise_std
         input_sign = K.sign(image)
-        soft_thresh_unsigned = ReLU()(input_sign * inputs - threshold)
+        soft_thresh_unsigned = ReLU()(input_sign * image - threshold)
         soft_thresh = soft_thresh_unsigned * input_sign
         return soft_thresh
 
