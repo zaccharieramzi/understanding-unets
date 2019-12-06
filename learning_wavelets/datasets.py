@@ -37,7 +37,6 @@ def select_patch_in_image_function(patch_size, seed=0):
 def add_noise_function(noise_std_range, return_noise_level=False):
     if not isinstance(noise_std_range, Iterable):
         noise_std_range = (noise_std_range, noise_std_range)
-    @tf.py_function
     def add_noise(image):
         noise_std = tf.random.uniform(
             (1,),
