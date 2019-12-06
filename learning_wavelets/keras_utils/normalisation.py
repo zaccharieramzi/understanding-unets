@@ -77,7 +77,7 @@ class NormalisationAdjustment(Callback):
             self.norms_input_model = Model(model.input, norm_input_model_outputs)
 
     def on_batch_end(self, batch, logs={}):
-        if self.exact_recon:
+        if self.exact_recon or self.dynamic_denoising:
             # TODO: change this hack
             n_channels = 1
         else:
