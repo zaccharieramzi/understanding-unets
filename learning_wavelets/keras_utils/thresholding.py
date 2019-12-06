@@ -18,7 +18,7 @@ class DynamicSoftThresholding(Layer):
         def _alpha_intializer(shape, **kwargs):
             return tf.ones(shape) * self.alpha_init
         self.alpha = self.add_weight(
-            shape=input_shape,
+            shape=input_shape[0],
             initializer=_alpha_intializer,
             trainable=self.trainable,
         )
