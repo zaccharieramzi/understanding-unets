@@ -1,7 +1,11 @@
 from tensorflow.keras.layers import  Input, Conv2D, Activation, BatchNormalization, Subtract
 from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
 
-def dncnn(input_size=(None, None, 1), filters=64, depth=20):
+from .evaluate import keras_psnr, keras_ssim
+
+
+def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3):
     inpt = Input(shape=input_size)
     # 1st layer, Conv+relu
     x = Conv2D(
@@ -30,5 +34,9 @@ def dncnn(input_size=(None, None, 1), filters=64, depth=20):
     )(x)
     x = Subtract()([inpt, x])
     model = Model(inputs=inpt, outputs=x)
-
+    model.compile(
+        optimizer=Adam(lr=lr),
+        loss='mean_squared_error',
+        metrics=[keras_psnr, keras_ssim],
+    )
     return model
