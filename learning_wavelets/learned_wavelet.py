@@ -44,7 +44,7 @@ def learnlet(
             normalisation_layer = Normalisation(1.0)
             detail = normalisation_layer(detail, mode='normal')
         if dynamic_denoising:
-            detail_thresholded = thresholding_layer([detail, noise_std])
+            detail_thresholded = denoising_activation([detail, noise_std])
         else:
             detail_thresholded = thresholding_layer(detail)
         if noise_std_norm:
