@@ -1,6 +1,6 @@
 from tensorflow.keras.layers import  Input, Conv2D, Activation, BatchNormalization, Subtract
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.optimizers import Adam
 
 from .evaluate import keras_psnr, keras_ssim
 
@@ -35,7 +35,7 @@ def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3):
     x = Subtract()([inpt, x])
     model = Model(inputs=inpt, outputs=x)
     model.compile(
-        optimizer=SGD(momentum=0.9, lr=lr),
+        optimizer=Adam(lr=lr),
         loss='mean_squared_error',
         metrics=[keras_psnr, keras_ssim],
     )
