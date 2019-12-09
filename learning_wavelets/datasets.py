@@ -98,7 +98,7 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
         test_file_ds = tf.data.Dataset.list_files(f'{test_path}/*.jpg', seed=0)
         file_ds = train_file_ds.concatenate(test_file_ds)
     elif mode == 'validation':
-        val_path = 'DIV2K_valid_HR'
+        val_path = 'BSR/BSDS500/data/images/val'
         file_ds = tf.data.Dataset.list_files(f'{val_path}/*.jpg', seed=0)
     # TODO: refactor with div2k dataset
     image_ds = file_ds.map(
