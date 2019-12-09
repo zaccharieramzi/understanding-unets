@@ -88,7 +88,7 @@ def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30
     image_noisy_ds = image_noisy_ds.batch(batch_size).repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
 
-def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=30, exact_recon=False):
+def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=30, exact_recon=False, return_noise_level=False):
     # the training set for bsd500 is test + train
     # the test set (i.e. containing bsd68 images) is val
     if mode == 'training':
@@ -116,7 +116,7 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
     image_patch_ds = image_grey_ds.map(
         select_patch_in_image, num_parallel_calls=tf.data.experimental.AUTOTUNE
     )
-    add_noise = add_noise_function(noise_std)
+    add_noise = add_noise_function(noise_std, return_noise_level=return_noise_level)
     image_noisy_ds = image_patch_ds.map(
         lambda patch: (add_noise(patch), patch),
         num_parallel_calls=tf.data.experimental.AUTOTUNE,
