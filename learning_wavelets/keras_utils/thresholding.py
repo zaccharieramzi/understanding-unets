@@ -1,10 +1,50 @@
 import numpy as np
 from tensorflow.keras.callbacks import Callback
-from tensorflow.keras.layers import Layer, ThresholdedReLU, ReLU, Activation
+from tensorflow.keras.layers import Layer, ReLU, Activation
 from tensorflow.keras.models import Model
 import tensorflow.keras.backend as K
 import tensorflow as tf
 
+
+class DynamicHardThresholding(Layer):
+    __name__ = 'dynamic_soft_thresholding'
+
+    def __init__(self, alpha_init, trainable=False, **kwargs):
+        super(DynamicHardThresholding, self).__init__(**kwargs)
+        self.alpha_init = alpha_init
+        self.trainable = trainable
+
+    def build(self, input_shape):
+        def _alpha_intializer(shape, **kwargs):
+            return tf.ones(shape) * self.alpha_init
+        # TODO: set constraints on alpha, and potentially have it be varying along the channels
+        self.alpha = self.add_weight(
+            shape=(1,),
+            initializer=_alpha_intializer,
+            trainable=self.trainable,
+        )
+
+    def call(self, inputs):
+        image, noise_std = inputs
+        threshold = self.alpha * noise_std
+        threshold = tf.expand_dims(threshold, axis=-1)
+        threshold = tf.expand_dims(threshold, axis=-1)
+        input_sign = K.sign(image)
+        soft_thresh_unsigned = ReLU()(input_sign * image - threshold)
+        hard_thresh_unsigned = soft_thresh_unsigned + K.sign(soft_thresh_unsigned) * threshold
+        hard_thresh = hard_thresh_unsigned * input_sign
+        return hard_thresh
+
+    def get_config(self):
+        config = super(DynamicHardThresholding, self).get_config()
+        config.update({
+            'alpha_init': self.alpha_init,
+            'trainable': self.trainable,
+        })
+        return config
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
 
 class DynamicSoftThresholding(Layer):
     __name__ = 'dynamic_soft_thresholding'
