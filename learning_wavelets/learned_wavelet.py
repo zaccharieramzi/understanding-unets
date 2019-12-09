@@ -4,7 +4,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
 from .evaluate import keras_psnr, keras_ssim
-from .keras_utils import Normalisation, conv_2d, wavelet_pooling, DynamicSoftThresholding
+from .keras_utils import Normalisation, conv_2d, wavelet_pooling, DynamicSoftThresholding, DynamicHardThresholding
 from .learnlet_layers import LearnletAnalysis, LearnletSynthesis
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
@@ -26,7 +26,7 @@ def learnlet(
     if learnlet_synthesis_kwargs is None:
         learnlet_synthesis_kwargs = {}
     dynamic_denoising = False
-    if isinstance(denoising_activation, DynamicSoftThresholding):
+    if isinstance(denoising_activation, (DynamicSoftThresholding, DynamicHardThresholding)):
         dynamic_denoising = True
         noise_std = Input((1,))
     learnlet_analysis_layer = LearnletAnalysis(
