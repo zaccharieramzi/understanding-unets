@@ -185,8 +185,8 @@ class LearnletSynthesis(Layer):
         details.reverse()
         coarse = analysis_coeffs[-1]
         image = coarse
-        image = self.upsampling(image)
         for i_scale, detail in enumerate(details):
+            image = self.upsampling(image)
             if self.normalize:
                 wav_norm = self.wav_filters_norm[i_scale]
                 detail = detail * wav_norm
