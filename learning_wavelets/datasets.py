@@ -25,12 +25,15 @@ def tf_random_rotate_image(image):
 # patch selection
 def select_patch_in_image_function(patch_size, seed=0):
     def select_patch_in_image(image):
-        patch = tf.image.random_crop(
-            image,
-            [patch_size, patch_size, 1],
-            seed=seed,
-        )
-        return patch
+        if patch_size is not None:
+            patch = tf.image.random_crop(
+                image,
+                [patch_size, patch_size, 1],
+                seed=seed,
+            )
+            return patch
+        else:
+            return image
     return select_patch_in_image
 
 # noise
