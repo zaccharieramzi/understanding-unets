@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
-from tensorflow.keras.layers import Layer, Conv2D, AveragePooling2D, UpSampling2D, Substract
+from tensorflow.keras.layers import Layer, Conv2D, AveragePooling2D, UpSampling2D, Subtract
 
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
@@ -30,7 +30,7 @@ class WavPooling(Layer):
         )
         self.conv_h.trainable = False
         g_prefix = 'high_pass_filtering'
-        self.subs = Substract(name=f'{g_prefix}_{str(K.get_uid(g_prefix))}')
+        self.subs = Subtract(name=f'{g_prefix}_{str(K.get_uid(g_prefix))}')
         self.down = AveragePooling2D(size=(2, 2))
         self.up = UpSampling2D(size=(2, 2), interpolation='bilinear')
 
