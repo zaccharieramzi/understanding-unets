@@ -60,8 +60,7 @@ class WavAnalysis(Layer):
                 wav_norm = self.wav_filters_norm[i_scale]
                 high_freqs = high_freqs / wav_norm
             wav_coeffs.append(high_freqs)
-            if i_scale < self.n_scales - 1:
-                low_freqs = self.pooling(low_freqs)
+            low_freqs = self.pooling(low_freqs)
         if self.coarse:
             wav_coeffs.append(low_freqs)
         return wav_coeffs
@@ -186,6 +185,7 @@ class LearnletSynthesis(Layer):
         details.reverse()
         coarse = analysis_coeffs[-1]
         image = coarse
+        image = self.upsampling(image)
         for i_scale, detail in enumerate(details):
             if self.normalize:
                 wav_norm = self.wav_filters_norm[i_scale]
@@ -194,8 +194,6 @@ class LearnletSynthesis(Layer):
                 image = self.convs_groupping[i_scale](detail) + image
             else:
                 image = self.convs_groupping[i_scale](tf.concat([image, detail], axis=-1))
-            if i_scale < len(details) - 1:
-                image = self.upsampling(image)
         return image
 
     def get_config(self):
