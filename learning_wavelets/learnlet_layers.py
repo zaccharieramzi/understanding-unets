@@ -31,7 +31,7 @@ class WavPooling(Layer):
         self.conv_h.trainable = False
         g_prefix = 'high_pass_filtering'
         self.subs = Subtract(name=f'{g_prefix}_{str(K.get_uid(g_prefix))}')
-        self.down = AveragePooling2D(size=(2, 2))
+        self.down = AveragePooling2D()
         self.up = UpSampling2D(size=(2, 2), interpolation='bilinear')
 
 
