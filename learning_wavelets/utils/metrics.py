@@ -37,6 +37,17 @@ def metrics_exact_recon_net(val_seq, name=None, **net_params):
         metrics.push(images, im_recos.numpy())
     return metrics
 
+def metrics_dynamic_denoising_net(val_seq, noise_std, name=None, **net_params):
+    model = unpack_model(**net_params)
+    metrics = Metrics()
+    pred_and_gt = [
+        (model.predict_on_batch((images_noisy, np.array([[noise_std/255]]))), images_gt)
+        for images_noisy, images_gt in enumerate_seq(val_seq, name)
+    ]
+    for im_recos, images in tqdm_notebook(pred_and_gt, desc=f'Stats for {name}'):
+        metrics.push(images, im_recos.numpy())
+    return metrics
+
 def metrics_original(val_seq):
     metrics = Metrics()
     pred_and_gt = [

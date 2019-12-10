@@ -39,7 +39,7 @@ class Normalisation(Layer):
 
 
 class NormalisationAdjustment(Callback):
-    def __init__(self, n_pooling=4, momentum=0.9, exact_recon=False):
+    def __init__(self, n_pooling=4, momentum=0.9, exact_recon=False, dynamic_denoising=False):
         super().__init__()
         # 4 as a minimum just to make sure we have enough samples to compute
         # a reliable std
@@ -48,6 +48,7 @@ class NormalisationAdjustment(Callback):
         self.stds_lists = list()  # this is just for monitoring/ debugging
         self.momentum = momentum
         self.exact_recon = exact_recon
+        self.dynamic_denoising = dynamic_denoising
 
     def set_model(self, model):
         self.model = model
@@ -58,7 +59,8 @@ class NormalisationAdjustment(Callback):
             self.norms_input_model = None
             norm_input_model_outputs = list()
         else:
-            if self.exact_recon:
+            if self.exact_recon or self.dynamic_denoising:
+                # TODO: handle case with exact reconstruction and dynamic denoising
                 self.norms_input_model = Model(model.input[0], norms_input_layer(model.input[0]))
             else:
                 self.norms_input_model = Model(model.input, norms_input_layer(model.input))
@@ -75,7 +77,7 @@ class NormalisationAdjustment(Callback):
             self.norms_input_model = Model(model.input, norm_input_model_outputs)
 
     def on_batch_end(self, batch, logs={}):
-        if self.exact_recon:
+        if self.exact_recon or self.dynamic_denoising:
             # TODO: change this hack
             n_channels = 1
         else:
