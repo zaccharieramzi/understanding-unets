@@ -1,3 +1,4 @@
+import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.layers import Activation, concatenate, UpSampling2D, Input, AveragePooling2D, Lambda
 from tensorflow.keras.models import Model
@@ -19,6 +20,7 @@ def learnlet(
         exact_reconstruction_weight=0,
         learnlet_analysis_kwargs=None,
         learnlet_synthesis_kwargs=None,
+        clip=False,
     ):
     image_noisy = Input(input_size)
     if learnlet_analysis_kwargs is None:
@@ -57,6 +59,8 @@ def learnlet(
         **learnlet_synthesis_kwargs,
     )
     denoised_image = learnlet_synthesis_layer(learnlet_analysis_coeffs_thresholded)
+    if clip:
+        denoised_image = Lambda(tf.clip_by_value, arguments={'clip_value_min': -0.5, 'clip_value_max': 0.5})(denoised_image)
     if dynamic_denoising:
         learnlet_model = Model([image_noisy, noise_std], denoised_image)
     else:
