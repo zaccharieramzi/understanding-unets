@@ -178,7 +178,7 @@ class LearnletSynthesis(Layer):
         if self.normalize:
             self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales)
             self.wav_filters_norm.reverse()
-        self.upsampling = UpSampling2D(size=(2, 2))
+        self.upsampling = UpSampling2D(size=(2, 2), interpolation='bilinear')
         constraint = None
         if self.synthesis_norm:
             constraint = UnitNorm(axis=[0, 1, 2])
