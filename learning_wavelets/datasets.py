@@ -62,6 +62,7 @@ def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30
     elif mode == 'validation':
         path = 'DIV2K_valid_HR'
     file_ds = tf.data.Dataset.list_files(f'{path}/*/*.png', seed=0)
+    file_ds = file_ds.shuffle(800, seed=0)
     image_ds = file_ds.map(
         tf.io.read_file, num_parallel_calls=tf.data.experimental.AUTOTUNE
     ).map(
@@ -104,6 +105,7 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
         val_path = 'BSR/BSDS500/data/images/val'
         file_ds = tf.data.Dataset.list_files(f'{val_path}/*.jpg', seed=0)
     # TODO: refactor with div2k dataset
+    file_ds = file_ds.shuffle(800, seed=0)
     image_ds = file_ds.map(
         tf.io.read_file, num_parallel_calls=tf.data.experimental.AUTOTUNE
     ).map(
