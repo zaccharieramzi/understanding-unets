@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
-from tensorflow.keras.layers import Layer, Conv2D, AveragePooling2D, UpSampling2D
+from tensorflow.keras.layers import Layer, Conv2D, AveragePooling2D, UpSampling2D, Substract
 
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
@@ -15,15 +15,8 @@ class WavPooling(Layer):
             [i * j for j in base_filter]
             for i in base_filter
         ])
-        filter_shape = wav_h_filter.shape
-        filter_center_idx = filter_shape[0]//2
-        wav_g_filter = -wav_h_filter
-        wav_g_filter[filter_center_idx, filter_center_idx] = 0
-        wav_g_filter[filter_center_idx, filter_center_idx] = -np.sum(wav_g_filter)
         def h_kernel_initializer(shape, **kwargs):
             return wav_h_filter[..., None, None]
-        def g_kernel_initializer(shape, **kwargs):
-            return wav_g_filter[..., None, None]
         h_prefix = 'low_pass_filtering'
         self.conv_h = Conv2D(
             1,
@@ -37,22 +30,14 @@ class WavPooling(Layer):
         )
         self.conv_h.trainable = False
         g_prefix = 'high_pass_filtering'
-        self.conv_g = Conv2D(
-            1,
-            # TODO: check that wav_g_filter is square
-            wav_g_filter.shape[0],
-            activation='linear',
-            padding='same',
-            kernel_initializer=g_kernel_initializer,
-            use_bias=False,
-            name=f'{g_prefix}_{str(K.get_uid(g_prefix))}',
-        )
-        self.conv_g.trainable = False
+        self.subs = Substract(name=f'{g_prefix}_{str(K.get_uid(g_prefix))}')
+        self.down = AveragePooling2D(size=(2, 2))
+        self.up = UpSampling2D(size=(2, 2), interpolation='bilinear')
 
 
     def call(self, image):
         low_freqs = self.conv_h(image)
-        high_freqs = self.conv_g(image)
+        high_freqs = image - self.up(self.down(low_freqs))
         return [low_freqs, high_freqs]
 
 class WavAnalysis(Layer):
