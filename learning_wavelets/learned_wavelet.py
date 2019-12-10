@@ -28,7 +28,7 @@ def learnlet(
     if learnlet_synthesis_kwargs is None:
         learnlet_synthesis_kwargs = {}
     dynamic_denoising = False
-    if isinstance(denoising_activation, (DynamicSoftThresholding, DynamicHardThresholding)):
+    if isinstance(denoising_activation, (DynamicSoftThresholding, DynamicHardThresholding)) or 'dynamic' in denoising_activation:
         dynamic_denoising = True
         noise_std = Input((1,))
     learnlet_analysis_layer = LearnletAnalysis(
@@ -46,7 +46,14 @@ def learnlet(
             normalisation_layer = Normalisation(1.0)
             detail = normalisation_layer(detail, mode='normal')
         if dynamic_denoising:
-            detail_thresholded = denoising_activation([detail, noise_std])
+            if isinstance(denoising_activation, str):
+                if denoising_activation == 'dynamic_soft_thresholding':
+                    thresholding_layer = DynamicSoftThresholding(2.0, trainable=True)
+                elif denoising_activation == 'dynamic_hard_thresholding':
+                    thresholding_layer = DynamicHardThresholding(3.0, trainable=False)
+                detail_thresholded = thresholding_layer([detail, noise_std])
+            else:
+                detail_thresholded = denoising_activation([detail, noise_std])
         else:
             detail_thresholded = thresholding_layer(detail)
         if noise_std_norm:
