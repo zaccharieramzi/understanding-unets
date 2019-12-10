@@ -31,6 +31,8 @@ def learnlet(
     if isinstance(denoising_activation, (DynamicSoftThresholding, DynamicHardThresholding)) or 'dynamic' in denoising_activation:
         dynamic_denoising = True
         noise_std = Input((1,))
+    else:
+        thresholding_layer = Activation(denoising_activation, name='thresholding')
     learnlet_analysis_layer = LearnletAnalysis(
         normalize=normalize,
         n_scales=n_scales,
@@ -39,7 +41,6 @@ def learnlet(
     learnlet_analysis_coeffs = learnlet_analysis_layer(image_noisy)
     details = learnlet_analysis_coeffs[:-1]
     coarse = learnlet_analysis_coeffs[-1]
-    thresholding_layer = Activation(denoising_activation, name='thresholding')
     learnlet_analysis_coeffs_thresholded = list()
     for detail in details:
         if noise_std_norm:
