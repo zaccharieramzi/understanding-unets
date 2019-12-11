@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.layers import Activation, concatenate, UpSampling2D, Input, AveragePooling2D, Lambda
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam, SGD
+from tensorflow.keras.optimizers import Adam
 
 from .evaluate import keras_psnr, keras_ssim, center_keras_psnr
 from .keras_utils import Normalisation, conv_2d, wavelet_pooling, DynamicSoftThresholding, DynamicHardThresholding
@@ -80,7 +80,7 @@ def learnlet(
         reconstructed_image = learnlet_synthesis_layer(learnlet_analysis_coeffs_exact)
         learnlet_model = Model([image_noisy, image], [denoised_image, reconstructed_image])
         learnlet_model.compile(
-            optimizer=SGD(momentum=0.99, lr=lr, nesterov=False),
+            optimizer=Adam(lr=lr),
             loss=['mse', 'mse'],
             loss_weights=[1, exact_reconstruction_weight],
             metrics=[[keras_psnr, keras_ssim]]*2,
