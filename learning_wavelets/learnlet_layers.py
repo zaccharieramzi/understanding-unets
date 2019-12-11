@@ -211,7 +211,7 @@ class LearnletSynthesis(Layer):
         return config
 
 class ScalesThreshold(Layer):
-    def __init__(self, noise_std_norm, dynamic_denoising, denoising_activation, n_scales):
+    def __init__(self, noise_std_norm=True, dynamic_denoising=False, denoising_activation='relu', n_scales=2):
         super(ScalesThreshold, self).__init__()
         self.noise_std_norm = noise_std_norm
         self.dynamic_denoising = dynamic_denoising
