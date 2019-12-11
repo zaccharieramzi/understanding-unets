@@ -36,9 +36,8 @@ class WavPooling(Layer):
 
 
     def call(self, image):
-        image_in = image
         low_freqs = self.conv_h(image)
-        high_freqs = image_in - self.up(self.down(low_freqs))
+        high_freqs = image - self.up(self.down(low_freqs))
         return [low_freqs, high_freqs]
 
 class WavAnalysis(Layer):
