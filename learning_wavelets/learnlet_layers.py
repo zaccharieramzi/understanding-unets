@@ -2,8 +2,9 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
-from tensorflow.keras.layers import Layer, Conv2D, AveragePooling2D, UpSampling2D, Subtract
+from tensorflow.keras.layers import Layer, Activation, Conv2D, AveragePooling2D, UpSampling2D, Subtract
 
+from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
 
@@ -206,5 +207,54 @@ class LearnletSynthesis(Layer):
             'synthesis_norm': self.synthesis_norm,
             'res': self.res,
             'kernel_size': self.kernel_size,
+        })
+        return config
+
+class ScalesThreshold(Layer):
+    def __init__(self, noise_std_norm, dynamic_denoising, denoising_activation, n_scales):
+        super(ScalesThreshold, self).__init__()
+        self.noise_std_norm = noise_std_norm
+        self.dynamic_denoising = dynamic_denoising
+        self.denoising_activation = denoising_activation
+        self.n_scales = n_scales
+        if not self.dynamic_denoising:
+            self.thresholding_layer = Activation(self.denoising_activation, name='thresholding')
+        if self.noise_std_norm:
+            self.normalisation_layers = [Normalisation(1.0) for i in range(self.n_scales)]
+        if self.denoising_activation == 'dynamic_soft_thresholding':
+            self.thresholding_layers = [DynamicSoftThresholding(2.0, trainable=True) for i in range(self.n_scales)]
+        if self.denoising_activation == 'dynamic_hard_thresholding':
+            self.thresholding_layers = [DynamicHardThresholding(3.0, trainable=False) for i in range(self.n_scales)]
+
+    def call(self, inputs):
+        if self.dynamic_denoising:
+            details, noise_std = inputs
+        else:
+            details = inputs
+        details_thresholded = list()
+        for i_scale, detail in enumerate(details):
+            if self.noise_std_norm:
+                normalisation_layer = self.normalisation_layers[i_scale]
+                detail = normalisation_layer(detail, mode='normal')
+            if self.dynamic_denoising:
+                if isinstance(self.denoising_activation, str):
+                    thresholding_layer = self.thresholding_layers[i_scale]
+                    detail_thresholded = thresholding_layer([detail, noise_std])
+                else:
+                    detail_thresholded = self.denoising_activation([detail, noise_std])
+            else:
+                detail_thresholded = self.thresholding_layer(detail)
+            if self.noise_std_norm:
+                detail_thresholded = normalisation_layer(detail_thresholded, mode='inv')
+            details_thresholded.append(detail_thresholded)
+        return detail_thresholded
+
+    def get_config(self):
+        config = super(ScalesThreshold, self).get_config()
+        config.update({
+            'noise_std_norm': self.noise_std_norm,
+            'dynamic_denoising': self.dynamic_denoising,
+            'denoising_activation': self.denoising_activation,
+            'n_scales': self.n_scales,
         })
         return config
