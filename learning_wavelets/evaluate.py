@@ -19,7 +19,7 @@ def _tf_crop(im, crop=320):
     return im
 
 def center_keras_psnr(y_true, y_pred):
-    return tf.image.psnr(_tf_crop(y_true, crop=128), _tf_crop(y_pred, crop=128))
+    return tf.image.psnr(_tf_crop(y_true, crop=128), _tf_crop(y_pred, crop=128), 1)
 
 def keras_ssim(y_true, y_pred):
     return tf.image.ssim(y_true, y_pred, 1)
