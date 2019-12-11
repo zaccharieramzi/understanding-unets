@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Activation, concatenate, UpSampling2D, Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
-from .evaluate import keras_psnr, keras_ssim
+from .evaluate import keras_psnr, keras_ssim, center_keras_psnr
 from .keras_utils import Normalisation, conv_2d, wavelet_pooling, DynamicSoftThresholding, DynamicHardThresholding
 from .learnlet_layers import LearnletAnalysis, LearnletSynthesis
 from .utils.wav_utils import get_wavelet_filters_normalisation
@@ -89,7 +89,7 @@ def learnlet(
         learnlet_model.compile(
             optimizer=Adam(lr=lr),
             loss='mse',
-            metrics=[keras_psnr, keras_ssim],
+            metrics=[keras_psnr, keras_ssim, center_keras_psnr],
         )
     return learnlet_model
 

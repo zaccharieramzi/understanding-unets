@@ -9,6 +9,18 @@ from .image_utils import trim_zero_padding
 def keras_psnr(y_true, y_pred):
     return tf.image.psnr(y_true, y_pred, 1)
 
+def _tf_crop(im, crop=320):
+    im_shape = tf.shape(im)
+    y = im_shape[1]
+    x = im_shape[2]
+    startx = x // 2 - (crop // 2)
+    starty = y // 2 - (crop // 2)
+    im = im[:, starty:starty+crop, startx:startx+crop, :]
+    return im
+
+def center_keras_psnr(y_true, y_pred):
+    return tf.image.psnr(_tf_crop(y_true, crop=128), _tf_crop(y_pred, crop=128))
+
 def keras_ssim(y_true, y_pred):
     return tf.image.ssim(y_true, y_pred, 1)
 
