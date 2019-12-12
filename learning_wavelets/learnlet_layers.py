@@ -2,9 +2,9 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
-from tensorflow.keras.layers import Layer, Activation, Conv2D, AveragePooling2D, UpSampling2D, Subtract
+from tensorflow.keras.layers import Layer, Activation, Conv2D, UpSampling2D, Subtract
 
-from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding
+from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, FixedPointPooling
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
 
@@ -33,7 +33,7 @@ class WavPooling(Layer):
         self.pad = tf.constant([[0, 0], [2, 2], [2, 2], [0, 0]])
         g_prefix = 'high_pass_filtering'
         self.subs = Subtract(name=f'{g_prefix}_{str(K.get_uid(g_prefix))}')
-        self.down = AveragePooling2D()
+        self.down = FixedPointPooling()
         self.up = UpSampling2D(size=(2, 2), interpolation='bilinear')
 
 
