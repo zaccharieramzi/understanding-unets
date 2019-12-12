@@ -1,5 +1,5 @@
 # those stds were computed with a noise of std 1.0
-WAV_STDS = [0.94388556, 0.20002668, 0.08651136, 0.04172291, 0.020271296]
+WAV_STDS = [0.9466215372085571, 0.23304526507854462, 0.10223511606454849, 0.049666628241539, 0.02393055334687233]
 
 def get_wavelet_filters_normalisation(n_scales):
     if n_scales > len(WAV_STDS):
