@@ -247,7 +247,7 @@ class ScalesThreshold(Layer):
             if self.noise_std_norm:
                 detail_thresholded = normalisation_layer(detail_thresholded, mode='inv')
             details_thresholded.append(detail_thresholded)
-        return detail_thresholded
+        return details_thresholded
 
     def get_config(self):
         config = super(ScalesThreshold, self).get_config()
