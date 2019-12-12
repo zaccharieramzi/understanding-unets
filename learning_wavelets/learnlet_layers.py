@@ -47,7 +47,7 @@ class WavAnalysis(Layer):
     def __init__(self, n_scales=4, coarse=False, normalize=True):
         super(WavAnalysis, self).__init__()
         self.wav_pooling = WavPooling()
-        self.pooling = AveragePooling2D()
+        self.pooling = FixedPointPooling()
         self.normalize = normalize
         self.n_scales = n_scales
         self.coarse = coarse
