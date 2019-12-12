@@ -24,12 +24,13 @@ class WavPooling(Layer):
             # TODO: check that wav_h_filter is square
             wav_h_filter.shape[0],
             activation='linear',
-            padding='same',
+            padding='valid',
             kernel_initializer=h_kernel_initializer,
             use_bias=False,
             name=f'{h_prefix}_{str(K.get_uid(h_prefix))}',
         )
         self.conv_h.trainable = False
+        self.pad = tf.constant([[0, 0], [2, 2], [2, 2], [0, 0]])
         g_prefix = 'high_pass_filtering'
         self.subs = Subtract(name=f'{g_prefix}_{str(K.get_uid(g_prefix))}')
         self.down = AveragePooling2D()
@@ -37,7 +38,8 @@ class WavPooling(Layer):
 
 
     def call(self, image):
-        low_freqs = self.conv_h(image)
+        padded_image = tf.pad(image, self.pad, 'SYMMETRIC')
+        low_freqs = self.conv_h(padded_image)
         high_freqs = image - self.up(self.down(low_freqs))
         return [low_freqs, high_freqs]
 
