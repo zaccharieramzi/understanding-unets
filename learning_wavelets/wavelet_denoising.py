@@ -44,7 +44,6 @@ def wavelet_denoising(noisy_image, noise_std, wavelet_id='2', n_scales=2):
     denoised_image = np.empty_like(noisy_image)
     for i_channel in range(noisy_image.shape[-1]):
         noisy_channel = noisy_image[..., i_channel]
-        # from IPython.core.debugger import set_trace; set_trace()
         wav_filters = get_mr_filters(noisy_channel.shape, opt=[f'-t {wavelet_id}', f'-n {n_scales}'], coarse=True)
         denoised_channel = threshold_wavelet_coefficients(noisy_channel, wav_filters, noise_std)
         denoised_image[..., i_channel] = denoised_channel
