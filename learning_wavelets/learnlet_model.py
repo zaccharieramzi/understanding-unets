@@ -40,7 +40,8 @@ class Learnlet(Model):
 
     def call(self, inputs):
         if self.dynamic_denoising:
-            image_noisy, noise_std = inputs
+            image_noisy = inputs[0]
+            noise_std = inputs[1]
         else:
             image_noisy = inputs
         learnlet_analysis_coeffs = self.analysis(image_noisy)
