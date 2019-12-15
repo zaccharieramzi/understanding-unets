@@ -2,9 +2,9 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
-from tensorflow.keras.layers import Layer, Activation, Conv2D, UpSampling2D, Subtract
+from tensorflow.keras.layers import Layer, Activation, Conv2D, Subtract
 
-from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, FixedPointPooling
+from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, FixedPointPooling, FixedPointUpSampling
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
 
@@ -34,7 +34,7 @@ class WavPooling(Layer):
         g_prefix = 'high_pass_filtering'
         self.subs = Subtract(name=f'{g_prefix}_{str(K.get_uid(g_prefix))}')
         self.down = FixedPointPooling()
-        self.up = UpSampling2D(size=(2, 2), interpolation='bilinear')
+        self.up = FixedPointUpSampling()
 
 
     def call(self, image):
@@ -165,7 +165,7 @@ class LearnletSynthesis(Layer):
         if self.normalize:
             self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales)
             self.wav_filters_norm.reverse()
-        self.upsampling = UpSampling2D(size=(2, 2), interpolation='bilinear')
+        self.upsampling = FixedPointUpSampling()
         constraint = None
         if self.synthesis_norm:
             constraint = UnitNorm(axis=[0, 1, 2])
