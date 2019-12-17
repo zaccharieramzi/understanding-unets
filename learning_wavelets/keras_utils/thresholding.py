@@ -162,7 +162,7 @@ class LocalWienerFiltering(Layer):
 
     def call(self, inputs):
         image, noise_std = inputs
-        threshold = noise_std
+        threshold = noise_std ** 2
         threshold = tf.expand_dims(threshold, axis=-1)
         threshold = tf.expand_dims(threshold, axis=-1)
         image_variance = image ** 2
