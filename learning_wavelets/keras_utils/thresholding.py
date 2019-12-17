@@ -143,6 +143,47 @@ class HardThresholding(Layer):
     def compute_output_shape(self, input_shape):
         return input_shape
 
+class RelaxedDynamicHardThresholding(Layer):
+    __name__ = 'relaxed_dynamic_soft_thresholding'
+
+    def __init__(self, alpha_init, mu=1e-3, trainable=False, **kwargs):
+        super(RelaxedDynamicHardThresholding, self).__init__(**kwargs)
+        self.alpha_init = alpha_init
+        self.trainable = trainable
+        self.mu = mu
+
+    def build(self, input_shape):
+        def _alpha_intializer(shape, **kwargs):
+            return tf.ones(shape) * self.alpha_init
+        # TODO: set constraints on alpha, and potentially have it be varying along the channels
+        self.alpha = self.add_weight(
+            shape=(1,),
+            initializer=_alpha_intializer,
+            trainable=self.trainable,
+        )
+
+    def call(self, inputs):
+        image, noise_std = inputs
+        threshold = self.alpha * noise_std
+        threshold = tf.expand_dims(threshold, axis=-1)
+        threshold = tf.expand_dims(threshold, axis=-1)
+        first_exp = tf.exp((-image + threshold)/self.mu)
+        second_exp = tf.exp((-image - threshold)/self.mu)
+        relaxed_ht = (1 / (1+first_exp) - 1 / (1+second_exp) + 1) * image
+        return relaxed_ht
+
+    def get_config(self):
+        config = super(RelaxedDynamicHardThresholding, self).get_config()
+        config.update({
+            'alpha_init': self.alpha_init,
+            'mu': self.mu,
+            'trainable': self.trainable,
+        })
+        return config
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
 
 class ThresholdAdjustment(Callback):
     def __init__(self, noise_std, n=2, n_pooling=4):
