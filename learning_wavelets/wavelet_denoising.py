@@ -26,7 +26,7 @@ def wavelet_denoising_pysap(noisy_images, noise_std, wavelet_id='2', n_scales=2,
             bias = 0
             noisy_image_biased = np.copy(noisy_image)
         flt.filter(noisy_image_biased)
-        denoised_image = flt.data
+        denoised_image = flt.data.data
         denoised_image += bias
         denoised_images.append(denoised_image)
     return denoised_images
