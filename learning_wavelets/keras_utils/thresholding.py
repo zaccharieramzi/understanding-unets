@@ -154,6 +154,7 @@ class LocalWienerFiltering(Layer):
         self.local_mean = Conv2D(
             1,
             self.kernel_size,
+            padding='same',
             use_bias=False,
             kernel_initializer=_mean_initializer,
         )
