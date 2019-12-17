@@ -150,7 +150,7 @@ class LocalWienerFiltering(Layer):
         super(LocalWienerFiltering, self).__init__(**kwargs)
         self.kernel_size = kernel_size
         def _mean_initializer(shape, **kwargs):
-            return tf.ones(shape) / tf.dtypes.cast(tf.math.reduce_sum(shape), 'float32')
+            return tf.ones(shape) / tf.dtypes.cast(tf.math.reduce_prod(shape), 'float32')
         self.local_mean = Conv2D(
             1,
             self.kernel_size,
