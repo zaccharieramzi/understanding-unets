@@ -5,7 +5,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
 from .evaluate import keras_psnr, keras_ssim, center_keras_psnr
-from .keras_utils import Normalisation, conv_2d, wavelet_pooling, DynamicSoftThresholding, DynamicHardThresholding
+from .keras_utils import Normalisation, conv_2d, wavelet_pooling, DynamicSoftThresholding, DynamicHardThresholding, RelaxedDynamicHardThresholding, LocalWienerFiltering
 from .learnlet_layers import LearnletAnalysis, LearnletSynthesis
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
@@ -28,7 +28,7 @@ def learnlet(
     if learnlet_synthesis_kwargs is None:
         learnlet_synthesis_kwargs = {}
     dynamic_denoising = False
-    if isinstance(denoising_activation, (DynamicSoftThresholding, DynamicHardThresholding)) or 'dynamic' in denoising_activation:
+    if isinstance(denoising_activation, (DynamicSoftThresholding, DynamicHardThresholding, RelaxedDynamicHardThresholding, LocalWienerFiltering)) or 'dynamic' in denoising_activation:
         dynamic_denoising = True
         noise_std = Input((1,))
     else:
@@ -50,6 +50,8 @@ def learnlet(
             if isinstance(denoising_activation, str):
                 if denoising_activation == 'dynamic_soft_thresholding':
                     thresholding_layer = DynamicSoftThresholding(2.0, trainable=True)
+                if denoising_activation == 'dynamic_relaxed_hard_thresholding':
+                    thresholding_layer = RelaxedDynamicHardThresholding(3.0, mu=0.01, trainable=True)
                 elif denoising_activation == 'dynamic_hard_thresholding':
                     thresholding_layer = DynamicHardThresholding(3.0, trainable=False)
                 detail_thresholded = thresholding_layer([detail, noise_std])
