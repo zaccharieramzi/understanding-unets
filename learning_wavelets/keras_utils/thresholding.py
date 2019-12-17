@@ -1,6 +1,6 @@
 import numpy as np
 from tensorflow.keras.callbacks import Callback
-from tensorflow.keras.layers import Layer, ReLU, Activation
+from tensorflow.keras.layers import Layer, ReLU, Activation, Conv2D
 from tensorflow.keras.models import Model
 import tensorflow.keras.backend as K
 import tensorflow as tf
@@ -138,6 +138,42 @@ class HardThresholding(Layer):
     def get_config(self):
         config = super(HardThresholding, self).get_config()
         config.update({'threshold': float(self.threshold)})
+        return config
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+class LocalWienerFiltering(Layer):
+    __name__ = 'local_wiener_filtering'
+
+    def __init__(self, kernel_size=3, **kwargs):
+        super(LocalWienerFiltering, self).__init__(**kwargs)
+        self.kernel_size = kernel_size
+        def _mean_initializer(shape, **kwargs):
+            return tf.ones(shape) / tf.math.reduce_sum(shape)
+        self.local_mean = Conv2D(
+            1,
+            self.kernel_size,
+            use_bias=False,
+            kernel_initializer=_mean_initializer,
+        )
+
+    def call(self, inputs):
+        image, noise_std = inputs
+        threshold = noise_std
+        threshold = tf.expand_dims(threshold, axis=-1)
+        threshold = tf.expand_dims(threshold, axis=-1)
+        image_variance = image ** 2
+        image_variance_local_mean = self.local_mean(image_variance)
+        wiener_coefficients = tf.nn.relu(image_variance_local_mean - threshold) / image_variance_local_mean
+        filtered_image = image * wiener_coefficients
+        return filtered_image
+
+    def get_config(self):
+        config = super(LocalWienerFiltering, self).get_config()
+        config.update({
+            'kernel_size': self.kernel_size,
+        })
         return config
 
     def compute_output_shape(self, input_shape):
