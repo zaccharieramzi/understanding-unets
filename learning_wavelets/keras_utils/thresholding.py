@@ -158,6 +158,7 @@ class LocalWienerFiltering(Layer):
             use_bias=False,
             kernel_initializer=_mean_initializer,
         )
+        self.local_mean.trainable = False
 
     def call(self, inputs):
         image, noise_std = inputs
