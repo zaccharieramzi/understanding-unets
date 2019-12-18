@@ -82,6 +82,7 @@ class DynamicSoftThresholding(Layer):
             shape=shape,
             initializer=_alpha_intializer,
             trainable=self.trainable,
+            constraint=AlphaConstraint(5.0),
         )
 
     def call(self, inputs):
