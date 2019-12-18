@@ -1,10 +1,25 @@
 import numpy as np
 from tensorflow.keras.callbacks import Callback
+from tensorflow.keras.constraints import Constraint, NonNeg, MaxNorm
 from tensorflow.keras.layers import Layer, ReLU, Activation, Conv2D
 from tensorflow.keras.models import Model
 import tensorflow.keras.backend as K
 import tensorflow as tf
 
+
+class AlphaConstraint(Constraint):
+    def __init__(self, max_value=5):
+        self.max_value = max_value
+
+    def __call__(self, w):
+        norms = K.sqrt(tf.math.reduce_sum(tf.math.square(w)))
+        desired = K.clip(norms, 0, self.max_value)
+        max_norm_constrained_w = w * (desired / (K.epsilon() + norms))
+        non_neg_w = max_norm_constrained_w * tf.dtypes.cast(tf.math.greater_equal(max_norm_constrained_w, 0.), K.floatx())
+        return non_neg_w
+
+    def get_config(self):
+        return {'max_value': self.max_value}
 
 class DynamicHardThresholding(Layer):
     __name__ = 'dynamic_soft_thresholding'
@@ -198,6 +213,7 @@ class RelaxedDynamicHardThresholding(Layer):
             shape=(1,),
             initializer=_alpha_intializer,
             trainable=self.trainable,
+            constraint=AlphaConstraint(5.0),
         )
 
     def call(self, inputs):
