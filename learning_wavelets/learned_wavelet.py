@@ -51,7 +51,7 @@ def learnlet(
                 if denoising_activation == 'dynamic_soft_thresholding':
                     thresholding_layer = DynamicSoftThresholding(2.0, trainable=True)
                 if denoising_activation == 'dynamic_relaxed_hard_thresholding':
-                    thresholding_layer = RelaxedDynamicHardThresholding(3.0, mu=0.01, trainable=True)
+                    thresholding_layer = RelaxedDynamicHardThresholding(3.0, mu=0.03, trainable=True)
                 elif denoising_activation == 'dynamic_hard_thresholding':
                     thresholding_layer = DynamicHardThresholding(3.0, trainable=False)
                 detail_thresholded = thresholding_layer([detail, noise_std])
