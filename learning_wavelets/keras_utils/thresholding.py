@@ -64,17 +64,22 @@ class DynamicHardThresholding(Layer):
 class DynamicSoftThresholding(Layer):
     __name__ = 'dynamic_soft_thresholding'
 
-    def __init__(self, alpha_init, trainable=False, **kwargs):
+    def __init__(self, alpha_init, trainable=False, per_filter=False, **kwargs):
         super(DynamicSoftThresholding, self).__init__(**kwargs)
         self.alpha_init = alpha_init
         self.trainable = trainable
+        self.per_filter = per_filter
 
     def build(self, input_shape):
         def _alpha_intializer(shape, **kwargs):
             return tf.ones(shape) * self.alpha_init
         # TODO: set constraints on alpha, and potentially have it be varying along the channels
+        if self.per_filter:
+            shape = (input_shape[-1],)
+        else:
+            shape = (1,)
         self.alpha = self.add_weight(
-            shape=(1,),
+            shape=shape,
             initializer=_alpha_intializer,
             trainable=self.trainable,
         )
@@ -94,6 +99,7 @@ class DynamicSoftThresholding(Layer):
         config.update({
             'alpha_init': self.alpha_init,
             'trainable': self.trainable,
+            'per_filter': self.per_filter,
         })
         return config
 
