@@ -70,12 +70,12 @@ class DynamicSoftThresholding(Layer):
         self.trainable = trainable
         self.per_filter = per_filter
 
-    def build(self, input_shape):
+    def build(self, input_shapes):
         def _alpha_intializer(shape, **kwargs):
             return tf.ones(shape) * self.alpha_init
         # TODO: set constraints on alpha, and potentially have it be varying along the channels
         if self.per_filter:
-            shape = (input_shape[-1],)
+            shape = (input_shapes[0][-1],)
         else:
             shape = (1,)
         self.alpha = self.add_weight(
