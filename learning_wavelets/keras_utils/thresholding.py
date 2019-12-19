@@ -87,9 +87,11 @@ class DynamicSoftThresholding(Layer):
 
     def call(self, inputs):
         image, noise_std = inputs
-        threshold = self.alpha * noise_std
-        threshold = tf.expand_dims(threshold, axis=-1)
-        threshold = tf.expand_dims(threshold, axis=-1)
+        threshold = self.alpha
+        threshold = tf.expand_dims(threshold, axis=0)
+        threshold = tf.expand_dims(threshold, axis=0)
+        threshold = threshold * noise_std
+        import ipdb; ipdb.set_trace()
         input_sign = K.sign(image)
         soft_thresh_unsigned = ReLU()(input_sign * image - threshold)
         soft_thresh = soft_thresh_unsigned * input_sign
