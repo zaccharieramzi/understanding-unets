@@ -37,20 +37,26 @@ def select_patch_in_image_function(patch_size, seed=0):
     return select_patch_in_image
 
 # noise
-def add_noise_function(noise_std_range, return_noise_level=False):
+def add_noise_function(noise_std_range, return_noise_level=False, no_noise=False):
     if not isinstance(noise_std_range, Iterable):
         noise_std_range = (noise_std_range, noise_std_range)
     def add_noise(image):
-        noise_std = tf.random.uniform(
-            (1,),
-            minval=noise_std_range[0],
-            maxval=noise_std_range[1],
-        )
-        noise = tf.random.normal(shape=tf.shape(image), mean=0.0, stddev=noise_std/255, dtype=tf.float32)
-        if return_noise_level:
-            return (image + noise), noise_std/255
+        if not no_noise:
+            noise_std = tf.random.uniform(
+                (1,),
+                minval=noise_std_range[0],
+                maxval=noise_std_range[1],
+            )
+            noise = tf.random.normal(shape=tf.shape(image), mean=0.0, stddev=noise_std/255, dtype=tf.float32)
+            if return_noise_level:
+                return (image + noise), noise_std/255
+            else:
+                return image + noise
         else:
-            return image + noise
+            if return_noise_level:
+                return image, noise_std/255
+            else:
+                return image
     return add_noise
 
 def exact_recon_helper(image_noisy, image):
@@ -92,7 +98,7 @@ def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30
     image_noisy_ds = image_noisy_ds.batch(batch_size).repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
 
-def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=30, exact_recon=False, return_noise_level=False):
+def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=30, exact_recon=False, no_noise=False, return_noise_level=False):
     # the training set for bsd500 is test + train
     # the test set (i.e. containing bsd68 images) is val
     if mode == 'training':
@@ -121,7 +127,7 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
     image_patch_ds = image_grey_ds.map(
         select_patch_in_image, num_parallel_calls=tf.data.experimental.AUTOTUNE
     )
-    add_noise = add_noise_function(noise_std, return_noise_level=return_noise_level)
+    add_noise = add_noise_function(noise_std, return_noise_level=return_noise_level, no_noise=no_noise)
     image_noisy_ds = image_patch_ds.map(
         lambda patch: (add_noise(patch), patch),
         num_parallel_calls=tf.data.experimental.AUTOTUNE,
