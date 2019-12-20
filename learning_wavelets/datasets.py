@@ -41,22 +41,22 @@ def add_noise_function(noise_std_range, return_noise_level=False, no_noise=False
     if not isinstance(noise_std_range, Iterable):
         noise_std_range = (noise_std_range, noise_std_range)
     def add_noise(image):
-        if not no_noise:
-            noise_std = tf.random.uniform(
-                (1,),
-                minval=noise_std_range[0],
-                maxval=noise_std_range[1],
-            )
+        noise_std = tf.random.uniform(
+            (1,),
+            minval=noise_std_range[0],
+            maxval=noise_std_range[1],
+        )
+        if no_noise:
+            if return_noise_level:
+                return image, noise_std/255
+            else:
+                return image
+        else:
             noise = tf.random.normal(shape=tf.shape(image), mean=0.0, stddev=noise_std/255, dtype=tf.float32)
             if return_noise_level:
                 return (image + noise), noise_std/255
             else:
                 return image + noise
-        else:
-            if return_noise_level:
-                return image, noise_std/255
-            else:
-                return image
     return add_noise
 
 def exact_recon_helper(image_noisy, image):
