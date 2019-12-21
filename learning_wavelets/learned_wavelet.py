@@ -50,6 +50,8 @@ def learnlet(
             if isinstance(denoising_activation, str):
                 if denoising_activation == 'dynamic_soft_thresholding':
                     thresholding_layer = DynamicSoftThresholding(2.0, trainable=True)
+                elif denoising_activation == 'dynamic_soft_thresholding_not_train':
+                    thresholding_layer = DynamicSoftThresholding(2.0, trainable=False)
                 elif denoising_activation == 'dynamic_soft_thresholding_per_filter':
                     thresholding_layer = DynamicSoftThresholding(2.0, trainable=True, per_filter=True)
                 elif denoising_activation == 'dynamic_relaxed_hard_thresholding':
