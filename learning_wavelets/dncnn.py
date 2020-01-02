@@ -6,6 +6,7 @@ from .evaluate import keras_psnr, keras_ssim
 
 
 def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3):
+    # the code is from https://github.com/cszn/DnCNN/blob/master/TrainingCodes/dncnn_keras/main_train.py
     inpt = Input(shape=input_size)
     # 1st layer, Conv+relu
     x = Conv2D(
