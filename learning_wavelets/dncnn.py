@@ -31,7 +31,7 @@ def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3):
         kernel_size=3,
         # kernel_initializer='Orthogonal',  # this is only in FFDNet
         padding='same',
-        use_bias=False,
+        use_bias=True,
     )(x)
     x = Subtract()([inpt, x])
     model = Model(inputs=inpt, outputs=x)
