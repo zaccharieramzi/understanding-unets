@@ -23,7 +23,7 @@ def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3):
             padding='same',
             use_bias=False,
         )(x)
-        x = BatchNormalization(axis=-1, epsilon=1e-3)(x)
+        x = BatchNormalization(axis=-1, epsilon=1e-3, momentum=0.9)(x)
         x = Activation('relu')(x)
     x = Conv2D(
         filters=input_size[-1],
