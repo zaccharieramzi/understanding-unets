@@ -37,7 +37,7 @@ def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3, bn=True):
     x = Subtract()([inpt, x])
     model = Model(inputs=inpt, outputs=x)
     model.compile(
-        optimizer=Adam(lr=lr),
+        optimizer=Adam(lr=lr, clipnorm=1.0),
         loss='mean_squared_error',
         metrics=[keras_psnr, keras_ssim],
     )
