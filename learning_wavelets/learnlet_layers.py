@@ -2,8 +2,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
-from tensorflow.keras.layers import Layer, Activation, Conv2D, Subtract
-
+from tensorflow.keras.layers import Layer, Activation, Conv2D, Subtract, Concatenate
 from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, FixedPointPooling, FixedPointUpSampling
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
@@ -86,6 +85,7 @@ class LearnletAnalysis(Layer):
             mixing_details=False,
             n_scales=4,
             kernel_size=5,
+            skip_connection=False,
             **wav_analysis_kwargs,
         ):
         super(LearnletAnalysis, self).__init__()
@@ -95,6 +95,7 @@ class LearnletAnalysis(Layer):
         self.mixing_details = mixing_details
         self.n_scales = n_scales
         self.kernel_size = kernel_size
+        self.skip_connection = skip_connection
         self.wav_analysis = WavAnalysis(coarse=True, n_scales=self.n_scales, **wav_analysis_kwargs)
         constraint = None
         if self.tiling_unit_norm:
@@ -136,6 +137,8 @@ class LearnletAnalysis(Layer):
             details_tiled = self.convs_detail_tiling[i_scale](wav_detail)
             if self.mixing_details:
                 details_tiled = self.convs_detail_mixing[i_scale](details_tiled)
+            if self.skip_connection:
+                details_tiled = Concatenate()([details_tiled, wav_detail])
             outputs_list.append(details_tiled)
         outputs_list.append(wav_coarse)
         return outputs_list
@@ -149,6 +152,7 @@ class LearnletAnalysis(Layer):
             'mixing_details': self.mixing_details,
             'n_scales': self.n_scales,
             'kernel_size': self.kernel_size,
+            'skip_connection': self.skip_connection,
         })
         return config
 
