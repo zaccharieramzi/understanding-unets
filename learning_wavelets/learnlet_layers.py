@@ -66,16 +66,16 @@ class WavPooling(Layer):
         return config
 
 class WavAnalysis(Layer):
-    def __init__(self, n_scales=4, coarse=False, normalize=True):
+    __name__ = 'wav_analysis'
+    def __init__(self, n_scales=4, coarse=False, normalize=True, wav_type='starlet'):
         super(WavAnalysis, self).__init__()
-        self.wav_pooling = WavPooling()
+        self.wav_pooling = WavPooling(wav_type=wav_type)
         self.pooling = FixedPointPooling()
         self.normalize = normalize
         self.n_scales = n_scales
         self.coarse = coarse
         if self.normalize:
-            # TODO: get normalization depending on the wavelet type
-            self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales)
+            self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales, wav_type=wav_type)
 
     def call(self, image):
         low_freqs = image
