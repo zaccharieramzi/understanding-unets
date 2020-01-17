@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
-from tensorflow.keras.layers import Layer, Activation, Conv2D, Subtract, Concatenate
+from tensorflow.keras.layers import Layer, Activation, Conv2D, Concatenate
 
 from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, FixedPointPooling, FixedPointUpSampling, BiorUpSampling
 from .utils.wav_utils import get_wavelet_filters_normalisation
