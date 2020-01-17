@@ -35,8 +35,20 @@ class WavPooling(Layer):
             [i * j for j in base_filter]
             for i in base_filter
         ])
-        self.tf_h_filter = tf.constant(wav_h_filter[ ..., None, None], dtype='float')
-        # TODO: replace 2 by length of filter // 2
+        def h_kernel_initializer(shape, **kwargs):
+            return wav_h_filter[..., None, None]
+        h_prefix = 'low_pass_filtering'
+        self.conv_h = Conv2D(
+            1,
+            # TODO: check that wav_h_filter is square
+            wav_h_filter.shape[0],
+            activation='linear',
+            padding='valid',
+            kernel_initializer=h_kernel_initializer,
+            use_bias=False,
+            name=f'{h_prefix}_{str(K.get_uid(h_prefix))}',
+        )
+        self.conv_h.trainable = False
         pad_length = len(base_filter)//2
         self.pad = tf.constant([
             [0, 0],
@@ -54,7 +66,7 @@ class WavPooling(Layer):
 
     def call(self, images):
         padded_images = tf.pad(images, self.pad, 'SYMMETRIC')
-        low_freqs = tf.nn.conv2d(padded_images, self.tf_h_filter, strides=1, padding='VALID')
+        low_freqs = self.conv_h(padded_images)
         high_freqs = images - self.up(self.down(low_freqs))
         return [low_freqs, high_freqs]
 
