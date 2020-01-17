@@ -21,6 +21,7 @@ def learnlet(
         learnlet_analysis_kwargs=None,
         learnlet_synthesis_kwargs=None,
         clip=False,
+        # TODO: add wavelet type and have it used by wav pooling (wav analysis) and learnlet synthesis
     ):
     image_noisy = Input(input_size)
     if learnlet_analysis_kwargs is None:
