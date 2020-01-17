@@ -3,55 +3,80 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
 from tensorflow.keras.layers import Layer, Activation, Conv2D, Subtract, Concatenate
-from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, FixedPointPooling, FixedPointUpSampling
+
+from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, FixedPointPooling, FixedPointUpSampling, BiorUpSampling
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
 
+h_filter_bior = [
+    -6.453888262893856e-02,
+    -4.068941760955867e-02,
+    4.180922732222124e-01,
+    7.884856164056651e-01,
+    4.180922732222124e-01,
+    -4.068941760955867e-02,
+    -6.453888262893856e-02,
+]
+
+h_filter_starlet = [1/16, 1/4, 3/8, 1/4, 1/16]
+
 class WavPooling(Layer):
-    def __init__(self):
+    __name__ = 'wav_pooling'
+    def __init__(self, wav_type='starlet'):
         super(WavPooling, self).__init__()
-        base_filter = [1/16, 1/4, 3/8, 1/4, 1/16]
+        self.wav_type = wav_type
+        if self.wav_type == 'starlet':
+            base_filter = h_filter_starlet
+        elif self.wav_type == 'bior':
+            base_filter = h_filter_bior
+        else:
+            raise ValueError(f'Wavelet type {self.wav_type} is not implemented')
         wav_h_filter = np.array([
             [i * j for j in base_filter]
             for i in base_filter
         ])
-        def h_kernel_initializer(shape, **kwargs):
-            return wav_h_filter[..., None, None]
-        h_prefix = 'low_pass_filtering'
-        self.conv_h = Conv2D(
-            1,
-            # TODO: check that wav_h_filter is square
-            wav_h_filter.shape[0],
-            activation='linear',
-            padding='valid',
-            kernel_initializer=h_kernel_initializer,
-            use_bias=False,
-            name=f'{h_prefix}_{str(K.get_uid(h_prefix))}',
-        )
-        self.conv_h.trainable = False
-        self.pad = tf.constant([[0, 0], [2, 2], [2, 2], [0, 0]])
+        self.tf_h_filter = tf.constant(wav_h_filter[ ..., None, None], dtype='float')
+        # TODO: replace 2 by length of filter // 2
+        pad_length = len(base_filter)//2
+        self.pad = tf.constant([
+            [0, 0],
+            [pad_length, pad_length],
+            [pad_length, pad_length],
+            [0, 0],
+        ])
         g_prefix = 'high_pass_filtering'
-        self.subs = Subtract(name=f'{g_prefix}_{str(K.get_uid(g_prefix))}')
         self.down = FixedPointPooling()
-        self.up = FixedPointUpSampling()
+        if self.wav_type == 'starlet':
+            self.up = FixedPointUpSampling()
+        elif self.wav_type == 'bior':
+            self.up = BiorUpSampling()
 
 
-    def call(self, image):
-        padded_image = tf.pad(image, self.pad, 'SYMMETRIC')
-        low_freqs = self.conv_h(padded_image)
-        high_freqs = image - self.up(self.down(low_freqs))
+    def call(self, images):
+        padded_images = tf.pad(images, self.pad, 'SYMMETRIC')
+        low_freqs = tf.nn.conv2d(padded_images, self.tf_h_filter, strides=1, padding='VALID')
+        high_freqs = images - self.up(self.down(low_freqs))
         return [low_freqs, high_freqs]
 
+    def get_config(self):
+        config = super(WavPooling, self).get_config()
+        config.update({
+            'wav_type': self.wav_type,
+        })
+        return config
+
 class WavAnalysis(Layer):
-    def __init__(self, n_scales=4, coarse=False, normalize=True):
+    __name__ = 'wav_analysis'
+    def __init__(self, n_scales=4, coarse=False, normalize=True, wav_type='starlet'):
         super(WavAnalysis, self).__init__()
-        self.wav_pooling = WavPooling()
+        self.wav_type = wav_type
+        self.wav_pooling = WavPooling(wav_type=self.wav_type)
         self.pooling = FixedPointPooling()
         self.normalize = normalize
         self.n_scales = n_scales
         self.coarse = coarse
         if self.normalize:
-            self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales)
+            self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales, wav_type=wav_type)
 
     def call(self, image):
         low_freqs = image
@@ -70,6 +95,7 @@ class WavAnalysis(Layer):
     def get_config(self):
         config = super(WavAnalysis, self).get_config()
         config.update({
+            'wav_type': self.wav_type,
             'n_scales': self.n_scales,
             'coarse': self.coarse,
             'normalize': self.normalize,
@@ -157,7 +183,8 @@ class LearnletAnalysis(Layer):
         return config
 
 class LearnletSynthesis(Layer):
-    def __init__(self, normalize=True, n_scales=4, n_channels=1, synthesis_use_bias=False, synthesis_norm=False, res=False, kernel_size=5):
+    __name__ = 'learnlet_synthesis'
+    def __init__(self, normalize=True, n_scales=4, n_channels=1, synthesis_use_bias=False, synthesis_norm=False, res=False, kernel_size=5, wav_type='starlet'):
         super(LearnletSynthesis, self).__init__()
         self.normalize = normalize
         self.n_scales = n_scales
@@ -166,10 +193,16 @@ class LearnletSynthesis(Layer):
         self.synthesis_norm = synthesis_norm
         self.res = res
         self.kernel_size = kernel_size
+        self.wav_type = wav_type
         if self.normalize:
-            self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales)
+            self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales, wav_type=self.wav_type)
             self.wav_filters_norm.reverse()
-        self.upsampling = FixedPointUpSampling()
+        if self.wav_type == 'starlet':
+            self.upsampling = FixedPointUpSampling()
+        elif self.wav_type == 'bior':
+            self.upsampling = BiorUpSampling()
+        else:
+            raise ValueError(f'Wavelet type {self.wav_type} is not implemented for upsampling')
         constraint = None
         if self.synthesis_norm:
             constraint = UnitNorm(axis=[0, 1, 2])
@@ -213,6 +246,7 @@ class LearnletSynthesis(Layer):
             'synthesis_norm': self.synthesis_norm,
             'res': self.res,
             'kernel_size': self.kernel_size,
+            'wav_type': self.wav_type,
         })
         return config
 
