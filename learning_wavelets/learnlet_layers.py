@@ -69,7 +69,8 @@ class WavAnalysis(Layer):
     __name__ = 'wav_analysis'
     def __init__(self, n_scales=4, coarse=False, normalize=True, wav_type='starlet'):
         super(WavAnalysis, self).__init__()
-        self.wav_pooling = WavPooling(wav_type=wav_type)
+        self.wav_type = wav_type
+        self.wav_pooling = WavPooling(wav_type=self.wav_type)
         self.pooling = FixedPointPooling()
         self.normalize = normalize
         self.n_scales = n_scales
@@ -94,6 +95,7 @@ class WavAnalysis(Layer):
     def get_config(self):
         config = super(WavAnalysis, self).get_config()
         config.update({
+            'wav_type': self.wav_type,
             'n_scales': self.n_scales,
             'coarse': self.coarse,
             'normalize': self.normalize,
@@ -176,7 +178,8 @@ class LearnletAnalysis(Layer):
         return config
 
 class LearnletSynthesis(Layer):
-    def __init__(self, normalize=True, n_scales=4, n_channels=1, synthesis_use_bias=False, synthesis_norm=False, res=False, kernel_size=5):
+    __name__ = 'learnlet_synthesis'
+    def __init__(self, normalize=True, n_scales=4, n_channels=1, synthesis_use_bias=False, synthesis_norm=False, res=False, kernel_size=5, wav_type='starlet'):
         super(LearnletSynthesis, self).__init__()
         self.normalize = normalize
         self.n_scales = n_scales
@@ -185,11 +188,16 @@ class LearnletSynthesis(Layer):
         self.synthesis_norm = synthesis_norm
         self.res = res
         self.kernel_size = kernel_size
+        self.wav_type = wav_type
         if self.normalize:
-            # TODO: get normalization depending on the wavelet type
-            self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales)
+            self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales, wav_type=self.wav_type)
             self.wav_filters_norm.reverse()
-        self.upsampling = FixedPointUpSampling()
+        if self.wav_type == 'starlet':
+            self.upsampling = FixedPointUpSampling()
+        elif self.wav_type == 'bior':
+            self.upsampling = BiorUpSampling()
+        else:
+            raise ValueError(f'Wavelet type {self.wav_type} is not implemented for upsampling')
         constraint = None
         if self.synthesis_norm:
             constraint = UnitNorm(axis=[0, 1, 2])
@@ -233,6 +241,7 @@ class LearnletSynthesis(Layer):
             'synthesis_norm': self.synthesis_norm,
             'res': self.res,
             'kernel_size': self.kernel_size,
+            'wav_type': self.wav_type,
         })
         return config
 
