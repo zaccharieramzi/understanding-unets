@@ -21,7 +21,7 @@ def learnlet(
         learnlet_analysis_kwargs=None,
         learnlet_synthesis_kwargs=None,
         clip=False,
-        # TODO: add wavelet type and have it used by wav pooling (wav analysis) and learnlet synthesis
+        wav_type='starlet',
     ):
     image_noisy = Input(input_size)
     if learnlet_analysis_kwargs is None:
@@ -37,6 +37,7 @@ def learnlet(
     learnlet_analysis_layer = LearnletAnalysis(
         normalize=normalize,
         n_scales=n_scales,
+        wav_type=wav_type,
         **learnlet_analysis_kwargs,
     )
     learnlet_analysis_coeffs = learnlet_analysis_layer(image_noisy)
@@ -71,6 +72,7 @@ def learnlet(
     learnlet_synthesis_layer = LearnletSynthesis(
         normalize=normalize,
         n_scales=n_scales,
+        wav_type=wav_type,
         **learnlet_synthesis_kwargs,
     )
     denoised_image = learnlet_synthesis_layer(learnlet_analysis_coeffs_thresholded)
