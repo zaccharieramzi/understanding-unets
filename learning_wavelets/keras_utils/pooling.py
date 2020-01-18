@@ -34,7 +34,9 @@ class FixedPointUpSampling(Layer):
         return resized_image
 
 class BiorUpSampling(Layer):
+    __name__ = 'bior_upsampling'
     def __init__(self):
+        super(BiorUpSampling, self).__init__()
         pad_length = len(h_tilde_filter)//2
         self.pad = tf.constant([
             [0, 0],
