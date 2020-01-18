@@ -34,23 +34,36 @@ class FixedPointUpSampling(Layer):
         return resized_image
 
 class BiorUpSampling(Layer):
+    def __init__(self):
+        pad_length = len(h_tilde_filter)//2
+        self.pad = tf.constant([
+            [0, 0],
+            [pad_length, pad_length],
+            [pad_length, pad_length],
+            [0, 0],
+        ])
+
     def call(self, image_batch):
-        core_im_shape = tf.shape(image_batch)[1:3]
-        up_sampled_im_shape = tf.Variable(tf.shape(image_batch))
-        up_sampled_im_shape[1:3].assign(2*core_im_shape)
-        upsampled_images = tf.Variable(tf.zeros(up_sampled_im_shape))
-        upsampled_images[:, ::2, ::2, :].assign(image_batch)
-        #TODO: maybe deal with padding here
+        im_shape = tf.shape(image_batch)
+        output_shape = im_shape * tf.constant([1, 2, 2, 1])
+        upsampled_images = tf.nn.conv2d_transpose(
+            image_batch,
+            tf.ones([1, 1, 1, 1]),
+            output_shape,
+            strides=2,
+            padding='VALID',
+        )
+        padded_images = tf.pad(upsampled_images, self.pad, 'SYMMETRIC')
         line_conv_upsampled = tf.nn.conv2d(
-            upsampled_images,
+            padded_images,
             tf.constant(h_tilde_filter[None, ..., None, None], dtype='float'),
             strides=1,
-            padding='SAME',
+            padding='VALID',
         )
         column_conv_upsampled = tf.nn.conv2d(
             line_conv_upsampled,
             tf.constant(h_tilde_filter[..., None, None, None], dtype='float'),
             strides=1,
-            padding='SAME',
+            padding='VALID',
         )
         return column_conv_upsampled
