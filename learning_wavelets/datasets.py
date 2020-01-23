@@ -158,3 +158,44 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
         )
     image_noisy_ds = image_noisy_ds.batch(batch_size).repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
+
+def im_dataset_bsd68(batch_size=1, patch_size=256, noise_std=30, exact_recon=False, no_noise=False, return_noise_level=False, n_pooling=None):
+    # the training set for bsd500 is test + train
+    # the test set (i.e. containing bsd68 images) is val
+    path = 'BSD68'
+    file_ds = tf.data.Dataset.list_files(f'{path}/*.png', seed=0)
+    # TODO: refactor with div2k dataset
+    file_ds = file_ds.shuffle(100, seed=0)
+    image_ds = file_ds.map(
+        tf.io.read_file, num_parallel_calls=tf.data.experimental.AUTOTUNE
+    ).map(
+        tf.image.decode_png, num_parallel_calls=tf.data.experimental.AUTOTUNE
+    )
+    image_grey_ds = image_ds.map(
+        normalise, num_parallel_calls=tf.data.experimental.AUTOTUNE
+    )
+    # image_grey_aug_ds = image_grey_ds.map(tf_random_rotate_image)
+    if patch_size is not None:
+        select_patch_in_image = select_patch_in_image_function(patch_size)
+        image_patch_ds = image_grey_ds.map(
+            select_patch_in_image, num_parallel_calls=tf.data.experimental.AUTOTUNE
+        )
+    elif n_pooling is not None:
+        pad = pad_for_pool(n_pooling)
+        image_patch_ds = image_grey_ds.map(
+            pad, num_parallel_calls=tf.data.experimental.AUTOTUNE
+        )
+    else:
+        image_patch_ds = image_grey_ds
+    add_noise = add_noise_function(noise_std, return_noise_level=return_noise_level, no_noise=no_noise)
+    image_noisy_ds = image_patch_ds.map(
+        lambda patch: (add_noise(patch), patch),
+        num_parallel_calls=tf.data.experimental.AUTOTUNE,
+    )
+    if exact_recon:
+        image_noisy_ds = image_noisy_ds.map(
+            exact_recon_helper,
+            num_parallel_calls=tf.data.experimental.AUTOTUNE,
+        )
+    image_noisy_ds = image_noisy_ds.batch(batch_size).repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+    return image_noisy_ds
