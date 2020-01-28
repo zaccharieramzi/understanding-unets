@@ -76,7 +76,7 @@ def exact_recon_helper(image_noisy, image):
 def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30, exact_recon=False, return_noise_level=False):
     if mode == 'training':
         path = 'DIV2K_train_HR'
-    elif mode == 'validation':
+    elif mode == 'validation' or mode == 'testing':
         path = 'DIV2K_valid_HR'
     file_ds = tf.data.Dataset.list_files(f'{path}/*/*.png', seed=0)
     file_ds = file_ds.shuffle(800, seed=0)
@@ -106,7 +106,8 @@ def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30
             exact_recon_helper,
             num_parallel_calls=tf.data.experimental.AUTOTUNE,
         )
-    image_noisy_ds = image_noisy_ds.batch(batch_size).repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+    if mode != 'testing':
+        image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
 
 def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=30, exact_recon=False, no_noise=False, return_noise_level=False, n_pooling=None, n_samples=None):
