@@ -118,7 +118,7 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
         train_file_ds = tf.data.Dataset.list_files(f'{train_path}/*.jpg', seed=0)
         test_file_ds = tf.data.Dataset.list_files(f'{test_path}/*.jpg', seed=0)
         file_ds = train_file_ds.concatenate(test_file_ds)
-    elif mode == 'validation':
+    elif mode == 'validation' or mode == 'testing':
         val_path = 'BSR/BSDS500/data/images/val'
         file_ds = tf.data.Dataset.list_files(f'{val_path}/*.jpg', seed=0)
     # TODO: refactor with div2k dataset
@@ -156,7 +156,9 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
             exact_recon_helper,
             num_parallel_calls=tf.data.experimental.AUTOTUNE,
         )
-    image_noisy_ds = image_noisy_ds.batch(batch_size).repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+    image_noisy_ds = image_noisy_ds.batch(batch_size)
+    if mode != 'testing':
+        image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
 
 def im_dataset_bsd68(batch_size=1, patch_size=256, noise_std=30, exact_recon=False, no_noise=False, return_noise_level=False, n_pooling=None):
