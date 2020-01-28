@@ -106,6 +106,7 @@ def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30
             exact_recon_helper,
             num_parallel_calls=tf.data.experimental.AUTOTUNE,
         )
+    image_noisy_ds = image_noisy_ds.batch(batch_size)
     if mode != 'testing':
         image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
