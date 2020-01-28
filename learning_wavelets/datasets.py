@@ -161,7 +161,7 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
         image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
 
-def im_dataset_bsd68(batch_size=1, patch_size=256, noise_std=30, exact_recon=False, no_noise=False, return_noise_level=False, n_pooling=None):
+def im_dataset_bsd68(mode='validation', batch_size=1, patch_size=256, noise_std=30, exact_recon=False, no_noise=False, return_noise_level=False, n_pooling=None):
     # the training set for bsd500 is test + train
     # the test set (i.e. containing bsd68 images) is val
     path = 'BSD68'
@@ -199,5 +199,7 @@ def im_dataset_bsd68(batch_size=1, patch_size=256, noise_std=30, exact_recon=Fal
             exact_recon_helper,
             num_parallel_calls=tf.data.experimental.AUTOTUNE,
         )
-    image_noisy_ds = image_noisy_ds.batch(batch_size).repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+    image_noisy_ds = image_noisy_ds.batch(batch_size)
+    if mode != 'testing':
+        image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
