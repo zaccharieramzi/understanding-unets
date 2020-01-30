@@ -201,11 +201,17 @@ def im_dataset_bsd68(mode='validation', batch_size=1, patch_size=256, noise_std=
             lambda patch: (add_noise(patch), patch),
             num_parallel_calls=tf.data.experimental.AUTOTUNE,
         )
-    elif mode == 'testing':
-        image_noisy_ds = image_patch_ds.map(
-            lambda patch, im_shape: (add_noise(patch), patch, im_shape),
-            num_parallel_calls=tf.data.experimental.AUTOTUNE,
-        )
+    if mode == 'testing':
+        if n_pooling is not None:
+            image_noisy_ds = image_patch_ds.map(
+                lambda patch, im_shape: (add_noise(patch), patch, im_shape),
+                num_parallel_calls=tf.data.experimental.AUTOTUNE,
+            )
+        else:
+            image_noisy_ds = image_patch_ds.map(
+                lambda patch: (add_noise(patch), patch, tf.shape(patch)[:2]),
+                num_parallel_calls=tf.data.experimental.AUTOTUNE,
+            )
     image_noisy_ds = image_noisy_ds.batch(batch_size)
     if mode != 'testing':
         image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
