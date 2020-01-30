@@ -35,7 +35,7 @@ def trim_padding(im_shape, *images):
     trimmed_images = []
     for image in images:
         padded_im_shape = image.shape[1:3]
-        to_trim = padded_im_shape - im_shape
+        to_trim = padded_im_shape - im_shape[:2]
         trimmed_image = image[:, to_trim[0]//2:-to_trim[0]//2, to_trim[1]//2:-to_trim[1]//2]
         trimmed_images.append(trimmed_image)
     return trimmed_images

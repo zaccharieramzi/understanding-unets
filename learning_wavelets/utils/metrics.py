@@ -48,25 +48,25 @@ def metrics_dynamic_denoising_net(val_seq, noise_std, name=None, **net_params):
         metrics.push(images, im_recos.numpy())
     return metrics
 
-def metrics_from_ds(ds, name=None, **net_params):
+def metrics_from_ds(ds, with_shape=True, name=None, **net_params):
     model = unpack_model(**net_params)
     metrics = Metrics()
-    pred_and_gt = [
-        (model.predict_on_batch(images_noisy), images_gt)
-        for images_noisy, images_gt in tqdm_notebook(ds)
+    pred_and_gt_shape = [
+        (model.predict_on_batch(images_noisy), images_gt, im_shape)
+        for images_noisy, images_gt, im_shape in tqdm_notebook(ds)
     ]
-    for im_recos, images in tqdm_notebook(pred_and_gt, desc=f'Stats for {name}'):
-        metrics.push(images.numpy(), im_recos.numpy())
+    for im_recos, images, im_shape in tqdm_notebook(pred_and_gt_shape, desc=f'Stats for {name}'):
+        metrics.push(images.numpy(), im_recos.numpy(), im_shape.numpy())
     return metrics
 
-def metrics_original_from_ds(ds):
+def metrics_original_from_ds(ds, with_shape=True):
     metrics = Metrics()
-    pred_and_gt = [
-        (images_noisy.numpy(), images_gt.numpy())
-        for images_noisy, images_gt in tqdm_notebook(ds)
+    pred_and_gt_shape = [
+        (images_noisy.numpy(), images_gt.numpy(), im_shape.numpy())
+        for images_noisy, images_gt, im_shape in tqdm_notebook(ds)
     ]
-    for im_recos, images in tqdm_notebook(pred_and_gt, desc='Original noisy image'):
-        metrics.push(images, im_recos)
+    for im_recos, images, im_shape in tqdm_notebook(pred_and_gt_shape, desc='Original noisy image'):
+        metrics.push(images, im_recos, im_shape)
     return metrics
 
 def metrics_original(val_seq):
