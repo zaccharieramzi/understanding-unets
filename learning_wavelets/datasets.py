@@ -51,7 +51,7 @@ def pad_for_pool(n_pooling=1, return_original_shape=False):
     return pad
 
 # noise
-def add_noise_function(noise_std_range, return_noise_level=False, no_noise=False):
+def add_noise_function(noise_std_range, return_noise_level=False, no_noise=False, set_noise_zero=False):
     if not isinstance(noise_std_range, Iterable):
         noise_std_range = (noise_std_range, noise_std_range)
     def add_noise(image):
@@ -68,7 +68,10 @@ def add_noise_function(noise_std_range, return_noise_level=False, no_noise=False
         else:
             noise = tf.random.normal(shape=tf.shape(image), mean=0.0, stddev=noise_std/255, dtype=tf.float32)
             if return_noise_level:
-                return (image + noise), noise_std/255
+                if set_noise_zero:
+                    return (image + noise), tf.zeros_like(noise_std)
+                else:
+                    return (image + noise), noise_std/255
             else:
                 return image + noise
     return add_noise
@@ -168,7 +171,7 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
         image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
 
-def im_dataset_bsd68(mode='validation', batch_size=1, patch_size=256, noise_std=30, no_noise=False, return_noise_level=False, n_pooling=None, n_samples=None):
+def im_dataset_bsd68(mode='validation', batch_size=1, patch_size=256, noise_std=30, no_noise=False, return_noise_level=False, n_pooling=None, n_samples=None, set_noise_zero=False):
     path = 'BSD68'
     file_ds = tf.data.Dataset.list_files(f'{path}/*.png', seed=0)
     # TODO: refactor with div2k dataset
@@ -195,7 +198,7 @@ def im_dataset_bsd68(mode='validation', batch_size=1, patch_size=256, noise_std=
         )
     else:
         image_patch_ds = image_grey_ds
-    add_noise = add_noise_function(noise_std, return_noise_level=return_noise_level, no_noise=no_noise)
+    add_noise = add_noise_function(noise_std, return_noise_level=return_noise_level, no_noise=no_noise, set_noise_zero=set_noise_zero)
     if mode == 'validation':
         image_noisy_ds = image_patch_ds.map(
             lambda patch: (add_noise(patch), patch),
