@@ -30,3 +30,12 @@ def trim_zero_padding(*images, ref_index=0, zero_value=0):
     lines_to_remove = ~(np.squeeze(ref_image) == zero_value).all(axis=1)
     trimmed_images = [image[lines_to_remove][:, cols_to_remove] for image in images]
     return trimmed_images
+
+def trim_padding(im_shape, *images):
+    trimmed_images = []
+    for image in images:
+        padded_im_shape = image.shape[1:3]
+        to_trim = padded_im_shape - im_shape
+        trimmed_image = image[:, to_trim[0]//2:-to_trim[0]//2, to_trim[1]//2:-to_trim[1]//2]
+        trimmed_images.append(trimmed_image)
+    return trimmed_images
