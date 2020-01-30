@@ -63,7 +63,7 @@ def metrics_original_from_ds(ds):
     metrics = Metrics()
     pred_and_gt = [
         (images_noisy.numpy(), images_gt.numpy())
-        for images_noisy, images_gt in enumerate_seq(ds, 'Original noisy image')
+        for images_noisy, images_gt in tqdm_notebook(ds)
     ]
     for im_recos, images in tqdm_notebook(pred_and_gt, desc='Original noisy image'):
         metrics.push(images, im_recos)
