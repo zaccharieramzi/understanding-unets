@@ -48,6 +48,17 @@ def metrics_dynamic_denoising_net(val_seq, noise_std, name=None, **net_params):
         metrics.push(images, im_recos.numpy())
     return metrics
 
+def metrics_from_ds(ds, name=None, **net_params):
+    model = unpack_model(**net_params)
+    metrics = Metrics()
+    pred_and_gt = [
+        (model.predict_on_batch(images_noisy), images_gt)
+        for images_noisy, images_gt in tqdm_notebook(ds)
+    ]
+    for im_recos, images in tqdm_notebook(pred_and_gt, desc=f'Stats for {name}'):
+        metrics.push(images.numpy(), im_recos.numpy())
+    return metrics
+
 def metrics_original(val_seq):
     metrics = Metrics()
     pred_and_gt = [
