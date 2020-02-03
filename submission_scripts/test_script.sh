@@ -15,9 +15,9 @@ module load cuda
 module load python3/3.7.5
 cd $workspace/understanding-unets
 
-ccc_mprun -E '--exclusive' -n 1 -c 2 -T 1800 -p v100 -A gch0424 ./learning_wavelets/training_scripts/test.py  &
-ccc_mprun -E '--exclusive' -n 1 -c 2 -T 1800 -p v100 -A gch0424 ./learning_wavelets/training_scripts/test.py  &
-ccc_mprun -E '--exclusive' -n 1 -c 2 -T 1800 -p v100 -A gch0424 ./learning_wavelets/training_scripts/test.py  &
-ccc_mprun -E '--exclusive' -n 1 -c 2 -T 1800 -p v100 -A gch0424 ./learning_wavelets/training_scripts/test.py  &
+ccc_mprun -E '--exclusive' -n 1 -c 2 -T 1800 -A gch0424 ./learning_wavelets/training_scripts/test.py  &
+ccc_mprun -E '--exclusive' -n 1 -c 2 -T 1800 -A gch0424 ./learning_wavelets/training_scripts/test.py  &
+ccc_mprun -E '--exclusive' -n 1 -c 2 -T 1800 -A gch0424 ./learning_wavelets/training_scripts/test.py  &
+ccc_mprun -E '--exclusive' -n 1 -c 2 -T 1800 -A gch0424 ./learning_wavelets/training_scripts/test.py  &
 
 wait  # wait for all ccc_mprun(s) to complete.
