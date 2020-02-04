@@ -6,6 +6,7 @@
 #MSUB -o test_%I.o              # Standard output. %I is the job id
 #MSUB -e test_%I.e              # Error output. %I is the job id
 #MSUB -q v100               # Queue
+#MSUB -Q test  # this is just a test script
 #MSUB -m scratch,work
 #MSUB -@ zaccharie.ramzi@gmail.com:begin,end
 #MSUB -A gch0424                  # Project ID
