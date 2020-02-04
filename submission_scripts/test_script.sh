@@ -5,7 +5,7 @@
 #MSUB -T 1800                      # Elapsed time limit in seconds
 #MSUB -o test_%I.o              # Standard output. %I is the job id
 #MSUB -e test_%I.e              # Error output. %I is the job id
-#MSUB -q hybrid               # Queue
+#MSUB -q v100               # Queue
 #MSUB -m scratch,work
 #MSUB -@ zaccharie.ramzi@gmail.com:begin,end
 #MSUB -A gch0424                  # Project ID
