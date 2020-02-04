@@ -4,6 +4,7 @@ import numpy as np
 import scipy.ndimage as ndimage
 import tensorflow as tf
 
+from .config import *
 
 # normalisation
 def normalise(image):
@@ -84,7 +85,7 @@ def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30
         path = 'DIV2K_train_HR'
     elif mode == 'validation' or mode == 'testing':
         path = 'DIV2K_valid_HR'
-    file_ds = tf.data.Dataset.list_files(f'{path}/*/*.png', seed=0)
+    file_ds = tf.data.Dataset.list_files(f'{DIV2K_DATA_DIR}{path}/*/*.png', seed=0)
     file_ds = file_ds.shuffle(800, seed=0)
     image_ds = file_ds.map(
         tf.io.read_file, num_parallel_calls=tf.data.experimental.AUTOTUNE
@@ -128,7 +129,7 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
         file_ds = train_file_ds.concatenate(test_file_ds)
     elif mode == 'validation' or mode == 'testing':
         val_path = 'BSR/BSDS500/data/images/val'
-        file_ds = tf.data.Dataset.list_files(f'{val_path}/*.jpg', seed=0)
+        file_ds = tf.data.Dataset.list_files(f'{BSD500_DATA_DIR}{val_path}/*.jpg', seed=0)
     # TODO: refactor with div2k dataset
     if n_samples is not None:
         file_ds = file_ds.take(n_samples)
@@ -173,7 +174,7 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
 
 def im_dataset_bsd68(mode='validation', batch_size=1, patch_size=256, noise_std=30, no_noise=False, return_noise_level=False, n_pooling=None, n_samples=None, set_noise_zero=False):
     path = 'BSD68'
-    file_ds = tf.data.Dataset.list_files(f'{path}/*.png', seed=0)
+    file_ds = tf.data.Dataset.list_files(f'{BSD68_DATA_DIR}{path}/*.png', seed=0)
     # TODO: refactor with div2k dataset
     if n_samples is not None:
         file_ds = file_ds.take(n_samples)
