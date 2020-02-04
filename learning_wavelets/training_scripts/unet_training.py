@@ -101,3 +101,6 @@ def train_unet(noise_std_train, noise_std_val, source):
         callbacks=[tboard_cback, chkpt_cback, lrate_cback],
         shuffle=False,
     )
+
+if __name__ == '__main__':
+    train_unet()
