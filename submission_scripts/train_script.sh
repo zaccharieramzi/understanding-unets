@@ -15,7 +15,7 @@ set -x
 module load cuda
 module load python3/3.7.5
 cd $workspace/understanding-unets
-pip install --target=$CCCWORKDIR/installed-packages/ ./
+pip install --target=$CCCWORKDIR/installed-packages/ --upgrade ./
 
 ccc_mprun -E '--exclusive' -n 1 ./submission_scripts/unet_20_40.sh  &
 ccc_mprun -E '--exclusive' -n 1 ./submission_scripts/unet_30.sh  &
