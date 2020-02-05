@@ -65,7 +65,28 @@ def metrics_original_from_ds(ds, with_shape=True):
         (images_noisy.numpy(), images_gt.numpy(), im_shape.numpy())
         for images_noisy, images_gt, im_shape in tqdm_notebook(ds)
     ]
-    for im_recos, images, im_shape in tqdm_notebook(pred_and_gt_shape, desc='Original noisy image'):
+    for im_recos, images, im_shape in tqdm_notebook(pred_and_gt_shape, desc='Stats for original noisy images'):
+        metrics.push(images, im_recos, im_shape)
+    return metrics
+
+def metrics_wavelets_from_ds(ds, wavelet_id, noise_std=30, with_shape=True):
+    metrics = Metrics()
+    pred_and_gt_shape = [
+        (
+            np.array(wavelet_denoising_pysap(
+                images_noisy[..., 0].numpy(),
+                noise_std=noise_std/255,
+                wavelet_id=wavelet_id,
+                n_scales=5,
+                soft_thresh=False,
+                n_sigma=3,
+            ))[..., None],
+            images_gt.numpy(),
+            im_shape.numpy(),
+        )
+        for images_noisy, images_gt, im_shape in tqdm_notebook(ds)
+    ]
+    for im_recos, images, im_shape in tqdm_notebook(pred_and_gt_shape, desc=f'Stats for wavelets {wavelet_id}'):
         metrics.push(images, im_recos, im_shape)
     return metrics
 
