@@ -8,6 +8,5 @@ pydot
 tensorboard
 click
 scikit-image
-Pillow
 pandas
 bm3d
