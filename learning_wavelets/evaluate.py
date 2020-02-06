@@ -1,5 +1,10 @@
 import numpy as np
-from runstats import Statistics
+try:
+    from runstats import Statistics
+except ImportError:
+    # TODO: this is just a quick hack to be able to submit jobs on the TGCC,
+    # it has to be remobed once it's installed.
+    print("runstats could not be imported because not installed")
 from skimage.measure import compare_psnr, compare_ssim
 import tensorflow as tf
 
