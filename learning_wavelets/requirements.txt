@@ -1,5 +1,4 @@
 numpy
-numba
 jupyter
 matplotlib
 keras
