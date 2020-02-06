@@ -38,8 +38,8 @@ tf.random.set_seed(1)
 )
 @click.option(
     'cuda_visible_devices',
-    '-gpus'
-    '--cuda-visible-devices,
+    '-gpus',
+    '--cuda-visible-devices',
     default='0123',
     type=str,
     help='The visible GPU devices. Defaults to 0123',
