@@ -18,6 +18,8 @@ module load python3/3.7.5
 cd $workspace/understanding-unets
 pip install --target=$CCCWORKDIR/installed-packages/ --upgrade ./
 
+./submission_scripts/env_config.sh
+
 ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/unet_training.py --ns-train 20 40  &
 ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/unet_training.py --ns-train 30 30  &
 
