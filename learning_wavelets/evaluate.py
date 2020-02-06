@@ -1,7 +1,7 @@
 import numpy as np
 try:
     from runstats import Statistics
-except ImportError:
+except ModuleNotFoundError:
     # TODO: this is just a quick hack to be able to submit jobs on the TGCC,
     # it has to be remobed once it's installed.
     print("runstats could not be imported because not installed")
