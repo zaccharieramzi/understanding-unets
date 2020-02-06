@@ -1,3 +1,4 @@
+import os
 import os.path as op
 import time
 
@@ -35,7 +36,16 @@ tf.random.set_seed(1)
     type=click.Choice(['bsd500', 'div2k'], case_sensitive=False),
     help='The dataset you wish to use for training and validation, between bsd500 and div2k. Defaults to bsd500',
 )
-def train_unet(noise_std_train, noise_std_val, source):
+@click.option(
+    'cuda_visible_devices',
+    '-gpus'
+    '--cuda-visible-devices,
+    default='0123',
+    type=str,
+    help='The visible GPU devices. Defaults to 0123',
+)
+def train_unet(noise_std_train, noise_std_val, source, cuda_visible_devices):
+    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
     # data preparation
     batch_size = 8
     if source == 'bsd500':
