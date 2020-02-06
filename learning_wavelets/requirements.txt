@@ -1,7 +1,6 @@
 numpy
 jupyter
 matplotlib
-keras
 runstats
 pylint
 keras-tqdm
