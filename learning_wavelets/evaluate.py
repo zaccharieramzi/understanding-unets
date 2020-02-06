@@ -1,11 +1,11 @@
 import numpy as np
 try:
     from runstats import Statistics
+    from skimage.measure import compare_psnr, compare_ssim
 except ModuleNotFoundError:
     # TODO: this is just a quick hack to be able to submit jobs on the TGCC,
-    # it has to be remobed once it's installed.
-    print("runstats could not be imported because not installed")
-from skimage.measure import compare_psnr, compare_ssim
+    # it has to be removed once they are installed.
+    print("runstats and/or skimage could not be imported because not installed")
 import tensorflow as tf
 
 from .image_utils import trim_padding
