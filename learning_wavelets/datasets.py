@@ -124,8 +124,8 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
     if mode == 'training':
         train_path = 'BSR/BSDS500/data/images/train'
         test_path = 'BSR/BSDS500/data/images/test'
-        train_file_ds = tf.data.Dataset.list_files(f'{train_path}/*.jpg', seed=0)
-        test_file_ds = tf.data.Dataset.list_files(f'{test_path}/*.jpg', seed=0)
+        train_file_ds = tf.data.Dataset.list_files(f'{BSD500_DATA_DIR}{train_path}/*.jpg', seed=0)
+        test_file_ds = tf.data.Dataset.list_files(f'{BSD500_DATA_DIR}{test_path}/*.jpg', seed=0)
         file_ds = train_file_ds.concatenate(test_file_ds)
     elif mode == 'validation' or mode == 'testing':
         val_path = 'BSR/BSDS500/data/images/val'
