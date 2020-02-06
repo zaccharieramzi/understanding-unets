@@ -2,17 +2,20 @@
 #MSUB -r train_unets                # Request name
 #MSUB -n 2                         # Number of tasks to use
 #MSUB -c 2                         # I want 2 cores per task since io might be costly
+#MSUB -x
 #MSUB -T 86400                      # Elapsed time limit in seconds
 #MSUB -o unet_train_%I.o              # Standard output. %I is the job id
 #MSUB -e unet_train_%I.e              # Error output. %I is the job id
 #MSUB -q v100               # Queue
-#MSUB -Q normal  # this is just a test script
+#MSUB -Q normal
 #MSUB -m scratch,work
 #MSUB -@ zaccharie.ramzi@gmail.com:begin,end
 #MSUB -A gch0424                  # Project ID
 
 set -x
-module load flavor/ucx/mt
+#module load flavor/ucx/mt
+module purge
+module load feature/openmpi/net/ib/openib
 module load cuda/10.1.105
 module load python3/3.7.5
 cd $workspace/understanding-unets
