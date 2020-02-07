@@ -61,6 +61,55 @@ class DynamicHardThresholding(Layer):
     def compute_output_shape(self, input_shape):
         return input_shape
 
+class CheekyDynamicHardThresholding(Layer):
+    __name__ = 'cheeky_dynamic_soft_thresholding'
+
+    def __init__(self, alpha_init, **kwargs):
+        super(CheekyDynamicHardThresholding, self).__init__(**kwargs)
+        self.alpha_init = alpha_init
+
+    def build(self, input_shape):
+        def _alpha_thresh_intializer(shape, **kwargs):
+            return tf.ones(shape) * self.alpha_init
+        def _alpha_bias_intializer(shape, **kwargs):
+            return tf.ones(shape) * (self.alpha_init -1.0)
+        # TODO: set constraints on alpha, and potentially have it be varying along the channels
+        self.alpha_thresh = self.add_weight(
+            shape=(1,),
+            initializer=_alpha_thresh_intializer,
+            trainable=True,
+        )
+        self.alpha_bias = self.add_weight(
+            shape=(1,),
+            initializer=_alpha_bias_intializer,
+            trainable=True,
+        )
+
+    def call(self, inputs):
+        image, noise_std = inputs
+        threshold = self.alpha_thresh * noise_std
+        threshold = tf.expand_dims(threshold, axis=-1)
+        threshold = tf.expand_dims(threshold, axis=-1)
+        bias = self.alpha_bias * noise_std
+        bias = tf.expand_dims(bias, axis=-1)
+        bias = tf.expand_dims(bias, axis=-1)
+        input_sign = K.sign(image)
+        soft_thresh_unsigned = ReLU()(input_sign * image - threshold)
+        hard_thresh_unsigned = soft_thresh_unsigned + K.sign(soft_thresh_unsigned) * bias
+        hard_thresh = hard_thresh_unsigned * input_sign
+        return hard_thresh
+
+    def get_config(self):
+        config = super(CheekyDynamicHardThresholding, self).get_config()
+        config.update({
+            'alpha_init': self.alpha_init,
+        })
+        return config
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+
 class DynamicSoftThresholding(Layer):
     __name__ = 'dynamic_soft_thresholding'
 
