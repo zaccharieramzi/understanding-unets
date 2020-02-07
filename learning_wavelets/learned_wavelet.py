@@ -5,7 +5,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
 from .evaluate import keras_psnr, keras_ssim, center_keras_psnr
-from .keras_utils import Normalisation, conv_2d, wavelet_pooling, DynamicSoftThresholding, DynamicHardThresholding, RelaxedDynamicHardThresholding, LocalWienerFiltering
+from .keras_utils import Normalisation, conv_2d, wavelet_pooling, DynamicSoftThresholding, DynamicHardThresholding, RelaxedDynamicHardThresholding, LocalWienerFiltering, CheekyDynamicHardThresholding
 from .learnlet_layers import LearnletAnalysis, LearnletSynthesis
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
@@ -60,6 +60,8 @@ def learnlet(
                     thresholding_layer = RelaxedDynamicHardThresholding(3.0, mu=0.03, trainable=True)
                 elif denoising_activation == 'dynamic_hard_thresholding':
                     thresholding_layer = DynamicHardThresholding(3.0, trainable=False)
+                elif denoising_activation == 'cheeky_dynamic_hard_thresholding':
+                    thresholding_layer = CheekyDynamicHardThresholding(3.0, trainable=True)
                 detail_thresholded = thresholding_layer([detail, noise_std])
             else:
                 detail_thresholded = denoising_activation([detail, noise_std])
