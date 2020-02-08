@@ -6,6 +6,7 @@ import click
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LearningRateScheduler
 import tensorflow as tf
 
+from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
 from learning_wavelets.datasets import im_dataset_div2k, im_dataset_bsd500
 from learning_wavelets.keras_utils.normalisation import NormalisationAdjustment
 from learning_wavelets.learned_wavelet import learnlet
@@ -56,7 +57,7 @@ tf.random.set_seed(1)
     ], case_sensitive=False),
     help='The denoising activation to use. Defaults to dynamic_soft_thresholding',
 )
-def train_unet(noise_std_train, noise_std_val, source, cuda_visible_devices, denoising_activation):
+def train_learnlet(noise_std_train, noise_std_val, source, cuda_visible_devices, denoising_activation):
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
     # data preparation
     batch_size = 8
@@ -97,8 +98,8 @@ def train_unet(noise_std_train, noise_std_val, source, cuda_visible_devices, den
         'clip': False,
     }
     n_epochs = 500
-    run_id = f'learnlet_dynamic_cdh_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{int(time.time())}'
-    chkpt_path = f'checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
+    run_id = f'learnlet_dynamic_{denoising_activation}_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{int(time.time())}'
+    chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
 
 
@@ -112,11 +113,11 @@ def train_unet(noise_std_train, noise_std_val, source, cuda_visible_devices, den
 
 
     chkpt_cback = ModelCheckpoint(chkpt_path, period=n_epochs, save_weights_only=False)
-    log_dir = op.join('logs', run_id)
+    log_dir = op.join(f'{LOGS_DIR}logs', run_id)
     tboard_cback = TensorBoard(
         log_dir=log_dir,
         histogram_freq=0,
-        write_graph=True,
+        write_graph=False,
         write_images=False,
         profile_batch=0,
     )
@@ -139,3 +140,6 @@ def train_unet(noise_std_train, noise_std_val, source, cuda_visible_devices, den
         callbacks=[tboard_cback, chkpt_cback, norm_cback, lrate_cback],
         shuffle=False,
     )
+
+if __name__ == '__main__':
+    train_learnlet()
