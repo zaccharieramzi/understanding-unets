@@ -78,11 +78,13 @@ class CheekyDynamicHardThresholding(Layer):
             shape=(1,),
             initializer=_alpha_thresh_intializer,
             trainable=True,
+            constraint=AlphaConstraint(5.0),
         )
         self.alpha_bias = self.add_weight(
             shape=(1,),
             initializer=_alpha_bias_intializer,
             trainable=True,
+            constraint=AlphaConstraint(5.0),
         )
 
     def call(self, inputs):
