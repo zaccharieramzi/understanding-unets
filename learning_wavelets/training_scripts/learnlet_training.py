@@ -70,14 +70,14 @@ def train_learnlet(noise_std_train, noise_std_val, source, cuda_visible_devices,
         batch_size=batch_size,
         patch_size=256,
         noise_std=noise_std_train,
-        return_noise_level=False,
+        return_noise_level=True,
     )
     im_ds_val = data_func(
         mode='validation',
         batch_size=batch_size,
         patch_size=256,
         noise_std=noise_std_val,
-        return_noise_level=False,
+        return_noise_level=True,
     )
 
     run_params = {
