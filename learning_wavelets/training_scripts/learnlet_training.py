@@ -126,7 +126,10 @@ def train_learnlet(noise_std_train, noise_std_val, source, cuda_visible_devices,
 
 
     n_channels = 1
-    model = learnlet(input_size=(None, None, n_channels), lr=1e-3, **run_params)
+    # run distributed
+    mirrored_strategy = tf.distribute.MirroredStrategy()
+    with mirrored_strategy.scope():
+        model = learnlet(input_size=(None, None, n_channels), lr=1e-3, **run_params)
     print(model.summary(line_length=114))
 
 
