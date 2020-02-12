@@ -57,3 +57,18 @@ class Learnlet(Model):
         if self.clip:
             denoised_image = tf.clip_by_value(denoised_image, clip_value_min=-0.5, clip_value_max=0.5)
         return denoised_image
+
+    def compute_coefficients(self, images, normalized=True, coarse=False):
+        learnlet_analysis_coeffs = self.analysis(images)
+        details = learnlet_analysis_coeffs[:-1]
+        if normalized:
+            learnlet_analysis_coeffs_normalized = self.threshold.normalize(details)
+            if coarse:
+                coarse = learnlet_analysis_coeffs[-1]
+                learnlet_analysis_coeffs_normalized.append(coarse)
+            return learnlet_analysis_coeffs_normalized
+        else:
+            if coarse:
+                return learnlet_analysis_coeffs
+            else:
+                return details
