@@ -93,6 +93,7 @@ class Learnlet(Model):
                 actual_threshold = noise_std * thresholding_layer.alpha * weight
                 new_weight = weight / (1 + learnlet_analysis_coeff_thresholded / actual_threshold)
                 new_weights.append((new_weight))
+            weights = new_weights
         learnlet_analysis_coeffs_thresholded = self.threshold([details, noise_std], weights=weights)
         learnlet_analysis_coeffs_thresholded.append(coarse)
         denoised_image = self.synthesis(learnlet_analysis_coeffs_thresholded)
