@@ -1,6 +1,6 @@
 #!/bin/bash
 #MSUB -r train_learnlets_different_n_samples             # Request name
-#MSUB -n 2                         # Number of tasks to use
+#MSUB -n 4                         # Number of tasks to use
 #MSUB -c 2                         # I want 2 cores per task since io might be costly
 #MSUB -x
 #MSUB -T 86400                      # Elapsed time limit in seconds
