@@ -39,11 +39,12 @@ class DynamicHardThresholding(Layer):
             trainable=self.trainable,
         )
 
-    def call(self, inputs):
+    def call(self, inputs, weights_mode=False):
         image, noise_std = inputs
         threshold = self.alpha * noise_std
-        threshold = tf.expand_dims(threshold, axis=-1)
-        threshold = tf.expand_dims(threshold, axis=-1)
+        if not weights_mode:
+            threshold = tf.expand_dims(threshold, axis=-1)
+            threshold = tf.expand_dims(threshold, axis=-1)
         input_sign = K.sign(image)
         soft_thresh_unsigned = ReLU()(input_sign * image - threshold)
         hard_thresh_unsigned = soft_thresh_unsigned + K.sign(soft_thresh_unsigned) * threshold
@@ -89,14 +90,16 @@ class CheekyDynamicHardThresholding(Layer):
             name='bias',
         )
 
-    def call(self, inputs):
+    def call(self, inputs, weights_mode=False):
         image, noise_std = inputs
         threshold = self.alpha_thresh * noise_std
-        threshold = tf.expand_dims(threshold, axis=-1)
-        threshold = tf.expand_dims(threshold, axis=-1)
+        if not weights_mode:
+            threshold = tf.expand_dims(threshold, axis=-1)
+            threshold = tf.expand_dims(threshold, axis=-1)
         bias = self.alpha_bias * noise_std
-        bias = tf.expand_dims(bias, axis=-1)
-        bias = tf.expand_dims(bias, axis=-1)
+        if not weights_mode:
+            bias = tf.expand_dims(bias, axis=-1)
+            bias = tf.expand_dims(bias, axis=-1)
         input_sign = K.sign(image)
         soft_thresh_unsigned = ReLU()(input_sign * image - threshold)
         hard_thresh_unsigned = soft_thresh_unsigned + K.sign(soft_thresh_unsigned) * bias
@@ -138,11 +141,13 @@ class DynamicSoftThresholding(Layer):
             constraint=AlphaConstraint(5.0),
         )
 
-    def call(self, inputs):
+    def call(self, inputs, weights_mode=False):
+        import ipdb; ipdb.set_trace()
         image, noise_std = inputs
         threshold = self.alpha * noise_std
-        threshold = tf.expand_dims(threshold, axis=1)
-        threshold = tf.expand_dims(threshold, axis=1)
+        if not weights_mode:
+            threshold = tf.expand_dims(threshold, axis=1)
+            threshold = tf.expand_dims(threshold, axis=1)
         input_sign = K.sign(image)
         soft_thresh_unsigned = ReLU()(input_sign * image - threshold)
         soft_thresh = soft_thresh_unsigned * input_sign
