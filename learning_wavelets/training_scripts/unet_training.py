@@ -30,6 +30,13 @@ tf.random.set_seed(1)
     help='The noise standard deviation for the validation set. Defaults to 30',
 )
 @click.option(
+    'n_samples',
+    '-n',
+    default=None,
+    type=int,
+    help='The number of samples to use for training. Defaults to None, which means that all samples are used.',
+)
+@click.option(
     'source',
     '-s',
     default='bsd500',
@@ -44,7 +51,7 @@ tf.random.set_seed(1)
     type=str,
     help='The visible GPU devices. Defaults to 0123',
 )
-def train_unet(noise_std_train, noise_std_val, source, cuda_visible_devices):
+def train_unet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_devices):
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
     # data preparation
     batch_size = 8
@@ -58,6 +65,7 @@ def train_unet(noise_std_train, noise_std_val, source, cuda_visible_devices):
         patch_size=256,
         noise_std=noise_std_train,
         return_noise_level=False,
+        n_samples=n_samples,
     )
     im_ds_val = data_func(
         mode='validation',
@@ -77,7 +85,7 @@ def train_unet(noise_std_train, noise_std_val, source, cuda_visible_devices):
         'bn': True,
     }
     n_epochs = 500
-    run_id = f'unet_dynamic_st_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{int(time.time())}'
+    run_id = f'unet_dynamic_st_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{n_samples}_{int(time.time())}'
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
 
