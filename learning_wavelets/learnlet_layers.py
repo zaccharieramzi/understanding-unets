@@ -286,7 +286,7 @@ class ScalesThreshold(Layer):
         else:
             details = inputs
         if weights is None:
-            weights = tf.ones_like(details)
+            weights = [tf.ones_like(detail) for detail in details]
         details_thresholded = list()
         for i_scale, (detail, weight) in enumerate(zip(details, weights)):
             if self.noise_std_norm:
@@ -296,7 +296,7 @@ class ScalesThreshold(Layer):
             if self.dynamic_denoising:
                 if isinstance(self.denoising_activation, str):
                     thresholding_layer = self.thresholding_layers[i_scale]
-                    detail_thresholded = thresholding_layer([detail, weight])
+                    detail_thresholded = thresholding_layer([detail, weight], weights_mode=True)
                 else:
                     detail_thresholded = self.denoising_activation([detail, weight])
             else:
