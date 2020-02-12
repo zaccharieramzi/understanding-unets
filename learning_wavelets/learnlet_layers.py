@@ -280,7 +280,7 @@ class ScalesThreshold(Layer):
         elif self.denoising_activation == 'cheeky_dynamic_hard_thresholding':
             self.thresholding_layers = [CheekyDynamicHardThresholding(3.0, trainable=True) for i in range(self.n_scales)]
 
-    def call(self, inputs, weights=None):
+    def call(self, inputs, weights=None, no_back_normalisation=False):
         if self.dynamic_denoising:
             details, noise_std = inputs
         else:
@@ -301,7 +301,7 @@ class ScalesThreshold(Layer):
                     detail_thresholded = self.denoising_activation([detail, weight])
             else:
                 detail_thresholded = self.thresholding_layer(detail)
-            if self.noise_std_norm:
+            if self.noise_std_norm and not no_back_normalisation:
                 detail_thresholded = normalisation_layer(detail_thresholded, mode='inv')
             details_thresholded.append(detail_thresholded)
         return details_thresholded
