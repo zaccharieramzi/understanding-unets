@@ -73,6 +73,10 @@ class Learnlet(Model):
             else:
                 return details
 
+    def update_normalisation(self, i_scale, update_stds):
+        norm_layer = self.threshold.normalisation_layers[i_scale]
+        norm_layer.set_weights([update_stds])
+
     def reweighting(self, inputs, n_reweights=3):
         image_noisy = inputs[0]
         noise_std = inputs[1]
