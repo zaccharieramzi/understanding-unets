@@ -52,7 +52,7 @@ def pad_for_pool(n_pooling=1, return_original_shape=False):
     return pad
 
 # noise
-def add_noise_function(noise_std_range, return_noise_level=False, no_noise=False, set_noise_zero=False):
+def add_noise_function(noise_std_range, return_noise_level=False, no_noise=False, set_noise_zero=False, decreasing_noise_level=False):
     if not isinstance(noise_std_range, Iterable):
         noise_std_range = (noise_std_range, noise_std_range)
     def add_noise(image):
@@ -61,6 +61,12 @@ def add_noise_function(noise_std_range, return_noise_level=False, no_noise=False
             minval=noise_std_range[0],
             maxval=noise_std_range[1],
         )
+        if decreasing_noise_level:
+            noise_std = tf.minimum(noise_std, tf.random.uniform(
+                (1,),
+                minval=noise_std_range[0],
+                maxval=noise_std_range[1],
+            ))
         if no_noise:
             if return_noise_level:
                 return image, noise_std/255
@@ -118,7 +124,7 @@ def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30
         image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
 
-def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=30, exact_recon=False, no_noise=False, return_noise_level=False, n_pooling=None, n_samples=None):
+def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=30, exact_recon=False, no_noise=False, return_noise_level=False, n_pooling=None, n_samples=None, decreasing_noise_level=False):
     # the training set for bsd500 is test + train
     # the test set (i.e. containing bsd68 images) is val
     if mode == 'training':
@@ -157,7 +163,12 @@ def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=3
         )
     else:
         image_patch_ds = image_grey_ds
-    add_noise = add_noise_function(noise_std, return_noise_level=return_noise_level, no_noise=no_noise)
+    add_noise = add_noise_function(
+        noise_std,
+        return_noise_level=return_noise_level,
+        no_noise=no_noise,
+        decreasing_noise_level=decreasing_noise_level,
+    )
     image_noisy_ds = image_patch_ds.map(
         lambda patch: (add_noise(patch), patch),
         num_parallel_calls=tf.data.experimental.AUTOTUNE,
