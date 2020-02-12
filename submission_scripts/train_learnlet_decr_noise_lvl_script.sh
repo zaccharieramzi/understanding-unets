@@ -1,5 +1,5 @@
 #!/bin/bash
-#MSUB -r train_learnlets                # Request name
+#MSUB -r train_learnlets_decr_n_lvl                # Request name
 #MSUB -n 1                        # Number of tasks to use
 #MSUB -c 2                         # I want 2 cores per task since io might be costly
 #MSUB -x
