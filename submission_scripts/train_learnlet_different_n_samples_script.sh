@@ -23,9 +23,9 @@ pip install --target=$CCCWORKDIR/installed-packages/ --upgrade ./
 
 . ./submission_scripts/env_config.sh
 
-ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_training.py -n 200 &
-ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_training.py -n 100 &
-ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_training.py -n 50 &
-ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_training.py -n 10 &
+ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_training.py -n 200 -gpus 0 &
+ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_training.py -n 100 -gpus 1 &
+ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_training.py -n 50 -gpus 2 &
+ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_training.py -n 10 -gpus 3 &
 
 wait  # wait for all ccc_mprun(s) to complete.
