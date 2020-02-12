@@ -142,7 +142,6 @@ class DynamicSoftThresholding(Layer):
         )
 
     def call(self, inputs, weights_mode=False):
-        import ipdb; ipdb.set_trace()
         image, noise_std = inputs
         threshold = self.alpha * noise_std
         if not weights_mode:
