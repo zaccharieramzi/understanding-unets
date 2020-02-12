@@ -292,7 +292,7 @@ class ScalesThreshold(Layer):
             if self.noise_std_norm:
                 normalisation_layer = self.normalisation_layers[i_scale]
                 detail = normalisation_layer(detail, mode='normal')
-            weight = noise_std * weight
+            weight = tf.expand_dims(tf.expand_dims(noise_std, axis=1), axis=1) * weight
             if self.dynamic_denoising:
                 if isinstance(self.denoising_activation, str):
                     thresholding_layer = self.thresholding_layers[i_scale]
