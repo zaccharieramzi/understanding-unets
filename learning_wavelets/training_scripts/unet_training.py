@@ -51,7 +51,15 @@ tf.random.set_seed(1)
     type=str,
     help='The visible GPU devices. Defaults to 0123',
 )
-def train_unet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_devices):
+@click.option(
+    'base_n_filters',
+    '-bnf',
+    '--base-n-filters',
+    default=64,
+    type=int,
+    help='The number of filters in the first scale of the u-net. Defaults to 64.',
+)
+def train_unet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_devices, base_n_filters):
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
     # data preparation
     batch_size = 8
@@ -79,7 +87,7 @@ def train_unet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_d
     run_params = {
         'n_layers': 5,
         'pool': 'max',
-        "layers_n_channels": [64, 128, 256, 512, 1024],
+        "layers_n_channels": [base_n_filters * 2**i for i in range(5)],
         'layers_n_non_lins': 2,
         'non_relu_contract': False,
         'bn': True,
