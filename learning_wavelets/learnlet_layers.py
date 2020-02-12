@@ -303,6 +303,13 @@ class ScalesThreshold(Layer):
             details_thresholded.append(detail_thresholded)
         return details_thresholded
 
+    def normalize(self, coefficients):
+        coefficients_normalized = [
+            normalisation_layer(coefficient, mode='normal')
+            for (coefficient, normalisation_layer) in zip(coefficients, self.normalisation_layers)
+        ]
+        return coefficients_normalized
+
     def get_config(self):
         config = super(ScalesThreshold, self).get_config()
         config.update({
