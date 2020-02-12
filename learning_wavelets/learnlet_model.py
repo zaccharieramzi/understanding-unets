@@ -88,7 +88,7 @@ class Learnlet(Model):
             )
             new_weights = []
             for weight, learnlet_analysis_coeff_thresholded, thresholding_layer in zip(
-                    weights, learnlet_analysis_coeff_thresholded, self.threshold.thresholding_layers
+                    weights, learnlet_analysis_coeffs_thresholded, self.threshold.thresholding_layers
                 ):
                 actual_threshold = noise_std * thresholding_layer.alpha * weight
                 new_weight = weight / (1 + learnlet_analysis_coeff_thresholded / actual_threshold)
