@@ -72,7 +72,13 @@ tf.random.set_seed(1)
     type=int,
     help='The number of filters in the learnlets. Defaults to 256.',
 )
-def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_devices, denoising_activation, n_filters):
+@click.option(
+    'decreasing_noise_level',
+    '--decr-n-lvl',
+    is_flag=True,
+    help='Set if you want the noise level distribution to be non uniform, skewed towards low value.',
+)
+def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_devices, denoising_activation, n_filters, decreasing_noise_level):
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
     # data preparation
     batch_size = 8
@@ -87,6 +93,7 @@ def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visib
         noise_std=noise_std_train,
         return_noise_level=True,
         n_samples=n_samples,
+        decreasing_noise_level=decreasing_noise_level,
     )
     im_ds_val = data_func(
         mode='validation',
