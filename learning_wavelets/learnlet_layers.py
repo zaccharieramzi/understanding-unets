@@ -4,7 +4,7 @@ import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
 from tensorflow.keras.layers import Layer, Activation, Conv2D, Concatenate
 
-from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, FixedPointPooling, FixedPointUpSampling, BiorUpSampling
+from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, CheekyDynamicHardThresholding, FixedPointPooling, FixedPointUpSampling, BiorUpSampling
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
 
@@ -277,6 +277,8 @@ class ScalesThreshold(Layer):
             self.thresholding_layers = [DynamicSoftThresholding(2.0, trainable=True) for i in range(self.n_scales)]
         if self.denoising_activation == 'dynamic_hard_thresholding':
             self.thresholding_layers = [DynamicHardThresholding(3.0, trainable=False) for i in range(self.n_scales)]
+        elif self.denoising_activation == 'cheeky_dynamic_hard_thresholding':
+            self.thresholding_layers = [CheekyDynamicHardThresholding(3.0, trainable=True) for i in range(self.n_scales)]
 
     def call(self, inputs):
         if self.dynamic_denoising:
