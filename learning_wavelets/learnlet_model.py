@@ -72,3 +72,30 @@ class Learnlet(Model):
                 return learnlet_analysis_coeffs
             else:
                 return details
+
+    def reweighting(self, inputs, n_reweights=3):
+        image_noisy = inputs[0]
+        noise_std = inputs[1]
+        learnlet_analysis_coeffs = self.analysis(image_noisy)
+        details = learnlet_analysis_coeffs[:-1]
+        coarse = learnlet_analysis_coeffs[-1]
+        weights = [tf.ones_like(detail) for detail in details]
+        for i in range(n_reweights-1):
+            learnlet_analysis_coeffs_thresholded = self.threshold(
+                [details, noise_std],
+                weights=weights,
+                no_back_normalisation=True,
+            )
+            new_weights = []
+            for weight, learnlet_analysis_coeff_thresholded, thresholding_layer in zip(
+                    weights, learnlet_analysis_coeff_thresholded, self.threshold.thresholding_layers
+                ):
+                actual_threshold = noise_std * thresholding_layer.alpha * weight
+                new_weight = weight / (1 + learnlet_analysis_coeff_thresholded / actual_threshold)
+                new_weights.append((new_weight))
+        learnlet_analysis_coeffs_thresholded = self.threshold([details, noise_std], weights=weights)
+        learnlet_analysis_coeffs_thresholded.append(coarse)
+        denoised_image = self.synthesis(learnlet_analysis_coeffs_thresholded)
+        if self.clip:
+            denoised_image = tf.clip_by_value(denoised_image, clip_value_min=-0.5, clip_value_max=0.5)
+        return denoised_image
