@@ -4,7 +4,6 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.models import Model
 import tensorflow as tf
 
-from ..learnlet_model import Learnlet
 
 class Normalisation(Layer):
     def __init__(self, norm_init, **kwargs):
@@ -54,8 +53,10 @@ class NormalisationAdjustment(Callback):
 
     def set_model(self, model):
         self.model = model
-        if isinstance(self.model, Learnlet):
+        if self.model.name == 'learnlet':
             self.mode = 'subclassing'
+            self.current_stds = [None] * self.model.n_scales
+            self.stds_lists = [list()] * self.model.n_scales
             return
         self.mode = 'normal'
         self.normalisation_layers = list()  # list the soft thresh layers
@@ -91,11 +92,11 @@ class NormalisationAdjustment(Callback):
         image_shape = [1, 2**self.n_pooling, 2**self.n_pooling, n_channels]
         if self.mode == 'subclassing':
             noise = tf.random.normal(stddev=1.0, shape=image_shape)
-            norm_inputs = self.model.compute_coefficients(noise).numpy()
+            norm_inputs = [norm_input.numpy() for norm_input in self.model.compute_coefficients(noise)]
         else:
             noise = np.random.normal(scale=1.0, size=image_shape)
             norm_inputs = self.norms_input_model.predict_on_batch(noise)
-        for i_scale, (norm_layer, norm_input) in enumerate(zip(self.normalisation_layers, norm_inputs)):
+        for i_scale, norm_input in enumerate(norm_inputs):
             norm_input = norm_input[0]
             n_channels = norm_input.shape[-1]
             stds = np.array([np.std(norm_input[..., i]) for i in range(n_channels)])
@@ -107,6 +108,6 @@ class NormalisationAdjustment(Callback):
             if self.mode == 'subclassing':
                 self.model.update_normalisation(i_scale, update_stds)
             else:
-                norm_layer.set_weights([update_stds])
+                self.normalisation_layers[i_scale].set_weights([update_stds])
             self.stds_lists[i_scale].append(update_stds)
             self.current_stds[i_scale] = update_stds
