@@ -4,7 +4,7 @@ import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
 from tensorflow.keras.layers import Layer, Activation, Conv2D, Concatenate
 
-from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, FixedPointPooling, FixedPointUpSampling, BiorUpSampling
+from .keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, CheekyDynamicHardThresholding, FixedPointPooling, FixedPointUpSampling, BiorUpSampling
 from .utils.wav_utils import get_wavelet_filters_normalisation
 
 
@@ -277,29 +277,41 @@ class ScalesThreshold(Layer):
             self.thresholding_layers = [DynamicSoftThresholding(2.0, trainable=True) for i in range(self.n_scales)]
         if self.denoising_activation == 'dynamic_hard_thresholding':
             self.thresholding_layers = [DynamicHardThresholding(3.0, trainable=False) for i in range(self.n_scales)]
+        elif self.denoising_activation == 'cheeky_dynamic_hard_thresholding':
+            self.thresholding_layers = [CheekyDynamicHardThresholding(3.0, trainable=True) for i in range(self.n_scales)]
 
-    def call(self, inputs):
+    def call(self, inputs, weights=None, no_back_normalisation=False):
         if self.dynamic_denoising:
             details, noise_std = inputs
         else:
             details = inputs
+        if weights is None:
+            weights = [tf.ones_like(detail) for detail in details]
         details_thresholded = list()
-        for i_scale, detail in enumerate(details):
+        for i_scale, (detail, weight) in enumerate(zip(details, weights)):
             if self.noise_std_norm:
                 normalisation_layer = self.normalisation_layers[i_scale]
                 detail = normalisation_layer(detail, mode='normal')
+            weight = tf.expand_dims(tf.expand_dims(noise_std, axis=1), axis=1) * weight
             if self.dynamic_denoising:
                 if isinstance(self.denoising_activation, str):
                     thresholding_layer = self.thresholding_layers[i_scale]
-                    detail_thresholded = thresholding_layer([detail, noise_std])
+                    detail_thresholded = thresholding_layer([detail, weight], weights_mode=True)
                 else:
-                    detail_thresholded = self.denoising_activation([detail, noise_std])
+                    detail_thresholded = self.denoising_activation([detail, weight])
             else:
                 detail_thresholded = self.thresholding_layer(detail)
-            if self.noise_std_norm:
+            if self.noise_std_norm and not no_back_normalisation:
                 detail_thresholded = normalisation_layer(detail_thresholded, mode='inv')
             details_thresholded.append(detail_thresholded)
         return details_thresholded
+
+    def normalize(self, coefficients):
+        coefficients_normalized = [
+            normalisation_layer(coefficient, mode='normal')
+            for (coefficient, normalisation_layer) in zip(coefficients, self.normalisation_layers)
+        ]
+        return coefficients_normalized
 
     def get_config(self):
         config = super(ScalesThreshold, self).get_config()

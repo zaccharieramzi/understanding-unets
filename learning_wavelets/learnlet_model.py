@@ -7,7 +7,17 @@ from .learnlet_layers import LearnletAnalysis, LearnletSynthesis, ScalesThreshol
 class Learnlet(Model):
     __name__ = 'learnlet'
 
-    def __init__(self, normalize=True, n_scales=2, clip=False, denoising_activation='relu', learnlet_analysis_kwargs=None, learnlet_synthesis_kwargs=None, threshold_kwargs=None):
+    def __init__(
+            self,
+            normalize=True,
+            n_scales=2,
+            clip=False,
+            denoising_activation='dynamic_soft_thresholding',
+            learnlet_analysis_kwargs=None,
+            learnlet_synthesis_kwargs=None,
+            threshold_kwargs=None,
+            n_reweights_learn=1,
+        ):
         super(Learnlet, self).__init__()
         if learnlet_analysis_kwargs is None:
             learnlet_analysis_kwargs = {}
@@ -16,11 +26,10 @@ class Learnlet(Model):
         if threshold_kwargs is None:
             threshold_kwargs = {}
         self.denoising_activation = denoising_activation
-        if isinstance(self.denoising_activation, (DynamicSoftThresholding, DynamicHardThresholding)) or 'dynamic' in self.denoising_activation:
-            self.dynamic_denoising = True
         self.clip = clip
         self.n_scales = n_scales
         self.normalize = normalize
+        self.n_reweights_learn = n_reweights_learn
         self.analysis = LearnletAnalysis(
             normalize=self.normalize,
             n_scales=self.n_scales,
@@ -28,7 +37,7 @@ class Learnlet(Model):
         )
         self.threshold = ScalesThreshold(
             n_scales=self.n_scales,
-            dynamic_denoising=self.dynamic_denoising,
+            dynamic_denoising=True,
             denoising_activation=self.denoising_activation,
             **threshold_kwargs,
         )
@@ -39,18 +48,51 @@ class Learnlet(Model):
         )
 
     def call(self, inputs):
-        if self.dynamic_denoising:
-            image_noisy = inputs[0]
-            noise_std = inputs[1]
+        return self.reweighting(inputs, n_reweights=self.n_reweights_learn)
+
+    def compute_coefficients(self, images, normalized=True, coarse=False):
+        learnlet_analysis_coeffs = self.analysis(images)
+        details = learnlet_analysis_coeffs[:-1]
+        if normalized:
+            learnlet_analysis_coeffs_normalized = self.threshold.normalize(details)
+            if coarse:
+                coarse = learnlet_analysis_coeffs[-1]
+                learnlet_analysis_coeffs_normalized.append(coarse)
+            return learnlet_analysis_coeffs_normalized
         else:
-            image_noisy = inputs
+            if coarse:
+                return learnlet_analysis_coeffs
+            else:
+                return details
+
+    def update_normalisation(self, i_scale, update_stds):
+        norm_layer = self.threshold.normalisation_layers[i_scale]
+        norm_layer.set_weights([update_stds])
+
+    def reweighting(self, inputs, n_reweights=3):
+        image_noisy = inputs[0]
+        noise_std = inputs[1]
         learnlet_analysis_coeffs = self.analysis(image_noisy)
         details = learnlet_analysis_coeffs[:-1]
         coarse = learnlet_analysis_coeffs[-1]
-        if self.dynamic_denoising:
-            learnlet_analysis_coeffs_thresholded = self.threshold([details, noise_std])
-        else:
-            learnlet_analysis_coeffs_thresholded = self.threshold(details)
+        weights = [tf.ones_like(detail) for detail in details]
+        for i in range(n_reweights-1):
+            learnlet_analysis_coeffs_thresholded = self.threshold(
+                [details, noise_std],
+                weights=weights,
+                no_back_normalisation=True,
+            )
+            new_weights = []
+            for weight, learnlet_analysis_coeff_thresholded, thresholding_layer in zip(
+                    weights, learnlet_analysis_coeffs_thresholded, self.threshold.thresholding_layers
+                ):
+                expanded_noise = tf.expand_dims(tf.expand_dims(noise_std, axis=1), axis=1)
+                expanded_alpha =  tf.expand_dims(tf.expand_dims(tf.expand_dims(thresholding_layer.alpha, axis=0), axis=0), axis=0)
+                actual_threshold =  expanded_noise * expanded_alpha * weight
+                new_weight = weight / (1 + tf.math.abs(learnlet_analysis_coeff_thresholded) / actual_threshold)
+                new_weights.append(new_weight)
+            weights = new_weights
+        learnlet_analysis_coeffs_thresholded = self.threshold([details, noise_std], weights=weights)
         learnlet_analysis_coeffs_thresholded.append(coarse)
         denoised_image = self.synthesis(learnlet_analysis_coeffs_thresholded)
         if self.clip:
