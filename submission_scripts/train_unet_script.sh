@@ -13,13 +13,7 @@
 #MSUB -A gch0424                  # Project ID
 
 set -x
-#module load flavor/ucx/mt
-module purge
-module load feature/openmpi/net/ib/openib
-module load cuda/10.1.105
-module load python3/3.7.5
 cd $workspace/understanding-unets
-pip install --target=$CCCWORKDIR/installed-packages/ --upgrade ./
 
 . ./submission_scripts/env_config.sh
 
