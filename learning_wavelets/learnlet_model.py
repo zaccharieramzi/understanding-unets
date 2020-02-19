@@ -80,8 +80,14 @@ class Learnlet(Model):
                 return details
 
     def update_normalisation(self, i_scale, update_stds):
-        norm_layer = self.threshold.normalisation_layers[i_scale]
-        norm_layer.set_weights([update_stds])
+        if self.exact_reconstruction:
+            classical_norm_layer = self.threshold.normalisation_layers[i_scale]
+            classical_norm_layer.set_weights([update_stds[:-1]])
+            exact_recon_norm_layer = self.threshold_wavelet.normalisation_layers[i_scale]
+            exact_recon_norm_layer.set_weights([update_stds[-2:-1]])
+        else:
+            norm_layer = self.threshold.normalisation_layers[i_scale]
+            norm_layer.set_weights([update_stds])
 
     def reweighting(self, inputs, n_reweights=3):
         image_noisy = inputs[0]
@@ -123,7 +129,6 @@ class Learnlet(Model):
         coarse = learnlet_analysis_coeffs[-1]
         learnlet_analysis_coeffs_thresholded = self.threshold([details_tiled, noise_std])
         learnlet_analysis_coeffs_thresholded.append(coarse)
-        # TODO: update update_normalisation in case of exact reconstruction
         wav_analysis_coeffs_thresholded = self.threshold_wavelet([details_identity, noise_std])
         wav_analysis_coeffs_thresholded_tiled = self.analysis.tiling(wav_analysis_coeffs_thresholded)
         denoised_image = self.synthesis.exact_reconstruction(
