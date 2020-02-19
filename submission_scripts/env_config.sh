@@ -3,6 +3,7 @@ module purge
 module load feature/openmpi/net/ib/openib
 module load cuda/10.1.105
 module load python3/3.7.5
+module load gnu/8.3.0
 
 pip install --target=$CCCWORKDIR/installed-packages/ --upgrade ./
 
