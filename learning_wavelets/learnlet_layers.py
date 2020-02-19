@@ -258,9 +258,11 @@ class LearnletSynthesis(Layer):
     def exact_reconstruction(self, analysis_coeffs, wav_analysis_coeffs_thresholded, wav_analysis_coeffs_thresholded_tiled):
         details = analysis_coeffs[:-1]
         details.reverse()
+        wav_analysis_coeffs_thresholded.reverse()
+        wav_analysis_coeffs_thresholded_tiled.reverse()
         coarse = analysis_coeffs[-1]
         image = coarse
-        for i_scale, (detail, wav_coeff_thresholded, wav_coeff_thresholded_tiled) in enumerate(details, wav_analysis_coeffs_thresholded, wav_analysis_coeffs_thresholded_tiled):
+        for i_scale, (detail, wav_coeff_thresholded, wav_coeff_thresholded_tiled) in enumerate(zip(details, wav_analysis_coeffs_thresholded, wav_analysis_coeffs_thresholded_tiled)):
             image = self.upsampling(image)
             if self.normalize:
                 wav_norm = self.wav_filters_norm[i_scale]
