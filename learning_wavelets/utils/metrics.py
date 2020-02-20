@@ -1,5 +1,6 @@
 import bm3d
 import numpy as np
+import tensorflow.keras.backend as K
 from tqdm import tqdm_notebook
 
 from ..evaluate import Metrics
@@ -125,3 +126,7 @@ def metrics_bm3d(val_seq, noise_std=30):
     for im_recos, images in tqdm_notebook(zip(pred, gt), desc='Stats for bm3d'):
         metrics.push(images[..., None], im_recos[..., None])
     return metrics
+
+def n_params_from_params(name=None, **net_params):
+    model = unpack_model(**net_params)
+    return np.sum([K.count_params(w) for w in model.trainable_weights])
