@@ -125,7 +125,7 @@ class Learnlet(Model):
         learnlet_analysis_coeffs = self.analysis(image_noisy)
         details = learnlet_analysis_coeffs[:-1]
         details_tiled = [detail[..., :-1] for detail in details]
-        details_identity = [detail[..., -2:-1] for detail in details]
+        details_identity = [detail[..., -1:] for detail in details]
         coarse = learnlet_analysis_coeffs[-1]
         learnlet_analysis_coeffs_thresholded = self.threshold([details_tiled, noise_std])
         learnlet_analysis_coeffs_thresholded.append(coarse)
