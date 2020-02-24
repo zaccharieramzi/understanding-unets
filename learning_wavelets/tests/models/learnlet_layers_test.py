@@ -1,4 +1,3 @@
-# TODO: add test for wavelet analysis to check for exact reconstruction when summing.
 import tensorflow as tf
 
 from learning_wavelets.models.learnlet_layers import WavAnalysis
