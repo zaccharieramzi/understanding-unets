@@ -1,3 +1,4 @@
 logs/** filter=lfs diff=lfs merge=lfs -text
 BSR/ filter=lfs diff=lfs merge=lfs -text
 BSD68/ filter=lfs diff=lfs merge=lfs -text
+checkpoints/** filter=lfs diff=lfs merge=lfs -text
