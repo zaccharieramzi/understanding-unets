@@ -40,7 +40,6 @@ def test_fit(learnlet_kwargs):
     )
     K.clear_session()
 
-# TODO: add test for exact reconstruction
 def test_exact_reconstruction():
     model = Learnlet(**learnlet_test_cases[-1])
     model.build([(None, 32, 32, 1), (None, 1)])
