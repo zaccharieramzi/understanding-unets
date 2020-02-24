@@ -50,41 +50,6 @@ def metrics_wavelets_from_ds(ds, wavelet_id, noise_std=30, with_shape=True):
         metrics.push(images, im_recos, im_shape)
     return metrics
 
-def metrics_original(val_seq):
-    metrics = Metrics()
-    pred_and_gt = [
-        (images_noisy, images_gt)
-        for images_noisy, images_gt in enumerate_seq(val_seq, 'Original noisy image')
-    ]
-    for im_recos, images in tqdm_notebook(pred_and_gt, desc='Original noisy image'):
-        metrics.push(images, im_recos)
-    return metrics
-
-def metrics_wavelets(val_seq, wavelet_id, noise_std=30):
-    metrics = Metrics()
-    pred = wavelet_denoising_pysap(
-        enumerate_seq_noisy(val_seq, f'Wavelet denoising {wavelet_id}'),
-        noise_std=noise_std/255,
-        wavelet_id=wavelet_id,
-        n_scales=5,
-        soft_thresh=False,
-        n_sigma=3,
-    )
-    gt = enumerate_seq_gt(val_seq)
-    for im_recos, images in tqdm_notebook(zip(pred, gt), desc='Stats for wavelet denoising'):
-        metrics.push(images[..., None], im_recos[..., None])
-    return metrics
-
-def metrics_bm3d(val_seq, noise_std=30):
-    metrics = Metrics()
-    pred = [
-        bm3d.bm3d(image_noisy + 0.5, sigma_psd=noise_std/255, stage_arg=bm3d.BM3DStages.ALL_STAGES) - 0.5
-        for image_noisy in enumerate_seq_noisy(val_seq, f'BM3D')
-    ]
-    gt = enumerate_seq_gt(val_seq)
-    for im_recos, images in tqdm_notebook(zip(pred, gt), desc='Stats for bm3d'):
-        metrics.push(images[..., None], im_recos[..., None])
-    return metrics
 
 def n_params_from_params(name=None, **net_params):
     model = unpack_model(**net_params)
