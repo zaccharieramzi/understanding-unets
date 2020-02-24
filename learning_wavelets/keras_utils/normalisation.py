@@ -68,9 +68,9 @@ class NormalisationAdjustment(Callback):
         else:
             if self.exact_recon or self.dynamic_denoising:
                 # TODO: handle case with exact reconstruction and dynamic denoising
-                self.norms_input_model = Model(model.input[0], norms_input_layer(model.input[0]))
+                self.norms_input_model = Model(model.input[0], norms_input_layer(model.input[0])[:-1])
             else:
-                self.norms_input_model = Model(model.input, norms_input_layer(model.input))
+                self.norms_input_model = Model(model.input, norms_input_layer(model.input)[:-1])
         for layer in model.layers:
             if isinstance(layer, Normalisation) and layer not in self.normalisation_layers:
                 self.normalisation_layers.append(layer)
