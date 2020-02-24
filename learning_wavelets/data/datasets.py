@@ -83,47 +83,13 @@ def add_noise_function(noise_std_range, return_noise_level=False, no_noise=False
                 return image + noise
     return add_noise
 
-def exact_recon_helper(image_noisy, image):
-    return (image_noisy, image), (image, image)
-
-# TODO: refactor the datasets
-def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30, exact_recon=False, return_noise_level=False):
+def im_dataset_div2k(mode='training', **kwargs):
     if mode == 'training':
-        path = 'DIV2K_train_HR'
+        path = 'DIV2K_train_HR/*'
     elif mode == 'validation' or mode == 'testing':
-        path = 'DIV2K_valid_HR'
-    file_ds = tf.data.Dataset.list_files(f'{DIV2K_DATA_DIR}{path}/*/*.png', seed=0)
-    file_ds = file_ds.shuffle(800, seed=0)
-    image_ds = file_ds.map(
-        tf.io.read_file, num_parallel_calls=tf.data.experimental.AUTOTUNE
-    ).map(
-        tf.image.decode_png, num_parallel_calls=tf.data.experimental.AUTOTUNE
-    )
-    image_grey_ds = image_ds.map(
-        tf.image.rgb_to_grayscale, num_parallel_calls=tf.data.experimental.AUTOTUNE
-    ).map(
-        normalise, num_parallel_calls=tf.data.experimental.AUTOTUNE
-    )
-    # image_grey_aug_ds = image_grey_ds.map(tf_random_rotate_image)
-    select_patch_in_image = select_patch_in_image_function(patch_size)
-    image_patch_ds = image_grey_ds.map(
-        select_patch_in_image, num_parallel_calls=tf.data.experimental.AUTOTUNE
-    )
-    add_noise = add_noise_function(noise_std, return_noise_level=return_noise_level)
-    image_noisy_ds = image_patch_ds.map(
-        lambda patch: (add_noise(patch), patch),
-        num_parallel_calls=tf.data.experimental.AUTOTUNE,
-    )
-    if exact_recon:
-        # TODO: see how to adapt exact recon for the case of noise level included
-        image_noisy_ds = image_noisy_ds.map(
-            exact_recon_helper,
-            num_parallel_calls=tf.data.experimental.AUTOTUNE,
-        )
-    image_noisy_ds = image_noisy_ds.batch(batch_size)
-    if mode != 'testing':
-        image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
-    return image_noisy_ds
+        path = 'DIV2K_valid_HR/*'
+    im_ds = im_dataset(DIV2K_DATA_DIR, [path], 'png', from_rgb=True, mode=mode, **kwargs)
+    return im_ds
 
 def im_dataset_bsd500(mode='training', **kwargs):
     # the training set for bsd500 is test + train
@@ -135,15 +101,15 @@ def im_dataset_bsd500(mode='training', **kwargs):
     elif mode == 'validation' or mode == 'testing':
         val_path = 'BSR/BSDS500/data/images/val'
         paths = [val_path]
-    im_ds = im_dataset_bsd(BSD500_DATA_DIR, paths, 'jpg', from_rgb=True, mode=mode, **kwargs)
+    im_ds = im_dataset(BSD500_DATA_DIR, paths, 'jpg', from_rgb=True, mode=mode, **kwargs)
     return im_ds
 
 def im_dataset_bsd68(mode='validation', **kwargs):
     path = 'BSD68'
-    im_ds = im_dataset_bsd(BSD68_DATA_DIR, [path], 'png', mode=mode, **kwargs)
+    im_ds = im_dataset(BSD68_DATA_DIR, [path], 'png', mode=mode, **kwargs)
     return im_ds
 
-def im_dataset_bsd(
+def im_dataset(
         data_dir,
         paths,
         pattern,
