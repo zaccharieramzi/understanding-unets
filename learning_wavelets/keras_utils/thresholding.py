@@ -1,4 +1,3 @@
-import numpy as np
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.constraints import Constraint, NonNeg, MaxNorm
 from tensorflow.keras.layers import Layer, ReLU, Activation, Conv2D, ThresholdedReLU
