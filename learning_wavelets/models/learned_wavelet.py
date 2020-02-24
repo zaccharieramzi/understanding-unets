@@ -4,10 +4,10 @@ from tensorflow.keras.layers import Activation, concatenate, UpSampling2D, Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
-from .evaluate import keras_psnr, keras_ssim, center_keras_psnr
-from .keras_utils import Normalisation, conv_2d, wavelet_pooling, DynamicSoftThresholding, DynamicHardThresholding, RelaxedDynamicHardThresholding, LocalWienerFiltering, CheekyDynamicHardThresholding
+from ..evaluate import keras_psnr, keras_ssim, center_keras_psnr
+from ..keras_utils import Normalisation, conv_2d, wavelet_pooling, DynamicSoftThresholding, DynamicHardThresholding, RelaxedDynamicHardThresholding, LocalWienerFiltering, CheekyDynamicHardThresholding
 from .learnlet_layers import LearnletAnalysis, LearnletSynthesis
-from .utils.wav_utils import get_wavelet_filters_normalisation
+from ..utils.wav_utils import get_wavelet_filters_normalisation
 
 
 def learnlet(
