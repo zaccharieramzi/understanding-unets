@@ -4,7 +4,7 @@ import numpy as np
 import scipy.ndimage as ndimage
 import tensorflow as tf
 
-from .config import *
+from ..config import *
 
 # normalisation
 def normalise(image):
