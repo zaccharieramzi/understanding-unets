@@ -41,7 +41,7 @@ class Normalisation(Layer):
 
 class NormalisationAdjustment(Callback):
     # TODO: adapt to just new functionnal and subclassing, reminding that subclassing is the way to go
-    def __init__(self, n_pooling=4, momentum=0.9, exact_recon=False, dynamic_denoising=False):
+    def __init__(self, n_pooling=4, momentum=0.9):
         super().__init__()
         # 4 as a minimum just to make sure we have enough samples to compute
         # a reliable std
@@ -49,8 +49,6 @@ class NormalisationAdjustment(Callback):
         self.current_stds = list()
         self.stds_lists = list()  # this is just for monitoring/ debugging
         self.momentum = momentum
-        self.exact_recon = exact_recon
-        self.dynamic_denoising = dynamic_denoising
 
     def set_model(self, model):
         self.model = model
@@ -61,36 +59,17 @@ class NormalisationAdjustment(Callback):
             return
         self.mode = 'normal'
         self.normalisation_layers = list()  # list the soft thresh layers
-        try:
-            norms_input_layer = model.get_layer(name='learnlet_analysis')
-        except ValueError:
-            self.norms_input_model = None
-            norm_input_model_outputs = list()
-        else:
-            if self.exact_recon or self.dynamic_denoising:
-                # TODO: handle case with exact reconstruction and dynamic denoising
-                self.norms_input_model = Model(model.input[0], norms_input_layer(model.input[0])[:-1])
-            else:
-                self.norms_input_model = Model(model.input, norms_input_layer(model.input)[:-1])
+        norms_input_layer = model.get_layer(name='learnlet_analysis')
+        self.norms_input_model = Model(model.input[0], norms_input_layer(model.input[0])[:-1])
         for layer in model.layers:
             if isinstance(layer, Normalisation) and layer not in self.normalisation_layers:
                 self.normalisation_layers.append(layer)
-                if self.norms_input_model is None:
-                    # this is from https://stackoverflow.com/a/50858709/4332585
-                    norm_input = layer._inbound_nodes[0].inbound_layers.output
-                    norm_input_model_outputs.append(norm_input)
                 self.current_stds.append(None)
                 self.stds_lists.append(list())
-        if self.norms_input_model is None:
-            self.norms_input_model = Model(model.input, norm_input_model_outputs)
 
     def on_batch_end(self, batch, logs={}):
-        if self.exact_recon or self.dynamic_denoising:
-            # TODO: change this hack
-            n_channels = 1
-        else:
-            n_channels = self.model.input_shape[-1]
-        image_shape = [1, 2**self.n_pooling, 2**self.n_pooling, n_channels]
+        # NOTE: for now we only support grey images
+        image_shape = [1, 2**self.n_pooling, 2**self.n_pooling, 1]
         if self.mode == 'subclassing':
             noise = tf.random.normal(stddev=1.0, shape=image_shape)
             norm_inputs = [norm_input.numpy() for norm_input in self.model.compute_coefficients(noise, normalized=False, coarse=False)]
