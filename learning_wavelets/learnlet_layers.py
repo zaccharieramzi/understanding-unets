@@ -181,6 +181,13 @@ class LearnletAnalysis(Layer):
         outputs_list.append(wav_coarse)
         return outputs_list
 
+    def tiling(self, wav_thresholded_details):
+        outputs_list = []
+        for i_scale, wav_thresholded_detail in enumerate(wav_thresholded_details):
+            thresholded_details_tiled = self.convs_detail_tiling[i_scale](wav_thresholded_detail)
+            outputs_list.append(thresholded_details_tiled)
+        return outputs_list
+
     def get_config(self):
         config = super(LearnletAnalysis, self).get_config()
         config.update({
@@ -246,6 +253,24 @@ class LearnletSynthesis(Layer):
                 image = self.convs_groupping[i_scale](detail) + image
             else:
                 image = self.convs_groupping[i_scale](tf.concat([image, detail], axis=-1))
+        return image
+
+    def exact_reconstruction(self, analysis_coeffs, wav_analysis_coeffs_thresholded, wav_analysis_coeffs_thresholded_tiled):
+        details = analysis_coeffs[:-1]
+        details.reverse()
+        wav_analysis_coeffs_thresholded.reverse()
+        wav_analysis_coeffs_thresholded_tiled.reverse()
+        coarse = analysis_coeffs[-1]
+        image = coarse
+        for i_scale, (detail, wav_coeff_thresholded, wav_coeff_thresholded_tiled) in enumerate(zip(details, wav_analysis_coeffs_thresholded, wav_analysis_coeffs_thresholded_tiled)):
+            image = self.upsampling(image)
+            if self.normalize:
+                wav_norm = self.wav_filters_norm[i_scale]
+                detail = detail * wav_norm
+                wav_coeff_thresholded = wav_coeff_thresholded * wav_norm
+                wav_coeff_thresholded_tiled = wav_coeff_thresholded_tiled * wav_norm
+            if self.res:
+                image = self.convs_groupping[i_scale](detail - wav_coeff_thresholded_tiled) + wav_coeff_thresholded + image
         return image
 
     def get_config(self):

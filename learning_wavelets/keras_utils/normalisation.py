@@ -92,7 +92,7 @@ class NormalisationAdjustment(Callback):
         image_shape = [1, 2**self.n_pooling, 2**self.n_pooling, n_channels]
         if self.mode == 'subclassing':
             noise = tf.random.normal(stddev=1.0, shape=image_shape)
-            norm_inputs = [norm_input.numpy() for norm_input in self.model.compute_coefficients(noise)]
+            norm_inputs = [norm_input.numpy() for norm_input in self.model.compute_coefficients(noise, normalized=False, coarse=False)]
         else:
             noise = np.random.normal(scale=1.0, size=image_shape)
             norm_inputs = self.norms_input_model.predict_on_batch(noise)
