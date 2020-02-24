@@ -125,77 +125,63 @@ def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30
         image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
 
-def im_dataset_bsd500(mode='training', batch_size=1, patch_size=256, noise_std=30, exact_recon=False, no_noise=False, return_noise_level=False, n_pooling=None, n_samples=None, decreasing_noise_level=False):
+def im_dataset_bsd500(mode='training', **kwargs):
     # the training set for bsd500 is test + train
     # the test set (i.e. containing bsd68 images) is val
     if mode == 'training':
         train_path = 'BSR/BSDS500/data/images/train'
         test_path = 'BSR/BSDS500/data/images/test'
-        train_file_ds = tf.data.Dataset.list_files(f'{BSD500_DATA_DIR}{train_path}/*.jpg', seed=0)
-        test_file_ds = tf.data.Dataset.list_files(f'{BSD500_DATA_DIR}{test_path}/*.jpg', seed=0)
-        file_ds = train_file_ds.concatenate(test_file_ds)
+        paths = [train_path, test_path]
     elif mode == 'validation' or mode == 'testing':
         val_path = 'BSR/BSDS500/data/images/val'
-        file_ds = tf.data.Dataset.list_files(f'{BSD500_DATA_DIR}{val_path}/*.jpg', seed=0)
-    # TODO: refactor with div2k dataset
+        paths = [val_path]
+    im_ds = im_dataset_bsd(BSD500_DATA_DIR, paths, 'jpg', from_rgb=True, mode=mode, **kwargs)
+    return im_ds
+
+def im_dataset_bsd68(mode='validation', **kwargs):
+    path = 'BSD68'
+    im_ds = im_dataset_bsd(BSD68_DATA_DIR, [path], 'png', mode=mode, **kwargs)
+    return im_ds
+
+def im_dataset_bsd(
+        data_dir,
+        paths,
+        pattern,
+        mode='validation',
+        batch_size=1,
+        patch_size=256,
+        noise_std=30,
+        no_noise=False,
+        return_noise_level=False,
+        n_pooling=None,
+        n_samples=None,
+        set_noise_zero=False,
+        from_rgb=False,
+        decreasing_noise_level=False,
+    ):
+    file_ds = None
+    for path in paths:
+        file_ds_new = tf.data.Dataset.list_files(f'{data_dir}{path}/*.{pattern}', seed=0)
+        if file_ds is None:
+            file_ds = file_ds_new
+        else:
+            file_ds.concatenate(file_ds_new)
     if n_samples is not None:
         file_ds = file_ds.take(n_samples)
     file_ds = file_ds.shuffle(800, seed=0)
+    if pattern == 'jpg':
+        decode_function = tf.image.decode_jpeg
+    elif pattern == 'png':
+        decode_function = tf.image.decode_png
     image_ds = file_ds.map(
         tf.io.read_file, num_parallel_calls=tf.data.experimental.AUTOTUNE
     ).map(
-        tf.image.decode_jpeg, num_parallel_calls=tf.data.experimental.AUTOTUNE
+        decode_function, num_parallel_calls=tf.data.experimental.AUTOTUNE
     )
-    image_grey_ds = image_ds.map(
-        tf.image.rgb_to_grayscale, num_parallel_calls=tf.data.experimental.AUTOTUNE
-    ).map(
-        normalise, num_parallel_calls=tf.data.experimental.AUTOTUNE
-    )
-    # image_grey_aug_ds = image_grey_ds.map(tf_random_rotate_image)
-    if patch_size is not None:
-        select_patch_in_image = select_patch_in_image_function(patch_size)
-        image_patch_ds = image_grey_ds.map(
-            select_patch_in_image, num_parallel_calls=tf.data.experimental.AUTOTUNE
+    if from_rgb:
+        image_ds = image_ds.map(
+            tf.image.rgb_to_grayscale, num_parallel_calls=tf.data.experimental.AUTOTUNE
         )
-    elif n_pooling is not None:
-        pad = pad_for_pool(n_pooling)
-        image_patch_ds = image_grey_ds.map(
-            pad, num_parallel_calls=tf.data.experimental.AUTOTUNE
-        )
-    else:
-        image_patch_ds = image_grey_ds
-    add_noise = add_noise_function(
-        noise_std,
-        return_noise_level=return_noise_level,
-        no_noise=no_noise,
-        decreasing_noise_level=decreasing_noise_level,
-    )
-    image_noisy_ds = image_patch_ds.map(
-        lambda patch: (add_noise(patch), patch),
-        num_parallel_calls=tf.data.experimental.AUTOTUNE,
-    )
-    if exact_recon:
-        image_noisy_ds = image_noisy_ds.map(
-            exact_recon_helper,
-            num_parallel_calls=tf.data.experimental.AUTOTUNE,
-        )
-    image_noisy_ds = image_noisy_ds.batch(batch_size)
-    if mode != 'testing':
-        image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
-    return image_noisy_ds
-
-def im_dataset_bsd68(mode='validation', batch_size=1, patch_size=256, noise_std=30, no_noise=False, return_noise_level=False, n_pooling=None, n_samples=None, set_noise_zero=False):
-    path = 'BSD68'
-    file_ds = tf.data.Dataset.list_files(f'{BSD68_DATA_DIR}{path}/*.png', seed=0)
-    # TODO: refactor with div2k dataset
-    if n_samples is not None:
-        file_ds = file_ds.take(n_samples)
-    file_ds = file_ds.shuffle(100, seed=0)
-    image_ds = file_ds.map(
-        tf.io.read_file, num_parallel_calls=tf.data.experimental.AUTOTUNE
-    ).map(
-        tf.image.decode_png, num_parallel_calls=tf.data.experimental.AUTOTUNE
-    )
     image_grey_ds = image_ds.map(
         normalise, num_parallel_calls=tf.data.experimental.AUTOTUNE
     )
@@ -211,8 +197,14 @@ def im_dataset_bsd68(mode='validation', batch_size=1, patch_size=256, noise_std=
         )
     else:
         image_patch_ds = image_grey_ds
-    add_noise = add_noise_function(noise_std, return_noise_level=return_noise_level, no_noise=no_noise, set_noise_zero=set_noise_zero)
-    if mode == 'validation':
+    add_noise = add_noise_function(
+        noise_std,
+        return_noise_level=return_noise_level,
+        no_noise=no_noise,
+        set_noise_zero=set_noise_zero,
+        decreasing_noise_level=decreasing_noise_level,
+    )
+    if mode == 'validation' or mode == 'training':
         image_noisy_ds = image_patch_ds.map(
             lambda patch: (add_noise(patch), patch),
             num_parallel_calls=tf.data.experimental.AUTOTUNE,
