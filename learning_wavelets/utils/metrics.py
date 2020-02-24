@@ -7,6 +7,8 @@ from ..evaluate import Metrics
 from ..keras_utils.load_model import unpack_model
 from ..wavelet_denoising import wavelet_denoising_pysap
 
+
+# TODO: get rid of sequence metrics and adapt notebooks
 def enumerate_seq(seq, name):
     return (seq[i] for i in tqdm_notebook(range(len(seq)), desc=f'Val files for {name}'))
 

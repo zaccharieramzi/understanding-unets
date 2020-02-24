@@ -31,6 +31,7 @@ def wavelet_denoising_pysap(noisy_images, noise_std, wavelet_id='2', n_scales=2,
         denoised_images.append(denoised_image)
     return denoised_images
 
+# TODO: remove these manual denoising as buggy, and prefer the one above
 def threshold_wavelet_coefficients(data, wav_filters, noise_std):
     threshold_per_level = np.empty((len(wav_filters), *data.shape))
     for i_filter, wav_filter in enumerate(wav_filters):

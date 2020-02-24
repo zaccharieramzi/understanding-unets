@@ -5,6 +5,8 @@ from tensorflow.keras.layers import Activation, Conv2D, AveragePooling2D, UpSamp
 
 from .normalisation import Normalisation
 
+
+# TODO: see where used and get rid of for both !
 def conv_2d(image, n_channels, kernel_size=3, activation='relu', bias=True, unit_norm=False, noise_std_norm=False, name=None):
     constraint = None
     if unit_norm:

@@ -1,7 +1,7 @@
 import numpy as np
 from tensorflow.keras.callbacks import Callback
 
-
+# TODO: get rid of
 class NormalizeWeights(Callback):
     # NOTE: for now only normalizes the individual kernels
     # the normalization is not done on an output feature map basis.

@@ -9,7 +9,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 np.random.seed(1)
 
-
+# TODO: get rid of sequences, see if they are still used in some important notebooks, in which case adapt them.
 # general keras utilities
 class ConcatenateGenerators(Sequence):
     def __init__(self, *generators):

@@ -303,6 +303,7 @@ class RelaxedDynamicHardThresholding(Layer):
         return input_shape
 
 
+# TODO: remove this legacy cback
 class ThresholdAdjustment(Callback):
     def __init__(self, noise_std, n=2, n_pooling=4):
         super().__init__()

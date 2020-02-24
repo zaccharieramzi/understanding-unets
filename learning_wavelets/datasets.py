@@ -86,6 +86,7 @@ def add_noise_function(noise_std_range, return_noise_level=False, no_noise=False
 def exact_recon_helper(image_noisy, image):
     return (image_noisy, image), (image, image)
 
+# TODO: refactor the datasets
 def im_dataset_div2k(mode='training', batch_size=1, patch_size=256, noise_std=30, exact_recon=False, return_noise_level=False):
     if mode == 'training':
         path = 'DIV2K_train_HR'

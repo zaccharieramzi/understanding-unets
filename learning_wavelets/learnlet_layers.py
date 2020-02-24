@@ -298,6 +298,7 @@ class ScalesThreshold(Layer):
             self.thresholding_layer = Activation(self.denoising_activation, name='thresholding')
         if self.noise_std_norm:
             self.normalisation_layers = [Normalisation(1.0) for i in range(self.n_scales)]
+        # TODO: this should be done in a much cleaner way, for example providing the thresholding class and its kwargs
         if self.denoising_activation == 'dynamic_soft_thresholding':
             self.thresholding_layers = [DynamicSoftThresholding(2.0, trainable=True) for i in range(self.n_scales)]
         if self.denoising_activation == 'dynamic_hard_thresholding':

@@ -28,6 +28,7 @@ def learnlet(
         learnlet_analysis_kwargs = {}
     if learnlet_synthesis_kwargs is None:
         learnlet_synthesis_kwargs = {}
+    # TODO: consider that we are always in dynamic denoising
     dynamic_denoising = False
     if isinstance(denoising_activation, (DynamicSoftThresholding, DynamicHardThresholding, RelaxedDynamicHardThresholding, LocalWienerFiltering)) or 'dynamic' in denoising_activation:
         dynamic_denoising = True
@@ -50,6 +51,7 @@ def learnlet(
             detail = normalisation_layer(detail, mode='normal')
         if dynamic_denoising:
             if isinstance(denoising_activation, str):
+                # TODO: regroup all of this in thresholding.py with a map or even a function
                 if denoising_activation == 'dynamic_soft_thresholding':
                     thresholding_layer = DynamicSoftThresholding(2.0, trainable=True)
                 elif denoising_activation == 'dynamic_soft_thresholding_not_train':
@@ -84,6 +86,7 @@ def learnlet(
         learnlet_model = Model([image_noisy, noise_std], denoised_image)
     else:
         learnlet_model = Model(image_noisy, denoised_image)
+    # TODO: remove exact reconstruction weight, as it's ancient history and not used
     if exact_reconstruction_weight:
         # TODO: make exact reconstruction adaptable to dynamic denoising
         image = Input(input_size)
@@ -104,7 +107,7 @@ def learnlet(
         )
     return learnlet_model
 
-
+# TODO: this can be removed: not part of any final results notebooks
 # legacy learned wavelet
 def learned_wavelet_rec(
         image,
