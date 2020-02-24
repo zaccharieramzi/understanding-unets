@@ -1,7 +1,7 @@
 import numpy as np
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.constraints import Constraint, NonNeg, MaxNorm
-from tensorflow.keras.layers import Layer, ReLU, Activation, Conv2D
+from tensorflow.keras.layers import Layer, ReLU, Activation, Conv2D, ThresholdedReLU
 from tensorflow.keras.models import Model
 import tensorflow.keras.backend as K
 import tensorflow as tf
