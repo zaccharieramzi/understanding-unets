@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.models import Model
 
-from .keras_utils import DynamicSoftThresholding, DynamicHardThresholding
+from ..keras_utils import DynamicSoftThresholding, DynamicHardThresholding
 from .learnlet_layers import LearnletAnalysis, LearnletSynthesis, ScalesThreshold
 
 class Learnlet(Model):
