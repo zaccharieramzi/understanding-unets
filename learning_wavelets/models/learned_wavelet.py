@@ -17,7 +17,6 @@ def learnlet(
         noise_std_norm=True,
         normalize=True,
         n_scales=4,
-        exact_reconstruction_weight=0,
         learnlet_analysis_kwargs=None,
         learnlet_synthesis_kwargs=None,
         clip=False,
@@ -86,23 +85,9 @@ def learnlet(
         learnlet_model = Model([image_noisy, noise_std], denoised_image)
     else:
         learnlet_model = Model(image_noisy, denoised_image)
-    # TODO: remove exact reconstruction weight, as it's ancient history and not used
-    if exact_reconstruction_weight:
-        # TODO: make exact reconstruction adaptable to dynamic denoising
-        image = Input(input_size)
-        learnlet_analysis_coeffs_exact = learnlet_analysis_layer(image)
-        reconstructed_image = learnlet_synthesis_layer(learnlet_analysis_coeffs_exact)
-        learnlet_model = Model([image_noisy, image], [denoised_image, reconstructed_image])
-        learnlet_model.compile(
-            optimizer=Adam(lr=lr),
-            loss=['mse', 'mse'],
-            loss_weights=[1, exact_reconstruction_weight],
-            metrics=[[keras_psnr, keras_ssim]]*2,
-        )
-    else:
-        learnlet_model.compile(
-            optimizer=Adam(lr=lr),
-            loss='mse',
-            metrics=[keras_psnr, keras_ssim, center_keras_psnr],
-        )
+    learnlet_model.compile(
+        optimizer=Adam(lr=lr),
+        loss='mse',
+        metrics=[keras_psnr, keras_ssim, center_keras_psnr],
+    )
     return learnlet_model
