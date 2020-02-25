@@ -1,7 +1,6 @@
-import numpy as np
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.constraints import Constraint, NonNeg, MaxNorm
-from tensorflow.keras.layers import Layer, ReLU, Activation, Conv2D
+from tensorflow.keras.layers import Layer, ReLU, Activation, Conv2D, ThresholdedReLU
 from tensorflow.keras.models import Model
 import tensorflow.keras.backend as K
 import tensorflow as tf
@@ -74,7 +73,6 @@ class CheekyDynamicHardThresholding(Layer):
             return tf.ones(shape) * self.alpha_init
         def _alpha_bias_intializer(shape, **kwargs):
             return tf.ones(shape) * (self.alpha_init -1.0)
-        # TODO: set constraints on alpha, and potentially have it be varying along the channels
         self.alpha_thresh = self.add_weight(
             shape=(1,),
             initializer=_alpha_thresh_intializer,
@@ -129,7 +127,6 @@ class DynamicSoftThresholding(Layer):
     def build(self, input_shapes):
         def _alpha_intializer(shape, **kwargs):
             return tf.ones(shape) * self.alpha_init
-        # TODO: set constraints on alpha, and potentially have it be varying along the channels
         if self.per_filter:
             shape = (input_shapes[0][-1],)
         else:
@@ -301,38 +298,3 @@ class RelaxedDynamicHardThresholding(Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape
-
-
-# TODO: remove this legacy cback
-class ThresholdAdjustment(Callback):
-    def __init__(self, noise_std, n=2, n_pooling=4):
-        super().__init__()
-        self.noise_std = noise_std
-        self.n = n
-        # 4 as a minimum just to make sure we have enough samples to compute
-        # a reliable std
-        self.n_pooling = min(n_pooling, 4) + 3
-
-    def set_model(self, model):
-        self.model = model
-        self.sts = list()  # list the soft thresh layers
-        st_input_model_outputs = list()
-        for layer in model.layers:
-            if isinstance(layer, Activation) and isinstance(layer.activation, SoftThresholding):
-                self.sts.append(layer)
-                # this is from https://stackoverflow.com/a/50858709/4332585
-                st_input = layer._inbound_nodes[0].inbound_layers[0].output
-                st_input_model_outputs.append(st_input)
-        self.sts_input_model = Model(model.input, st_input_model_outputs)
-
-    def on_batch_end(self, batch, logs={}):
-        n_channels = self.model.input_shape[-1]
-        image_shape = [1, 2**self.n_pooling, 2**self.n_pooling]
-        image_shape.append(n_channels)
-        noise = np.random.normal(scale=self.noise_std, size=image_shape)
-        st_inputs = self.sts_input_model.predict_on_batch(noise)
-        for st_layer, st_input in zip(self.sts, st_inputs):
-            st_input = st_input[0]
-            n_channels = st_input.shape[-1]
-            average_std = np.mean([np.std(st_input[..., i]) for i in range(n_channels)])
-            st_layer.activation.threshold = self.n * average_std

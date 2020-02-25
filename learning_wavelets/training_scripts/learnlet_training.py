@@ -7,9 +7,9 @@ from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LearningRat
 import tensorflow as tf
 
 from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
-from learning_wavelets.datasets import im_dataset_div2k, im_dataset_bsd500
+from learning_wavelets.data.datasets import im_dataset_div2k, im_dataset_bsd500
 from learning_wavelets.keras_utils.normalisation import NormalisationAdjustment
-from learning_wavelets.learned_wavelet import learnlet
+from learning_wavelets.models.learned_wavelet import learnlet
 
 tf.random.set_seed(1)
 
@@ -117,7 +117,6 @@ def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visib
         },
         'wav_type': 'starlet',
         'n_scales': 5,
-        'exact_reconstruction_weight': 0,
         'clip': False,
     }
     n_epochs = 500
@@ -144,7 +143,7 @@ def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visib
         write_images=False,
         profile_batch=0,
     )
-    norm_cback = NormalisationAdjustment(momentum=0.99, n_pooling=5, dynamic_denoising=True)
+    norm_cback = NormalisationAdjustment(momentum=0.99, n_pooling=5)
     norm_cback.on_train_batch_end = norm_cback.on_batch_end
 
 

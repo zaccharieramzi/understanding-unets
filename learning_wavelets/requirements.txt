@@ -6,6 +6,7 @@ pylint
 keras-tqdm
 pydot
 tensorboard
+tensorflow
 click
 scikit-image
 pandas
