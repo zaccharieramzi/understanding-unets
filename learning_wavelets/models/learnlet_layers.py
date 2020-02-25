@@ -234,7 +234,7 @@ class LearnletSynthesis(Layer):
         if self.normalize:
             self.wav_filters_norm = wav_filters_norm
             if self.wav_filters_norm is not None:
-                self.wav_filters_norm.reverse()
+                self.wav_filters_norm = self.wav_filters_norm[::-1]
         if self.wav_type == 'starlet':
             self.upsampling = FixedPointUpSampling()
         elif self.wav_type == 'bior':
