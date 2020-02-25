@@ -94,7 +94,7 @@ class WavAnalysis(Layer):
         wav_coeffs = list()
         for i_scale in range(self.n_scales):
             if self.undecimated:
-                dilation_rate = i_scale + 1
+                dilation_rate = 2**i_scale
             else:
                 dilation_rate = 1
             low_freqs, high_freqs = self.wav_pooling(low_freqs, dilation_rate=dilation_rate)
