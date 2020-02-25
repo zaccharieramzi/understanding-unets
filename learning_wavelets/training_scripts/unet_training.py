@@ -7,8 +7,8 @@ from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LearningRat
 import tensorflow as tf
 
 from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
-from learning_wavelets.datasets import im_dataset_div2k, im_dataset_bsd500
-from learning_wavelets.unet import unet
+from learning_wavelets.data.datasets import im_dataset_div2k, im_dataset_bsd500
+from learning_wavelets.models.unet import unet
 
 
 tf.random.set_seed(1)
