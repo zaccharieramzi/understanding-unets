@@ -6,9 +6,12 @@ from learning_wavelets.models.learnlet_model import Learnlet
 
 learnlet_test_cases = [
     {},
+    {'undecimated': True},
     {'n_reweights_learn': 3},
+    {'n_reweights_learn': 3, 'undecimated': True},
     # TODO: maybe change in subclassed model to have a check for these 2 params when doing exact recon
     {'exact_reconstruction': True, 'learnlet_synthesis_kwargs': {'res': True}, 'learnlet_analysis_kwargs': {'skip_connection': True}},
+    {'exact_reconstruction': True, 'undecimated': True, 'learnlet_synthesis_kwargs': {'res': True}, 'learnlet_analysis_kwargs': {'skip_connection': True}},
 ]
 
 @pytest.mark.parametrize('learnlet_kwargs', learnlet_test_cases)
