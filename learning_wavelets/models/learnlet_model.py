@@ -57,6 +57,7 @@ class Learnlet(Model):
                 thresholding_layer.alpha_init += 1
         self.synthesis = LearnletSynthesis(
             normalize=self.normalize,
+            wav_filters_norm=self.analysis.wav_analysis.wav_filters_norm,
             n_scales=self.n_scales,
             undecimated=self.undecimated,
             **learnlet_synthesis_kwargs,
