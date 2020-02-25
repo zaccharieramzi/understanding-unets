@@ -43,8 +43,9 @@ def test_fit(learnlet_kwargs):
     )
     K.clear_session()
 
-def test_exact_reconstruction():
-    model = Learnlet(**learnlet_test_cases[-1])
+@pytest.mark.parametrize('learnlet_kwargs', learnlet_test_cases[-3:-1])
+def test_exact_reconstruction(learnlet_kwargs):
+    model = Learnlet(**learnlet_kwargs)
     model.build([(None, 32, 32, 1), (None, 1)])
     image = tf.random.uniform((1, 32, 32, 1), maxval=1, seed=0)
     # we use a noise of level 0 to simulate no thresholding
