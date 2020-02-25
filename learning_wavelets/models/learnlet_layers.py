@@ -1,4 +1,3 @@
-import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
@@ -22,41 +21,21 @@ h_filter_starlet = [1/16, 1/4, 3/8, 1/4, 1/16]
 
 class WavPooling(Layer):
     __name__ = 'wav_pooling'
-    def __init__(self, wav_type='starlet'):
+    def __init__(self, wav_type='starlet', undecimated=False):
         super(WavPooling, self).__init__()
         self.wav_type = wav_type
+        self.undecimated = undecimated
         if self.wav_type == 'starlet':
-            base_filter = h_filter_starlet
+            self.base_filter = h_filter_starlet
         elif self.wav_type == 'bior':
-            base_filter = h_filter_bior
+            self.base_filter = h_filter_bior
         else:
             raise ValueError(f'Wavelet type {self.wav_type} is not implemented')
-        wav_h_filter = np.array([
-            [i * j for j in base_filter]
-            for i in base_filter
-        ])
-        def h_kernel_initializer(shape, **kwargs):
-            return wav_h_filter[..., None, None]
-        h_prefix = 'low_pass_filtering'
-        self.conv_h = Conv2D(
-            1,
-            # TODO: check that wav_h_filter is square
-            wav_h_filter.shape[0],
-            activation='linear',
-            padding='valid',
-            kernel_initializer=h_kernel_initializer,
-            use_bias=False,
-            name=f'{h_prefix}_{str(K.get_uid(h_prefix))}',
-        )
-        self.conv_h.trainable = False
-        pad_length = len(base_filter)//2
-        self.pad = tf.constant([
-            [0, 0],
-            [pad_length, pad_length],
-            [pad_length, pad_length],
-            [0, 0],
-        ])
-        g_prefix = 'high_pass_filtering'
+        self.wav_h_filter = tf.convert_to_tensor([
+            [i * j for j in self.base_filter]
+            for i in self.base_filter
+        ])[..., None, None]
+
         self.down = FixedPointPooling()
         if self.wav_type == 'starlet':
             self.up = FixedPointUpSampling()
@@ -64,25 +43,43 @@ class WavPooling(Layer):
             self.up = BiorUpSampling()
 
 
-    def call(self, images):
-        padded_images = tf.pad(images, self.pad, 'SYMMETRIC')
-        low_freqs = self.conv_h(padded_images)
-        high_freqs = images - self.up(self.down(low_freqs))
+    def call(self, images, dilation_rate=1):
+        pad_length = (len(self.base_filter) // 2) * dilation_rate
+        pad = tf.constant([
+            [0, 0],
+            [pad_length, pad_length],
+            [pad_length, pad_length],
+            [0, 0],
+        ])
+        padded_images = tf.pad(images, pad, 'SYMMETRIC')
+        low_freqs = tf.nn.conv2d(
+            padded_images,
+            self.wav_h_filter,
+            strides=1,
+            padding='VALID',
+            dilations=dilation_rate,
+        )
+        if self.undecimated:
+            high_freqs = images - low_freqs
+        else:
+            high_freqs = images - self.up(self.down(low_freqs))
         return [low_freqs, high_freqs]
 
     def get_config(self):
         config = super(WavPooling, self).get_config()
         config.update({
             'wav_type': self.wav_type,
+            'undecimated': self.undecimated,
         })
         return config
 
 class WavAnalysis(Layer):
     __name__ = 'wav_analysis'
-    def __init__(self, n_scales=4, coarse=False, normalize=True, wav_type='starlet'):
+    def __init__(self, n_scales=4, coarse=False, normalize=True, wav_type='starlet', undecimated=False):
         super(WavAnalysis, self).__init__()
         self.wav_type = wav_type
-        self.wav_pooling = WavPooling(wav_type=self.wav_type)
+        self.undecimated = undecimated
+        self.wav_pooling = WavPooling(wav_type=self.wav_type, undecimated=self.undecimated)
         self.pooling = FixedPointPooling()
         self.normalize = normalize
         self.n_scales = n_scales
@@ -94,12 +91,17 @@ class WavAnalysis(Layer):
         low_freqs = image
         wav_coeffs = list()
         for i_scale in range(self.n_scales):
-            low_freqs, high_freqs = self.wav_pooling(low_freqs)
+            if self.undecimated:
+                dilation_rate = i_scale + 1
+            else:
+                dilation_rate = 1
+            low_freqs, high_freqs = self.wav_pooling(low_freqs, dilation_rate=dilation_rate)
             if self.normalize:
                 wav_norm = self.wav_filters_norm[i_scale]
                 high_freqs = high_freqs / wav_norm
             wav_coeffs.append(high_freqs)
-            low_freqs = self.pooling(low_freqs)
+            if not self.undecimated:
+                low_freqs = self.pooling(low_freqs)
         if self.coarse:
             wav_coeffs.append(low_freqs)
         return wav_coeffs
@@ -111,6 +113,7 @@ class WavAnalysis(Layer):
             'n_scales': self.n_scales,
             'coarse': self.coarse,
             'normalize': self.normalize,
+            'undecimated': self.undecimated,
         })
         return config
 
@@ -203,7 +206,18 @@ class LearnletAnalysis(Layer):
 
 class LearnletSynthesis(Layer):
     __name__ = 'learnlet_synthesis'
-    def __init__(self, normalize=True, n_scales=4, n_channels=1, synthesis_use_bias=False, synthesis_norm=False, res=False, kernel_size=5, wav_type='starlet'):
+    def __init__(
+            self,
+            normalize=True,
+            n_scales=4,
+            n_channels=1,
+            synthesis_use_bias=False,
+            synthesis_norm=False,
+            res=False,
+            kernel_size=5,
+            wav_type='starlet',
+            undecimated=False
+        ):
         super(LearnletSynthesis, self).__init__()
         self.normalize = normalize
         self.n_scales = n_scales
@@ -213,6 +227,7 @@ class LearnletSynthesis(Layer):
         self.res = res
         self.kernel_size = kernel_size
         self.wav_type = wav_type
+        self.undecimated = undecimated
         if self.normalize:
             self.wav_filters_norm = get_wavelet_filters_normalisation(self.n_scales, wav_type=self.wav_type)
             self.wav_filters_norm.reverse()
@@ -245,7 +260,8 @@ class LearnletSynthesis(Layer):
         coarse = analysis_coeffs[-1]
         image = coarse
         for i_scale, detail in enumerate(details):
-            image = self.upsampling(image)
+            if not self.undecimated:
+                image = self.upsampling(image)
             if self.normalize:
                 wav_norm = self.wav_filters_norm[i_scale]
                 detail = detail * wav_norm
@@ -263,7 +279,8 @@ class LearnletSynthesis(Layer):
         coarse = analysis_coeffs[-1]
         image = coarse
         for i_scale, (detail, wav_coeff_thresholded, wav_coeff_thresholded_tiled) in enumerate(zip(details, wav_analysis_coeffs_thresholded, wav_analysis_coeffs_thresholded_tiled)):
-            image = self.upsampling(image)
+            if not self.undecimated:
+                image = self.upsampling(image)
             if self.normalize:
                 wav_norm = self.wav_filters_norm[i_scale]
                 detail = detail * wav_norm
@@ -284,6 +301,7 @@ class LearnletSynthesis(Layer):
             'res': self.res,
             'kernel_size': self.kernel_size,
             'wav_type': self.wav_type,
+            'undecimated': self.undecimated,
         })
         return config
 
