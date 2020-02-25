@@ -43,7 +43,7 @@ def test_fit(learnlet_kwargs):
     )
     K.clear_session()
 
-@pytest.mark.parametrize('learnlet_kwargs', learnlet_test_cases[-3:-1])
+@pytest.mark.parametrize('learnlet_kwargs', learnlet_test_cases[-2:])
 def test_exact_reconstruction(learnlet_kwargs):
     model = Learnlet(**learnlet_kwargs)
     model.build([(None, 32, 32, 1), (None, 1)])
