@@ -73,7 +73,6 @@ class CheekyDynamicHardThresholding(Layer):
             return tf.ones(shape) * self.alpha_init
         def _alpha_bias_intializer(shape, **kwargs):
             return tf.ones(shape) * (self.alpha_init -1.0)
-        # TODO: set constraints on alpha, and potentially have it be varying along the channels
         self.alpha_thresh = self.add_weight(
             shape=(1,),
             initializer=_alpha_thresh_intializer,
@@ -128,7 +127,6 @@ class DynamicSoftThresholding(Layer):
     def build(self, input_shapes):
         def _alpha_intializer(shape, **kwargs):
             return tf.ones(shape) * self.alpha_init
-        # TODO: set constraints on alpha, and potentially have it be varying along the channels
         if self.per_filter:
             shape = (input_shapes[0][-1],)
         else:

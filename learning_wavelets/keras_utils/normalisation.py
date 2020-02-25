@@ -40,7 +40,6 @@ class Normalisation(Layer):
 
 
 class NormalisationAdjustment(Callback):
-    # TODO: adapt to just new functionnal and subclassing, reminding that subclassing is the way to go
     def __init__(self, n_pooling=4, momentum=0.9):
         super().__init__()
         # 4 as a minimum just to make sure we have enough samples to compute
