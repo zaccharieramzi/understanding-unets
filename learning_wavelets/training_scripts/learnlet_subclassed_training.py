@@ -174,8 +174,6 @@ def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visib
             loss='mse',
             metrics=[keras_psnr, keras_ssim, center_keras_psnr],
         )
-    print(model.summary(line_length=114))
-
 
     model.fit(
         im_ds_train,
