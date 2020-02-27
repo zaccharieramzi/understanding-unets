@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=learnlet_undecimated     # nom du job
-#SBATCH --ntasks=3                   # nombre de tâche MPI
-#SBATCH --ntasks-per-node=3          # nombre de tâche MPI par noeud
-#SBATCH --gres=gpu:3                 # nombre de GPU à réserver par nœud
+#SBATCH --ntasks=4                   # nombre de tâche MPI
+#SBATCH --ntasks-per-node=4          # nombre de tâche MPI par noeud
+#SBATCH --gres=gpu:4                 # nombre de GPU à réserver par nœud
 #SBATCH --cpus-per-task=10           # nombre de coeurs à réserver par tâche
 # /!\ Attention, la ligne suivante est trompeuse mais dans le vocabulaire
 # de Slurm "multithread" fait bien référence à l'hyperthreading.
@@ -17,7 +17,7 @@ cd $WORK/understanding-unets
 
 . ./submission_scripts_jean_zay/env_config.sh
 
-srun python ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 20 40&
-srun python ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 30 30&
+srun python ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 20 40 -gpus 0,1&
+srun python ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 30 30 -gpus 2,3&
 
 wait  # wait for all ccc_mprun(s) to complete.

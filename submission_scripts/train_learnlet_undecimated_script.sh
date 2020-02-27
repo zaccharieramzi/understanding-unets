@@ -17,7 +17,7 @@ cd $workspace/understanding-unets
 
 . ./submission_scripts/env_config.sh
 
-ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 20 40 -gpus 01&
-ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 30 30 -gpus 23&
+ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 20 40 -gpus 0,1&
+ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 30 30 -gpus 2,3&
 
 wait  # wait for all ccc_mprun(s) to complete.
