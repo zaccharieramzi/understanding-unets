@@ -17,7 +17,7 @@ cd $WORK/understanding-unets
 
 . ./submission_scripts_jean_zay/env_config.sh
 
-srun python ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 20 40 -gpus 0,1&
-srun python ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 30 30 -gpus 2,3&
+srun --ntasks=1 python ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 20 40 -gpus 0,1&
+srun --ntasks=1 python ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 30 30 -gpus 2,3&
 
 wait  # wait for all ccc_mprun(s) to complete.
