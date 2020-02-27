@@ -1,6 +1,6 @@
 #!/bin/bash
 #MSUB -r train_learnlets_undecimated              # Request name
-#MSUB -n 1                         # Number of tasks to use
+#MSUB -n 2                         # Number of tasks to use
 #MSUB -c 20                         # 2 cores wasn't enough for memory consumption
 #MSUB -x
 #MSUB -T 86400                      # Elapsed time limit in seconds
@@ -17,6 +17,7 @@ cd $workspace/understanding-unets
 
 . ./submission_scripts/env_config.sh
 
-ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u&
+ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 20 40 -gpus 01&
+ccc_mprun -E '--exclusive' -n 1 python3 ./learning_wavelets/training_scripts/learnlet_subclassed_training.py -nf 64 -u --ns-train 30 30 -gpus 23&
 
 wait  # wait for all ccc_mprun(s) to complete.
