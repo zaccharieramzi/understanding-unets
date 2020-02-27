@@ -1,7 +1,7 @@
 #!/bin/bash
 #MSUB -r train_learnlets_undecimated              # Request name
 #MSUB -n 1                         # Number of tasks to use
-#MSUB -c 2                         # I want 2 cores per task since io might be costly
+#MSUB -c 20                         # 2 cores wasn't enough for memory consumption
 #MSUB -x
 #MSUB -T 86400                      # Elapsed time limit in seconds
 #MSUB -o learnlet_train_subclassed_%I.o              # Standard output. %I is the job id
