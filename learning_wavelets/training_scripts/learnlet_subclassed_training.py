@@ -86,7 +86,24 @@ tf.random.set_seed(1)
     is_flag=True,
     help='Set if you want the learnlets to be undecimated.',
 )
-def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_devices, denoising_activation, n_filters, decreasing_noise_level, undecimated):
+@click.option(
+    'exact_reco',
+    '-e',
+    is_flag=True,
+    help='Set if you want the learnlets to have exact reconstruction.',
+)
+def train_learnlet(
+        noise_std_train,
+        noise_std_val,
+        n_samples,
+        source,
+        cuda_visible_devices,
+        denoising_activation,
+        n_filters,
+        decreasing_noise_level,
+        undecimated,
+        exact_reco,
+    ):
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
     # data preparation
     batch_size = 8
@@ -128,15 +145,17 @@ def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visib
         },
         'n_scales': 5,
         'n_reweights_learn': 1,
-        'exact_reconstruction': True,
+        'exact_reconstruction': exact_reco,
         'undecimated': undecimated,
         'clip': False,
     }
 
-    n_epochs = 500
+    n_epochs = 100
     undecimated_str = 'decimated'
     if undecimated:
         undecimated_str = 'un' + undecimated_str
+    if exact_reco:
+        undecimated_str += '_exact_reco'
     run_id = f'learnlet_subclassed_{undecimated_str}_{n_filters}_{denoising_activation}_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{n_samples}_{int(time.time())}'
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
@@ -164,7 +183,6 @@ def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visib
     norm_cback.on_train_batch_end = norm_cback.on_batch_end
 
 
-    n_channels = 1
     # run distributed
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
