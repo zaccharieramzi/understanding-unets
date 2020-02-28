@@ -92,6 +92,12 @@ tf.random.set_seed(1)
     is_flag=True,
     help='Set if you want the learnlets to have exact reconstruction.',
 )
+@click.option(
+    'n_reweights',
+    '-nr',
+    default=1,
+    help='The number of reweights. Defaults to 1.',
+)
 def train_learnlet(
         noise_std_train,
         noise_std_val,
@@ -103,6 +109,7 @@ def train_learnlet(
         decreasing_noise_level,
         undecimated,
         exact_reco,
+        n_reweights,
     ):
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
     # data preparation
@@ -144,7 +151,7 @@ def train_learnlet(
             'noise_std_norm': True,
         },
         'n_scales': 5,
-        'n_reweights_learn': 1,
+        'n_reweights_learn': n_reweights,
         'exact_reconstruction': exact_reco,
         'undecimated': undecimated,
         'clip': False,
