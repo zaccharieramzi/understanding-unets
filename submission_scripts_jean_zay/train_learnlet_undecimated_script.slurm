@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=learnlet_undecimated     # nom du job
+#SBATCH --job-name=learnlet_undecimated_n_filters     # nom du job
 #SBATCH --ntasks=4                   # nombre de tâche MPI
 #SBATCH --ntasks-per-node=4          # nombre de tâche MPI par noeud
 #SBATCH --gres=gpu:4                 # nombre de GPU à réserver par nœud
@@ -9,8 +9,8 @@
 #SBATCH --hint=nomultithread         # on réserve des coeurs physiques et non logiques
 #SBATCH --distribution=block:block   # on épingle les tâches sur des coeurs contigus
 #SBATCH --time=10:00:00              # temps d’exécution maximum demande (HH:MM:SS)
-#SBATCH --output=learnlet_undecimated%j.out # nom du fichier de sortie
-#SBATCH --error=learnlet_undecimated%j.out  # nom du fichier d'erreur (ici commun avec la sortie)
+#SBATCH --output=learnlet_undecimated_n_filters%j.out # nom du fichier de sortie
+#SBATCH --error=learnlet_undecimated_n_filters%j.out  # nom du fichier d'erreur (ici commun avec la sortie)
 
 set -x
 cd $WORK/understanding-unets
