@@ -59,7 +59,7 @@ def metrics_bm3d_from_ds(ds, noise_std=30, with_shape=True):
                 images_noisy[0, ..., 0].numpy() + 0.5,
                 sigma_psd=noise_std/255,
                 stage_arg=bm3d.BM3DStages.ALL_STAGES
-            )[None, ..., None],
+            )[None, ..., None] - 0.5,
             images_gt.numpy(),
             im_shape.numpy(),
         )
