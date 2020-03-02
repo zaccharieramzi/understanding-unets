@@ -52,7 +52,6 @@ def metrics_wavelets_from_ds(ds, wavelet_id, noise_std=30, with_shape=True):
 
 def metrics_bm3d_from_ds(ds, noise_std=30, with_shape=True):
     metrics = Metrics()
-    import ipdb; ipdb.set_trace()
     pred_and_gt_shape = [
         (
             bm3d.bm3d(
