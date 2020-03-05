@@ -24,7 +24,8 @@ class IstaLearnlet(Model):
         ]
 
     def call(self, inputs):
-        x = self.adjoint_operator(*inputs)
+        measurements, subsampling_pattern = inputs
+        x = self.adjoint_operator(measurements[..., 0], subsampling_pattern)[..., None]
         for i in range(self.n_iterations):
             # ISTA-step
             grad = self.grad(x, inputs)
@@ -42,5 +43,6 @@ class IstaLearnlet(Model):
 
     def grad(self, x, inputs):
         measurements, subsampling_pattern = inputs
-        measurements_residual = self.forward_operator(x, subsampling_pattern) - measurements
-        return self.adjoint_operator(measurements_residual, subsampling_pattern)
+        measurements = measurements[..., 0]
+        measurements_residual = self.forward_operator(x[..., 0], subsampling_pattern) - measurements
+        return self.adjoint_operator(measurements_residual, subsampling_pattern)[..., None]
