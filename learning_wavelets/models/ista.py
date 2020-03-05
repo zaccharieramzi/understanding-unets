@@ -4,7 +4,9 @@ from tensorflow.keras.models import Model
 from .learnlet_model import Learnlet
 
 class IstaLearnlet(Model):
+    __name__ = 'ista_learnlet'
     def __init__(self, n_iterations, forward_operator, adjoint_operator, operator_lips_cst=None, **learnlet_kwargs):
+        super(IstaLearnlet, self).__init__()
         self.n_iterations = n_iterations
         self.forward_operator = forward_operator
         self.adjoint_operator = adjoint_operator
@@ -22,14 +24,23 @@ class IstaLearnlet(Model):
         ]
 
     def call(self, inputs):
-        x = self.adjoint_operator(inputs)
+        x = self.adjoint_operator(*inputs)
         for i in range(self.n_iterations):
             # ISTA-step
-            x = self.prox(x - self.alphas[i] * self.grad(x, inputs), self.alphas[i])
+            grad = self.grad(x, inputs)
+            alpha = tf.cast(self.alphas[i], grad.dtype)
+            x = x - alpha * grad
+            # learnlet transform on both the real and imaginary part
+            x_real = self.prox(tf.math.real(x), self.alphas[i])
+            x_imag = self.prox(tf.math.imag(x), self.alphas[i])
+            x = tf.complex(x_real, x_imag)
+        x = tf.math.abs(x)
         return x
 
     def prox(self, x, alpha):
         return self.learnlet([x, alpha])
 
-    def grad(self, x, y):
-        return self.adjoint_operator(self.forward_operator(x) - y)
+    def grad(self, x, inputs):
+        measurements, subsampling_pattern = inputs
+        measurements_residual = self.forward_operator(x, subsampling_pattern) - measurements
+        return self.adjoint_operator(measurements_residual, subsampling_pattern)
