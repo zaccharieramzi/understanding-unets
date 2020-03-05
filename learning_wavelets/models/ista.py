@@ -5,11 +5,12 @@ from .learnlet_model import Learnlet
 
 class IstaLearnlet(Model):
     __name__ = 'ista_learnlet'
-    def __init__(self, n_iterations, forward_operator, adjoint_operator, operator_lips_cst=None, **learnlet_kwargs):
+    def __init__(self, n_iterations, forward_operator, adjoint_operator, operator_lips_cst=None, postprocess=None, **learnlet_kwargs):
         super(IstaLearnlet, self).__init__()
         self.n_iterations = n_iterations
         self.forward_operator = forward_operator
         self.adjoint_operator = adjoint_operator
+        self.postprocess = postprocess
         self.learnlet = Learnlet(**learnlet_kwargs)
         if operator_lips_cst is None:
             # TODO: think of sthg better
@@ -36,6 +37,8 @@ class IstaLearnlet(Model):
             x_imag = self.prox(tf.math.imag(x), self.alphas[i])
             x = tf.complex(x_real, x_imag)
         x = tf.math.abs(x)
+        if self.postprocess is not None:
+            x = self.postprocess(x)
         return x
 
     def prox(self, x, alpha):
