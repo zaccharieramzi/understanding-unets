@@ -29,8 +29,7 @@ def from_image_to_masked_kspace_and_mask(af=4):
         kspace = tf_masked_shifted_normed_fft2d(image, mask)
         kspace_channeled = kspace[..., None]
         image_channeled = tf.cast(image[..., None], 'float32')
-        mask_channeled = mask[..., None]
-        return (kspace_channeled, mask_channeled), image_channeled
+        return (kspace_channeled, mask), image_channeled
     return _from_image_to_masked_kspace_and_mask
 
 
