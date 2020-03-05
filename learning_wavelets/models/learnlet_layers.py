@@ -310,7 +310,7 @@ class LearnletSynthesis(Layer):
         return config
 
 class ScalesThreshold(Layer):
-    def __init__(self, noise_std_norm=True, dynamic_denoising=False, denoising_activation='relu', n_scales=2):
+    def __init__(self, noise_std_norm=True, dynamic_denoising=False, denoising_activation='relu', n_scales=2, alpha_init=2.0):
         super(ScalesThreshold, self).__init__()
         self.noise_std_norm = noise_std_norm
         self.dynamic_denoising = dynamic_denoising
@@ -322,11 +322,11 @@ class ScalesThreshold(Layer):
             self.normalisation_layers = [Normalisation(1.0) for i in range(self.n_scales)]
         # TODO: this should be done in a much cleaner way, for example providing the thresholding class and its kwargs
         if self.denoising_activation == 'dynamic_soft_thresholding':
-            self.thresholding_layers = [DynamicSoftThresholding(2.0, trainable=True) for i in range(self.n_scales)]
+            self.thresholding_layers = [DynamicSoftThresholding(alpha_init, trainable=True) for i in range(self.n_scales)]
         if self.denoising_activation == 'dynamic_hard_thresholding':
-            self.thresholding_layers = [DynamicHardThresholding(3.0, trainable=False) for i in range(self.n_scales)]
+            self.thresholding_layers = [DynamicHardThresholding(alpha_init, trainable=False) for i in range(self.n_scales)]
         elif self.denoising_activation == 'cheeky_dynamic_hard_thresholding':
-            self.thresholding_layers = [CheekyDynamicHardThresholding(3.0, trainable=True) for i in range(self.n_scales)]
+            self.thresholding_layers = [CheekyDynamicHardThresholding(alpha_init, trainable=True) for i in range(self.n_scales)]
 
     def call(self, inputs, weights=None, no_back_normalisation=False):
         if self.dynamic_denoising:
