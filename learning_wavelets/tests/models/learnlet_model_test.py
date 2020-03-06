@@ -52,3 +52,4 @@ def test_exact_reconstruction(learnlet_kwargs):
     res_image = model([image, tf.zeros(1, 1)])
     res_psnr = tf.image.psnr(image, res_image, 1.).numpy()
     assert res_psnr > 100
+    K.clear_session()
