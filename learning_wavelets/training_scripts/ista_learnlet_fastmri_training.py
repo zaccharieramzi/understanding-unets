@@ -127,7 +127,7 @@ def train_ista_learnlet(
         'clip': False,
     }
 
-    n_epochs = 300
+    n_epochs = 100
     run_id = f'ista_learnlet_fastmri_{n_filters}_{n_iters}_{denoising_activation}_{int(time.time())}'
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
