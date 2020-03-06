@@ -26,7 +26,7 @@ val_path = f'{FASTMRI_DATA_DIR}singlecoil_val/'
     'af',
     '-af',
     default=4,
-    type=float,
+    type=int,  # TODO: change this quick and dirty fix
     help='The acceleration factor for the subsampling. Defaults to 4.',
 )
 @click.option(
