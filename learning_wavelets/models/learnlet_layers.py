@@ -129,6 +129,7 @@ class LearnletAnalysis(Layer):
             n_scales=4,
             kernel_size=5,
             skip_connection=False,
+            undecimated=False,
             **wav_analysis_kwargs,
         ):
         super(LearnletAnalysis, self).__init__()
@@ -139,7 +140,13 @@ class LearnletAnalysis(Layer):
         self.n_scales = n_scales
         self.kernel_size = kernel_size
         self.skip_connection = skip_connection
-        self.wav_analysis = WavAnalysis(coarse=True, n_scales=self.n_scales, **wav_analysis_kwargs)
+        self.undecimated = undecimated
+        self.wav_analysis = WavAnalysis(
+            coarse=True,
+            n_scales=self.n_scales,
+            undecimated=undecimated,
+            **wav_analysis_kwargs,
+        )
         constraint = None
         if self.tiling_unit_norm:
             constraint = UnitNorm(axis=[0, 1, 2])
@@ -150,11 +157,12 @@ class LearnletAnalysis(Layer):
                 self.kernel_size,
                 activation='linear',
                 padding='same',
+                dilation_rate=2**i_scale if self.undecimated else 1,
                 kernel_initializer='glorot_uniform',
                 use_bias=tiling_use_bias,
                 kernel_constraint=constraint,
                 name=f'{tiling_prefix}_{str(K.get_uid(tiling_prefix))}',
-            ) for i in range(self.n_scales)
+            ) for i_scale in range(self.n_scales)
         ]
         if self.mixing_details:
             mixing_prefix = 'details_mixing'
@@ -251,11 +259,12 @@ class LearnletSynthesis(Layer):
                 self.kernel_size,
                 activation='linear',
                 padding='same',
+                dilation_rate=2**i_scale if self.undecimated else 1,
                 kernel_initializer='glorot_uniform',
                 use_bias=synthesis_use_bias,
                 kernel_constraint=constraint,
                 name=f'{groupping_prefix}_{str(K.get_uid(groupping_prefix))}',
-            ) for i in range(self.n_scales)
+            ) for i_scale in range(self.n_scales)
         ]
 
     def call(self, analysis_coeffs):
