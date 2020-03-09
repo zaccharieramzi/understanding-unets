@@ -21,6 +21,6 @@ pip install -r ../fastmri-reproducible-benchmark/requirements.txt
 export FASTMRI_DATA_DIR=$SCRATCH/
 
 
-srun --ntasks=1 python ./learning_wavelets/training_scripts/ista_learnlet_fastmri_training.py -e -u&
+srun --ntasks=1 python ./learning_wavelets/training_scripts/ista_learnlet_fastmri_training.py -e -u -nf 32&
 
 wait  # wait for all ccc_mprun(s) to complete.
