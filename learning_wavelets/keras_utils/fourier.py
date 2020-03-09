@@ -3,7 +3,7 @@ from tensorflow.python.ops.signal.fft_ops import fft2d, ifft2d, ifftshift, fftsh
 
 
 def tf_shifted_normed_fft2d(image):
-    im_area = tf.dtypes.cast(tf.math.reduce_prod(tf.shape(image)), 'float32')
+    im_area = tf.dtypes.cast(tf.math.reduce_prod(tf.shape(image)[1:3]), 'float32')
     scaling_norm = tf.dtypes.cast(tf.math.sqrt(im_area), image.dtype)
     return ifftshift(fft2d(fftshift(image))) / scaling_norm
 
