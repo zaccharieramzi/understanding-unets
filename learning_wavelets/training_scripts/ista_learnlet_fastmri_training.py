@@ -118,7 +118,7 @@ def train_ista_learnlet(
             'kernel_size': 9,
         },
         'threshold_kwargs':{
-            'noise_std_norm': True,
+            'noise_std_norm': False,
         },
         'n_scales': 4,
         'n_reweights_learn': 1,
@@ -127,7 +127,7 @@ def train_ista_learnlet(
         'clip': False,
     }
 
-    n_epochs = 100
+    n_epochs = 300
     run_id = f'ista_learnlet_fastmri_{n_filters}_{n_iters}_{denoising_activation}_{int(time.time())}'
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
