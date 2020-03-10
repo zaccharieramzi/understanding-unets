@@ -48,6 +48,7 @@ class IstaLayer(Layer):
             initializer=tf.constant_initializer(operator_lips_cst),
             name='alpha',
             constraint=tf.keras.constraints.NonNeg(),
+            dtype='float32',  # quick-fix for unwanted error
         )
 
     def call(self, x_inputs):
