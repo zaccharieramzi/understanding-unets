@@ -14,6 +14,7 @@ class IstaLearnlet(Model):
             operator_lips_cst=None,
             postprocess=None,
             complex_mode=True,
+            fista_mode=False,
             **learnlet_kwargs,
         ):
         super(IstaLearnlet, self).__init__()
@@ -22,6 +23,7 @@ class IstaLearnlet(Model):
         self.adjoint_operator = adjoint_operator
         self.postprocess = postprocess
         self.complex_mode = complex_mode
+        self.fista_mode = fista_mode
         self.learnlet = Learnlet(**learnlet_kwargs)
         self.ista_blocks = [
             IstaLayer(
@@ -37,9 +39,15 @@ class IstaLearnlet(Model):
     def call(self, inputs):
         measurements, subsampling_pattern = inputs
         x = self.adjoint_operator(measurements[..., 0], subsampling_pattern)[..., None]
+        x = [x, x]
         for ista_block in self.ista_blocks:
             # ISTA-step
-            x = ista_block([x, inputs])
+            if self.fista_mode:
+                x = ista_block([*x, inputs])
+            else:
+                x = ista_block([x, inputs])
+        if self.fista_mode:
+            x = x[0]
         if self.postprocess is not None:
             x = self.postprocess(x)
         return x
@@ -53,12 +61,15 @@ class IstaLayer(Layer):
             adjoint_operator,
             operator_lips_cst=None,
             complex_mode=True,
+            fista_mode=False,
+            mom_init=1.0,
         ):
         super(IstaLayer, self).__init__()
         self.learnlet = learnlet
         self.forward_operator = forward_operator
         self.adjoint_operator = adjoint_operator
         self.complex_mode = complex_mode
+        self.fista_mode = fista_mode
         if operator_lips_cst is None:
             # TODO: think of sthg better
             operator_lips_cst = 1.0
@@ -68,8 +79,26 @@ class IstaLayer(Layer):
             name='alpha',
             constraint=tf.keras.constraints.NonNeg(),
         )
+        if self.fista_mode:
+            self.momentum = self.add_weight(
+                shape=(1,),
+                initializer=tf.constant_initializer(mom_init),
+                name='momentum',
+                constraint=tf.keras.constraints.NonNeg(),
+            )  # this represents a_k = (t_old - 1) / t
 
     def call(self, x_inputs):
+        if self.fista_mode:
+            x, x_old, inputs = x_inputs
+            x = self.call_ista(([x, inputs]))
+            x_old_tmp = x
+            x = x + self.momentum * (x - x_old)
+            x_old = x_old_tmp
+            return x, x_old
+        else:
+            return self.call_ista(x_inputs)
+
+    def call_ista(self, x_inputs):
         x, inputs = x_inputs
         grad = self.grad(x, inputs)
         alpha = tf.cast(self.alpha, grad.dtype)
