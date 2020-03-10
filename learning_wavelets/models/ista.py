@@ -37,6 +37,7 @@ class IstaLearnlet(Model):
 
 class IstaLayer(Layer):
     def __init__(self, learnlet, forward_operator, adjoint_operator, operator_lips_cst=None):
+        super(IstaLayer, self).__init__()
         self.learnlet = learnlet
         self.forward_operator = forward_operator
         self.adjoint_operator = adjoint_operator
@@ -48,7 +49,6 @@ class IstaLayer(Layer):
             initializer=tf.constant_initializer(operator_lips_cst),
             name='alpha',
             constraint=tf.keras.constraints.NonNeg(),
-            dtype='float32',  # quick-fix for unwanted error
         )
 
     def call(self, x_inputs):
