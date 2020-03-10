@@ -39,7 +39,8 @@ class IstaLearnlet(Model):
     def call(self, inputs):
         measurements, subsampling_pattern = inputs
         x = self.adjoint_operator(measurements[..., 0], subsampling_pattern)[..., None]
-        x = [x, x]
+        if self.fista_mode:
+            x = [x, x]
         for ista_block in self.ista_blocks:
             # ISTA-step
             if self.fista_mode:
