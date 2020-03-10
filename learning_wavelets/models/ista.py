@@ -94,7 +94,8 @@ class IstaLayer(Layer):
             x, x_old, inputs = x_inputs
             x = self.call_ista(([x, inputs]))
             x_old_tmp = x
-            x = x + self.momentum * (x - x_old)
+            momentum = tf.cast(self.momentum, x.dtype)
+            x = x + momentum * (x - x_old)
             x_old = x_old_tmp
             return x, x_old
         else:
