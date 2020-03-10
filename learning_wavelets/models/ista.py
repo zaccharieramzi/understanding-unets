@@ -32,6 +32,7 @@ class IstaLearnlet(Model):
                 adjoint_operator,
                 operator_lips_cst,
                 complex_mode=self.complex_mode,
+                fista_mode=self.fista_mode,
             )
             for i in range(self.n_iterations)
         ]
