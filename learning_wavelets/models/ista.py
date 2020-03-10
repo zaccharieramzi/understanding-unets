@@ -6,7 +6,16 @@ from .learnlet_model import Learnlet
 
 class IstaLearnlet(Model):
     __name__ = 'ista_learnlet'
-    def __init__(self, n_iterations, forward_operator, adjoint_operator, operator_lips_cst=None, postprocess=None, complex_mode=True, **learnlet_kwargs):
+    def __init__(
+            self,
+            n_iterations,
+            forward_operator,
+            adjoint_operator,
+            operator_lips_cst=None,
+            postprocess=None,
+            complex_mode=True,
+            **learnlet_kwargs,
+        ):
         super(IstaLearnlet, self).__init__()
         self.n_iterations = n_iterations
         self.forward_operator = forward_operator
@@ -37,7 +46,14 @@ class IstaLearnlet(Model):
 
 
 class IstaLayer(Layer):
-    def __init__(self, learnlet, forward_operator, adjoint_operator, operator_lips_cst=None, complex_mode=True):
+    def __init__(
+            self,
+            learnlet,
+            forward_operator,
+            adjoint_operator,
+            operator_lips_cst=None,
+            complex_mode=True,
+        ):
         super(IstaLayer, self).__init__()
         self.learnlet = learnlet
         self.forward_operator = forward_operator
