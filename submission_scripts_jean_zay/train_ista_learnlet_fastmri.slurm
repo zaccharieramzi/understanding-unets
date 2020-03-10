@@ -9,8 +9,9 @@
 #SBATCH --hint=nomultithread         # on réserve des coeurs physiques et non logiques
 #SBATCH --distribution=block:block   # on épingle les tâches sur des coeurs contigus
 #SBATCH --time=20:00:00              # temps d’exécution maximum demande (HH:MM:SS)
-#SBATCH --output=ista_learnlet_fastmri_%j.out # nom du fichier de sortie
-#SBATCH --error=ista_learnlet_fastmri_%j.out  # nom du fichier d'erreur (ici commun avec la sortie)
+#SBATCH --output=%x_%A_%a.out  # Nom du fichier de sortie contenant l'ID et l'indice
+#SBATCH --error=%x_%A_%a.out   # Nom du fichier d'erreur (ici commun avec la sortie)
+#SBATCH --array=0-3            # 4 jobs
 
 set -x
 cd $WORK/understanding-unets
@@ -20,7 +21,10 @@ pip install --no-cache-dir ../fastmri-reproducible-benchmark
 pip install -r ../fastmri-reproducible-benchmark/requirements.txt
 export FASTMRI_DATA_DIR=$SCRATCH/
 
+opt[0]="-e -u -nf 16 -gpus 0"
+opt[1]="-e -u -nf 16 -fi -gpus 1"
 
-srun --ntasks=1 python ./learning_wavelets/training_scripts/ista_learnlet_fastmri_training.py -e -u -nf 32&
+echo ${#opt[*]} # donne le nombre d'element du tableau
 
-wait  # wait for all ccc_mprun(s) to complete.
+# La variable $SLURM_ARRAY_TASK_ID contient l'ID de l'array
+srun python ./learning_wavelets/training_scripts/ista_learnlet_fastmri_training.py ${opt[$SLURM_ARRAY_TASK_ID]}
