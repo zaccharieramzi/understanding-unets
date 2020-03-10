@@ -11,7 +11,7 @@
 #SBATCH --time=20:00:00              # temps d’exécution maximum demande (HH:MM:SS)
 #SBATCH --output=%x_%A_%a.out  # Nom du fichier de sortie contenant l'ID et l'indice
 #SBATCH --error=%x_%A_%a.out   # Nom du fichier d'erreur (ici commun avec la sortie)
-#SBATCH --array=0-3            # 4 jobs
+#SBATCH --array=0-2            # 4 jobs
 
 set -x
 cd $WORK/understanding-unets
