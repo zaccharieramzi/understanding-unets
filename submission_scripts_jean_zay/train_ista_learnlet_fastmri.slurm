@@ -21,8 +21,8 @@ pip install --no-cache-dir ../fastmri-reproducible-benchmark
 pip install -r ../fastmri-reproducible-benchmark/requirements.txt
 export FASTMRI_DATA_DIR=$SCRATCH/
 
-opt[0]="-e -u -nf 16 -gpus 0"
-opt[1]="-e -u -nf 16 -fi -gpus 1"
+opt[0]="-e -u -nf 16"
+opt[1]="-e -u -nf 16 -fi"
 
 echo ${#opt[*]} # donne le nombre d'element du tableau
 
