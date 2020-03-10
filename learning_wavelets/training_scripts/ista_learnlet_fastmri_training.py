@@ -5,7 +5,7 @@ import time
 import click
 from fastmri_recon.config import FASTMRI_DATA_DIR
 from fastmri_recon.data.fastmri_tf_datasets import train_masked_kspace_dataset_from_indexable
-from fastmri_recon.helpers.nn_mri import _tf_crop
+from fastmri_recon.helpers.nn_mri import tf_fastmri_format
 from fastmri_recon.helpers.utils import keras_psnr, keras_ssim
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
@@ -67,6 +67,12 @@ val_path = f'{FASTMRI_DATA_DIR}singlecoil_val/'
     help='The number of iterations in the unrolled ISTA. Defaults to 5.',
 )
 @click.option(
+    'fista_mode',
+    '-fi',
+    is_flag=True,
+    help='Set if you want the unrolled ISTA to use acceleration.',
+)
+@click.option(
     'undecimated',
     '-u',
     is_flag=True,
@@ -84,6 +90,7 @@ def train_ista_learnlet(
         denoising_activation,
         n_filters,
         n_iters,
+        fista_mode,
         undecimated,
         exact_reco,
     ):
@@ -128,7 +135,10 @@ def train_ista_learnlet(
     }
 
     n_epochs = 300
-    run_id = f'ista_learnlet_fastmri_{n_filters}_{n_iters}_{denoising_activation}_{int(time.time())}'
+    ista_str = 'ista'
+    if fista_mode:
+        ista_str = 'fista'
+    run_id = f'{ista_str}_learnlet_fastmri_{n_filters}_{n_iters}_{denoising_activation}_{int(time.time())}'
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
 
@@ -149,7 +159,8 @@ def train_ista_learnlet(
             n_iterations=n_iters,
             forward_operator=tf_masked_shifted_normed_fft2d,
             adjoint_operator=tf_masked_shifted_normed_ifft2d,
-            postprocess=_tf_crop,
+            postprocess=tf_fastmri_format,
+            fista_mode=fista_mode,
             **learnlet_params,
         )
         model.compile(
