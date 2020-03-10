@@ -20,6 +20,7 @@ class IstaLearnlet(Model):
                 forward_operator,
                 adjoint_operator,
                 operator_lips_cst,
+                complex_mode=self.complex_mode,
             )
             for i in range(self.n_iterations)
         ]
@@ -36,11 +37,12 @@ class IstaLearnlet(Model):
 
 
 class IstaLayer(Layer):
-    def __init__(self, learnlet, forward_operator, adjoint_operator, operator_lips_cst=None):
+    def __init__(self, learnlet, forward_operator, adjoint_operator, operator_lips_cst=None, complex_mode=True):
         super(IstaLayer, self).__init__()
         self.learnlet = learnlet
         self.forward_operator = forward_operator
         self.adjoint_operator = adjoint_operator
+        self.complex_mode = complex_mode
         if operator_lips_cst is None:
             # TODO: think of sthg better
             operator_lips_cst = 1.0
