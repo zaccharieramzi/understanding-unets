@@ -108,6 +108,9 @@ class WavAnalysis(Layer):
             wav_coeffs.append(low_freqs)
         return wav_coeffs
 
+    def get_wav_filters_norm(self):
+        return self.wav_filters_norm
+
     def get_config(self):
         config = super(WavAnalysis, self).get_config()
         config.update({
@@ -201,6 +204,9 @@ class LearnletAnalysis(Layer):
             outputs_list.append(thresholded_details_tiled)
         return outputs_list
 
+    def get_wav_filters_norm(self):
+        return self.wav_analysis.wav_filters_norm
+
     def get_config(self):
         config = super(LearnletAnalysis, self).get_config()
         config.update({
@@ -227,7 +233,8 @@ class LearnletSynthesis(Layer):
             res=False,
             kernel_size=5,
             wav_type='starlet',
-            undecimated=False
+            undecimated=False,
+            wav_only=False,
         ):
         super(LearnletSynthesis, self).__init__()
         self.normalize = normalize
@@ -239,6 +246,7 @@ class LearnletSynthesis(Layer):
         self.kernel_size = kernel_size
         self.wav_type = wav_type
         self.undecimated = undecimated
+        self.wav_only = wav_only
         if self.normalize:
             self.wav_filters_norm = wav_filters_norm
             if self.wav_filters_norm is not None:
@@ -249,23 +257,24 @@ class LearnletSynthesis(Layer):
             self.upsampling = BiorUpSampling()
         else:
             raise ValueError(f'Wavelet type {self.wav_type} is not implemented for upsampling')
-        constraint = None
-        if self.synthesis_norm:
-            constraint = UnitNorm(axis=[0, 1, 2])
-        groupping_prefix = 'groupping_conv'
-        self.convs_groupping = [
-            Conv2D(
-                n_channels,
-                self.kernel_size,
-                activation='linear',
-                padding='same',
-                dilation_rate=2**i_scale if self.undecimated else 1,
-                kernel_initializer='glorot_uniform',
-                use_bias=synthesis_use_bias,
-                kernel_constraint=constraint,
-                name=f'{groupping_prefix}_{str(K.get_uid(groupping_prefix))}',
-            ) for i_scale in range(self.n_scales)
-        ]
+        if not self.wav_only:
+            constraint = None
+            if self.synthesis_norm:
+                constraint = UnitNorm(axis=[0, 1, 2])
+            groupping_prefix = 'groupping_conv'
+            self.convs_groupping = [
+                Conv2D(
+                    n_channels,
+                    self.kernel_size,
+                    activation='linear',
+                    padding='same',
+                    dilation_rate=2**i_scale if self.undecimated else 1,
+                    kernel_initializer='glorot_uniform',
+                    use_bias=synthesis_use_bias,
+                    kernel_constraint=constraint,
+                    name=f'{groupping_prefix}_{str(K.get_uid(groupping_prefix))}',
+                ) for i_scale in range(self.n_scales)
+            ]
 
     def call(self, analysis_coeffs):
         details = analysis_coeffs[:-1]
@@ -279,7 +288,10 @@ class LearnletSynthesis(Layer):
                 wav_norm = self.wav_filters_norm[i_scale]
                 detail = detail * wav_norm
             if self.res:
-                image = self.convs_groupping[i_scale](detail) + image
+                if self.wav_only:
+                    image = detail + image
+                else:
+                    image = self.convs_groupping[i_scale](detail) + image
             else:
                 image = self.convs_groupping[i_scale](tf.concat([image, detail], axis=-1))
         return image
@@ -315,6 +327,7 @@ class LearnletSynthesis(Layer):
             'kernel_size': self.kernel_size,
             'wav_type': self.wav_type,
             'undecimated': self.undecimated,
+            'wav_only': self.wav_only,
         })
         return config
 

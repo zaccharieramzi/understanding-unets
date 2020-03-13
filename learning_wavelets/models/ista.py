@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.models import Model
@@ -25,17 +26,22 @@ class IstaLearnlet(Model):
         self.complex_mode = complex_mode
         self.fista_mode = fista_mode
         self.learnlet = Learnlet(**learnlet_kwargs)
-        self.ista_blocks = [
-            IstaLayer(
+        self.ista_blocks = []
+        t_old = 1
+        for i in range(self.n_iterations):
+            t = (1 + np.sqrt(1 + 4*t_old**2)) / 2
+            a = (t_old - 1) / t
+            t_old = t
+            ista_block = IstaLayer(
                 self.learnlet,
                 forward_operator,
                 adjoint_operator,
                 operator_lips_cst,
                 complex_mode=self.complex_mode,
                 fista_mode=self.fista_mode,
+                mom_init=a,
             )
-            for i in range(self.n_iterations)
-        ]
+            self.ista_blocks.append(ista_block)
 
     def call(self, inputs):
         measurements, subsampling_pattern = inputs
@@ -124,3 +130,11 @@ class IstaLayer(Layer):
         else:
             x = self.learnlet([x, self.alpha])
         return x
+
+    def get_config(self):
+        config = super(IstaLayer, self).get_config()
+        config.update({
+            'fista_mode': self.fista_mode,
+            'complex_mode': self.complex_mode,
+        })
+        return config
