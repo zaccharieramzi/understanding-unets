@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 
 from ..keras_utils import DynamicSoftThresholding, DynamicHardThresholding
-from .learnlet_layers import LearnletAnalysis, LearnletSynthesis, ScalesThreshold
+from .learnlet_layers import LearnletAnalysis, LearnletSynthesis, ScalesThreshold, WavAnalysis
 
 class Learnlet(Model):
     __name__ = 'learnlet'
@@ -19,6 +19,7 @@ class Learnlet(Model):
             n_reweights_learn=1,
             exact_reconstruction=False,
             undecimated=False,
+            wav_only=False,
             odd_shapes=False,
         ):
         super(Learnlet, self).__init__()
@@ -35,14 +36,22 @@ class Learnlet(Model):
         self.n_reweights_learn = n_reweights_learn
         self.exact_reconstruction = exact_reconstruction
         self.undecimated = undecimated
-        # I am going to start assuming that the shapes are always either odd or even
+        self.wav_only = wav_only
         self.odd_shapes = odd_shapes
-        self.analysis = LearnletAnalysis(
-            normalize=self.normalize,
-            n_scales=self.n_scales,
-            undecimated=self.undecimated,
-            **learnlet_analysis_kwargs,
-        )
+        if self.wav_only:
+            self.analysis = WavAnalysis(
+                normalize=self.normalize,
+                n_scales=self.n_scales,
+                undecimated=self.undecimated,
+                **learnlet_analysis_kwargs,
+            )
+        else:
+            self.analysis = LearnletAnalysis(
+                normalize=self.normalize,
+                n_scales=self.n_scales,
+                undecimated=self.undecimated,
+                **learnlet_analysis_kwargs,
+            )
         self.threshold = ScalesThreshold(
             n_scales=self.n_scales,
             dynamic_denoising=True,
@@ -60,9 +69,10 @@ class Learnlet(Model):
                 thresholding_layer.alpha_init += 1
         self.synthesis = LearnletSynthesis(
             normalize=self.normalize,
-            wav_filters_norm=self.analysis.wav_analysis.wav_filters_norm,
+            wav_filters_norm=self.analysis.get_wav_filters_norm(),
             n_scales=self.n_scales,
             undecimated=self.undecimated,
+            wav_only=self.wav_only,
             **learnlet_synthesis_kwargs,
         )
 
