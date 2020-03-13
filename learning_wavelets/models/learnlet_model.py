@@ -89,11 +89,8 @@ class Learnlet(Model):
 
     def trim_padding(self, im_shape, image):
         padded_im_shape = image.shape[1:3]
-        if (padded_im_shape != im_shape).any():
-            to_trim = padded_im_shape - im_shape[0]
-            trimmed_image = image[:, to_trim[0]//2:-to_trim[0]//2, to_trim[1]//2:-to_trim[1]//2]
-        else:
-            trimmed_image = image
+        to_trim = padded_im_shape - im_shape[0]
+        trimmed_image = image[:, to_trim[0]//2:-to_trim[0]//2, to_trim[1]//2:-to_trim[1]//2]
         return trimmed_image
 
     def pad_for_pool(self, inputs):
