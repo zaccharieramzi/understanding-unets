@@ -89,7 +89,7 @@ class Learnlet(Model):
 
     def trim_padding(self, image, im_shape):
         padded_im_shape = image.shape[1:3]
-        to_trim = padded_im_shape - im_shape[0]
+        to_trim = padded_im_shape - im_shape
         trimmed_image = image[:, to_trim[0]//2:-to_trim[0]//2, to_trim[1]//2:-to_trim[1]//2]
         return trimmed_image
 
