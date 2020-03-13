@@ -87,7 +87,7 @@ class Learnlet(Model):
             image_denoised = self.trim_padding(image_denoised, image_shape)
         return image_denoised
 
-    def trim_padding(self, im_shape, image):
+    def trim_padding(self, image, im_shape):
         padded_im_shape = image.shape[1:3]
         to_trim = padded_im_shape - im_shape[0]
         trimmed_image = image[:, to_trim[0]//2:-to_trim[0]//2, to_trim[1]//2:-to_trim[1]//2]
