@@ -19,6 +19,7 @@ class Learnlet(Model):
             n_reweights_learn=1,
             exact_reconstruction=False,
             undecimated=False,
+            odd_shapes=False,
         ):
         super(Learnlet, self).__init__()
         if learnlet_analysis_kwargs is None:
@@ -34,6 +35,8 @@ class Learnlet(Model):
         self.n_reweights_learn = n_reweights_learn
         self.exact_reconstruction = exact_reconstruction
         self.undecimated = undecimated
+        # I am going to start assuming that the shapes are always either odd or even
+        self.odd_shapes = odd_shapes
         self.analysis = LearnletAnalysis(
             normalize=self.normalize,
             n_scales=self.n_scales,
@@ -64,10 +67,37 @@ class Learnlet(Model):
         )
 
     def call(self, inputs):
+        if not self.undecimated:
+            inputs, image_shape = self.pad_for_pool(inputs)
         if self.exact_reconstruction:
-            return self.exact_reconstruction_comp(inputs)
+            image_denoised = self.exact_reconstruction_comp(inputs)
         else:
-            return self.reweighting(inputs, n_reweights=self.n_reweights_learn)
+            image_denoised = self.reweighting(inputs, n_reweights=self.n_reweights_learn)
+        if not self.undecimated:
+            image_denoised = self.trim_padding(image_denoised, image_shape)
+        return image_denoised
+
+    def trim_padding(self, im_shape, image):
+        padded_im_shape = image.shape[1:3]
+        if (padded_im_shape != im_shape).any():
+            to_trim = padded_im_shape - im_shape[0]
+            trimmed_image = image[:, to_trim[0]//2:-to_trim[0]//2, to_trim[1]//2:-to_trim[1]//2]
+        else:
+            trimmed_image = image
+        return trimmed_image
+
+    def pad_for_pool(self, inputs):
+        image, noise_std = inputs
+        im_shape = tf.shape(image)[1:3]
+        n_pooling = self.n_scales
+        to_pad = (tf.dtypes.cast(im_shape / 2**n_pooling, 'int32') + 1) * 2**n_pooling - im_shape
+        # the + 1 is necessary because the images have odd shapes
+        if self.odd_shapes:
+            pad_seq = [(0, 0), (to_pad[0]//2, to_pad[0]//2 + 1), (to_pad[1]//2, to_pad[1]//2 + 1), (0, 0)]
+        else:
+            pad_seq = [(0, 0), (to_pad[0]//2, to_pad[0]//2), (to_pad[1]//2, to_pad[1]//2), (0, 0)]
+        image_padded = tf.pad(image, pad_seq, 'SYMMETRIC')
+        return (image_padded, noise_std), im_shape
 
     def compute_coefficients(self, images, normalized=True, coarse=False):
         learnlet_analysis_coeffs = self.analysis(images)
