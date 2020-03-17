@@ -281,6 +281,7 @@ class LearnletSynthesis(Layer):
             wav_type='starlet',
             undecimated=False,
             wav_only=False,
+            init_identity=False,
         ):
         super(LearnletSynthesis, self).__init__()
         self.normalize = normalize
@@ -293,6 +294,7 @@ class LearnletSynthesis(Layer):
         self.wav_type = wav_type
         self.undecimated = undecimated
         self.wav_only = wav_only
+        self.init_identity = init_identity
         if self.normalize:
             self.wav_filters_norm = wav_filters_norm
             if self.wav_filters_norm is not None:
@@ -315,12 +317,32 @@ class LearnletSynthesis(Layer):
                     activation='linear',
                     padding='same',
                     dilation_rate=2**i_scale if self.undecimated else 1,
-                    kernel_initializer='glorot_uniform',
+                    kernel_initializer=self.synth_init(),
                     use_bias=synthesis_use_bias,
                     kernel_constraint=constraint,
                     name=f'{groupping_prefix}_{str(K.get_uid(groupping_prefix))}',
                 ) for i_scale in range(self.n_scales)
             ]
+
+    def synth_init(self,):
+        if self.init_identity:
+            def _init(shape, dtype=None):
+                gaussian_noise = tf.random.uniform(shape, -1e-2, 1e-2)
+                n_filters = shape[-2]
+                kernel_size = shape[0:2]
+                weights = tf.random.uniform([n_filters,], -1, 1)
+                indices = tf.stack([
+                    tf.constant([kernel_size[0]//2]*n_filters),
+                    tf.constant([kernel_size[1]//2]*n_filters),
+                    tf.range(0, n_filters),
+                    tf.constant([0]*n_filters),
+                ], axis=-1)
+                kernel_inits = tf.tensor_scatter_nd_add(gaussian_noise, indices, weights)
+                return kernel_inits
+            return _init
+        else:
+            return 'glorot_uniform'
+
 
     def call(self, analysis_coeffs):
         details = analysis_coeffs[:-1]
