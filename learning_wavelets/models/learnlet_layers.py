@@ -1,3 +1,5 @@
+import random
+
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
@@ -133,6 +135,7 @@ class LearnletAnalysis(Layer):
             kernel_size=5,
             skip_connection=False,
             undecimated=False,
+            example_data=None,
             **wav_analysis_kwargs,
         ):
         super(LearnletAnalysis, self).__init__()
@@ -144,6 +147,8 @@ class LearnletAnalysis(Layer):
         self.kernel_size = kernel_size
         self.skip_connection = skip_connection
         self.undecimated = undecimated
+        self.example_data = example_data
+        self.init_coefs = None
         self.wav_analysis = WavAnalysis(
             coarse=True,
             n_scales=self.n_scales,
@@ -161,7 +166,7 @@ class LearnletAnalysis(Layer):
                 activation='linear',
                 padding='same',
                 dilation_rate=2**i_scale if self.undecimated else 1,
-                kernel_initializer='glorot_uniform',
+                kernel_initializer=self.data_driven_init(i_scale),
                 use_bias=tiling_use_bias,
                 kernel_constraint=constraint,
                 name=f'{tiling_prefix}_{str(K.get_uid(tiling_prefix))}',
@@ -181,6 +186,47 @@ class LearnletAnalysis(Layer):
                     name=f'{mixing_prefix}_{str(K.get_uid(mixing_prefix))}',
                 ) for i in range(self.n_scales)
             ]
+
+    def data_driven_init(self, i_scale=0):
+        if self.example_data is None:
+            return 'glorot_uniform'
+        else:
+            def _init(shape, dtype=None):
+                if self.init_coefs is None:
+                    coefs = self.wav_analysis(self.example_data)
+                    self.init_coefs = coefs
+                n_filters = shape[-1]
+                kernel_size = shape[0:2]
+                coef = self.init_coefs[i_scale]
+                patches = tf.image.extract_patches(
+                    images=coef,
+                    sizes=[1, kernel_size[0], kernel_size[1], 1],
+                    # strides could be changed, for now this is a bit arbitrary
+                    strides=[1, kernel_size[0], kernel_size[1], 1],
+                    rates=[1, 1, 1, 1],
+                    padding='VALID',
+                )
+                patches = tf.reshape(patches, [-1, tf.reduce_prod(kernel_size)])
+                n_patches = patches.shape[0]
+                kernel_inits = tf.TensorArray(tf.float32, size=n_filters)
+                for i_kernel in range(n_filters):
+                    patch_list = []
+                    for i_patch in range(n_patches):
+                        p = random.randint(0, 10)
+                        if p < 8:
+                            continue
+                        patch = tf.reshape(patches[i_patch], kernel_size)
+                        patch_list.append(patch)
+                    patch_list = tf.convert_to_tensor(patch_list)
+                    kernel_init = tf.reduce_mean(patch_list, axis=0)
+                    kernel_inits = kernel_inits.write(i_kernel, kernel_init)
+                kernel_inits = kernel_inits.stack()
+                kernel_inits = tf.reshape(
+                    kernel_inits,
+                    [kernel_size[0], kernel_size[1], 1, n_filters],
+                )
+                return kernel_inits
+            return _init
 
     def call(self, image):
         wav_coeffs = self.wav_analysis(image)
