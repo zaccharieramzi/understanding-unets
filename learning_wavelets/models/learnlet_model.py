@@ -21,8 +21,6 @@ class Learnlet(Model):
             undecimated=False,
             wav_only=False,
             odd_shapes=False,
-            example_data=None,
-            synth_id_init=False,
         ):
         super(Learnlet, self).__init__()
         if learnlet_analysis_kwargs is None:
@@ -52,7 +50,6 @@ class Learnlet(Model):
                 normalize=self.normalize,
                 n_scales=self.n_scales,
                 undecimated=self.undecimated,
-                example_data=example_data,
                 **learnlet_analysis_kwargs,
             )
         self.threshold = ScalesThreshold(
@@ -76,7 +73,6 @@ class Learnlet(Model):
             n_scales=self.n_scales,
             undecimated=self.undecimated,
             wav_only=self.wav_only,
-            init_identity=synth_id_init,
             **learnlet_synthesis_kwargs,
         )
 
