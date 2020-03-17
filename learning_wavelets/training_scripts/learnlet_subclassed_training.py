@@ -75,6 +75,14 @@ tf.random.set_seed(1)
     help='The number of filters in the learnlets. Defaults to 256.',
 )
 @click.option(
+    'kernel_sizes',
+    '--k-sizes',
+    nargs=2,
+    default=(11, 13),
+    type=int,
+    help='The analysis and synthesis kernel sizes. Defaults to [11, 13]',
+)
+@click.option(
     'decreasing_noise_level',
     '--decr-n-lvl',
     is_flag=True,
@@ -106,6 +114,7 @@ def train_learnlet(
         cuda_visible_devices,
         denoising_activation,
         n_filters,
+        kernel_sizes,
         decreasing_noise_level,
         undecimated,
         exact_reco,
@@ -134,18 +143,18 @@ def train_learnlet(
         noise_std=noise_std_val,
         return_noise_level=True,
     )
-
+    analysis_kernel_size, synthesis_kernel_size = kernel_sizes
     run_params = {
         'denoising_activation': denoising_activation,
         'learnlet_analysis_kwargs':{
             'n_tiling': n_filters,
             'mixing_details': False,
             'skip_connection': True,
-            'kernel_size': 11,
+            'kernel_size': analysis_kernel_size,
         },
         'learnlet_synthesis_kwargs': {
             'res': True,
-            'kernel_size': 13,
+            'kernel_size': synthesis_kernel_size,
         },
         'threshold_kwargs':{
             'noise_std_norm': True,
@@ -163,6 +172,8 @@ def train_learnlet(
         undecimated_str = 'un' + undecimated_str
     if exact_reco:
         undecimated_str += '_exact_reco'
+    if kernel_sizes != (11, 13):
+        undecimated_str += str(kernel_sizes)
     run_id = f'learnlet_subclassed_{undecimated_str}_{n_filters}_{denoising_activation}_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{n_samples}_{int(time.time())}'
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
