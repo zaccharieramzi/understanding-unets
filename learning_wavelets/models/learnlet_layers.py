@@ -220,10 +220,10 @@ class LearnletAnalysis(Layer):
                     patch_list = tf.convert_to_tensor(patch_list)
                     kernel_init = tf.reduce_mean(patch_list, axis=0)
                     kernel_inits = kernel_inits.write(i_kernel, kernel_init)
-                kernel_inits = kernel_inits.stack()
-                kernel_inits = tf.reshape(
+                kernel_inits = kernel_inits.stack()[..., None]
+                kernel_inits = tf.transpose(
                     kernel_inits,
-                    [kernel_size[0], kernel_size[1], 1, n_filters],
+                    [1, 2, 3, 0],
                 )
                 return kernel_inits
             return _init
