@@ -16,6 +16,7 @@ class Learnlet(Model):
             learnlet_analysis_kwargs=None,
             learnlet_synthesis_kwargs=None,
             threshold_kwargs=None,
+            channel_pooling=False,
             n_reweights_learn=1,
             exact_reconstruction=False,
             undecimated=False,
@@ -34,6 +35,7 @@ class Learnlet(Model):
         self.n_reweights_learn = n_reweights_learn
         self.exact_reconstruction = exact_reconstruction
         self.undecimated = undecimated
+        self.channel_pooling = channel_pooling
         self.analysis = LearnletAnalysis(
             normalize=self.normalize,
             n_scales=self.n_scales,
@@ -44,6 +46,7 @@ class Learnlet(Model):
             n_scales=self.n_scales,
             dynamic_denoising=True,
             denoising_activation=self.denoising_activation,
+            channel_pooling=self.channel_pooling,
             **threshold_kwargs,
         )
         if self.exact_reconstruction:
