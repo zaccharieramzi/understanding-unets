@@ -69,3 +69,14 @@ class BiorUpSampling(Layer):
             padding='VALID',
         )
         return column_conv_upsampled
+
+# Channel wise pooling
+class ChannelPooling(Layer):
+    __name__ = 'channel_pooling'
+    def call(self, inputs):
+        abs_inputs = tf.abs(inputs)
+        max_abs_inputs = tf.reduce_max(abs_inputs, axis=-1, keepdims=True)
+        max_cond = tf.equal(abs_inputs, max_abs_inputs)
+        # TODO: max pooled is not really a great term since we do not pool
+        inputs_max_pooled = tf.where(max_cond, inputs, tf.zeros_like(inputs))
+        return inputs_max_pooled
