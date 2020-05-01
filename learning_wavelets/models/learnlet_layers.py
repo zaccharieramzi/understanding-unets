@@ -3,7 +3,7 @@ import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
 from tensorflow.keras.layers import Layer, Activation, Conv2D, Concatenate
 
-from ..keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, CheekyDynamicHardThresholding, FixedPointPooling, FixedPointUpSampling, BiorUpSampling
+from ..keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, CheekyDynamicHardThresholding, FixedPointPooling, FixedPointUpSampling, BiorUpSampling, ChannelPooling
 
 
 h_filter_bior = [
@@ -319,12 +319,15 @@ class LearnletSynthesis(Layer):
         return config
 
 class ScalesThreshold(Layer):
-    def __init__(self, noise_std_norm=True, dynamic_denoising=False, denoising_activation='relu', n_scales=2):
+    def __init__(self, noise_std_norm=True, dynamic_denoising=False, denoising_activation='relu', n_scales=2, channel_pooling=False):
         super(ScalesThreshold, self).__init__()
         self.noise_std_norm = noise_std_norm
         self.dynamic_denoising = dynamic_denoising
         self.denoising_activation = denoising_activation
         self.n_scales = n_scales
+        self.channel_pooling = channel_pooling
+        if self.channel_pooling:
+            self.channel_pool = ChannelPooling()
         if not self.dynamic_denoising:
             self.thresholding_layer = Activation(self.denoising_activation, name='thresholding')
         if self.noise_std_norm:
@@ -349,6 +352,8 @@ class ScalesThreshold(Layer):
             if self.noise_std_norm:
                 normalisation_layer = self.normalisation_layers[i_scale]
                 detail = normalisation_layer(detail, mode='normal')
+            if self.channel_pooling:
+                detail = self.channel_pool(detail)
             weight = tf.expand_dims(tf.expand_dims(noise_std, axis=1), axis=1) * weight
             if self.dynamic_denoising:
                 if isinstance(self.denoising_activation, str):
