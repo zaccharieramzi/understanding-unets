@@ -29,8 +29,8 @@ class MultiScale(Model):
         to_trim = padded_im_shape - im_shape
         trimmed_image = image[
             :,
-            to_trim[0]//2:padded_im_shape[0]-to_trim[0]//2,
-            to_trim[1]//2:padded_im_shape[1]-to_trim[1]//2,
+            to_trim[0]//2:padded_im_shape[0]-(to_trim[0]//2 + 1),
+            to_trim[1]//2:padded_im_shape[1]-(to_trim[1]//2 + 1),
             :,
         ]
         return trimmed_image
