@@ -36,5 +36,5 @@ def evaluate_multiscale(
             return_noise_level=True,
             n_samples=n_samples,
         )
-        metrics.append(model.evaluate(im_ds, verbose=1))
+        metrics.append(multiscale_model.evaluate(im_ds, verbose=1))
     return metrics_names, metrics
