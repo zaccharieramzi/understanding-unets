@@ -10,6 +10,7 @@ def evaluate_unet_parameters(
         noise_std_train=None,
         n_samples=None,
         exp_id='',
+        **add_kwargs,
     ):
     if base_n_filters is None:
         base_n_filters = [64]
@@ -18,15 +19,17 @@ def evaluate_unet_parameters(
     if n_samples is None:
         n_samples = [None]
     exp_id = f'unet{exp_id}'
+    param_grid = {
+        'base_n_filters': base_n_filters,
+        'noise_std_train': noise_std_train,
+        'n_samples': n_samples,
+    }
+    param_grid.update(**add_kwargs)
     metrics_names, results = train_eval_parameter_grid(
         exp_id,
         train_unet,
         evaluate_unet,
-        parameter_grid={
-            'base_n_filters': base_n_filters,
-            'noise_std_train': noise_std_train,
-            'n_samples': n_samples,
-        }
+        parameter_grid=param_grid,
     )
     results_df = results_to_csv(
         metrics_names,

@@ -14,6 +14,7 @@ def evaluate_learnlet_parameters(
         noise_std_train=None,
         n_samples=None,
         exp_id='',
+        **add_params,
     ):
     if denoising_activation is None:
         denoising_activation = ['dynamic_soft_thresholding']
@@ -30,19 +31,21 @@ def evaluate_learnlet_parameters(
     if n_samples is None:
         n_samples = [None]
     exp_id = f'learnlet{exp_id}'
+    param_grid = {
+        'denoising_activation': denoising_activation,
+        'n_filters': n_filters,
+        'undecimated': undecimated,
+        'exact_reco': exact_reco,
+        'n_reweights': n_reweights,
+        'noise_std_train': noise_std_train,
+        'n_samples': n_samples,
+    }
+    param_grid.update(**add_params)
     metrics_names, results = train_eval_parameter_grid(
         exp_id,
         train_learnlet,
         evaluate_learnlet,
-        parameter_grid={
-            'denoising_activation': denoising_activation,
-            'n_filters': n_filters,
-            'undecimated': undecimated,
-            'exact_reco': exact_reco,
-            'n_reweights': n_reweights,
-            'noise_std_train': noise_std_train,
-            'n_samples': n_samples,
-        }
+        parameter_grid=param_grid,
     )
     results_df = results_to_csv(
         metrics_names,
