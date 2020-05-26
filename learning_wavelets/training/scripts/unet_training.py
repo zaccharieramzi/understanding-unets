@@ -92,6 +92,3 @@ def train_unet(
         shuffle=False,
     )
     return run_id
-
-if __name__ == '__main__':
-    train_unet_click()
