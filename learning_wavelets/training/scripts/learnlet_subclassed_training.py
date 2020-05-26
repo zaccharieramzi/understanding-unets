@@ -2,7 +2,6 @@ import os
 import os.path as op
 import time
 
-import click
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LearningRateScheduler
 from tensorflow.keras.optimizers import Adam
 import tensorflow as tf
@@ -15,105 +14,25 @@ from learning_wavelets.models.learnlet_model import Learnlet
 
 tf.random.set_seed(1)
 
-@click.command()
-@click.option(
-    'noise_std_train',
-    '--ns-train',
-    nargs=2,
-    default=(0, 55),
-    type=float,
-    help='The noise standard deviation range for the training set. Defaults to [0, 55]',
-)
-@click.option(
-    'noise_std_val',
-    '--ns-val',
-    default=30,
-    type=float,
-    help='The noise standard deviation for the validation set. Defaults to 30',
-)
-@click.option(
-    'n_samples',
-    '-n',
-    default=None,
-    type=int,
-    help='The number of samples to use for training. Defaults to None, which means that all samples are used.',
-)
-@click.option(
-    'source',
-    '-s',
-    default='bsd500',
-    type=click.Choice(['bsd500', 'div2k'], case_sensitive=False),
-    help='The dataset you wish to use for training and validation, between bsd500 and div2k. Defaults to bsd500',
-)
-@click.option(
-    'cuda_visible_devices',
-    '-gpus',
-    '--cuda-visible-devices',
-    default='0123',
-    type=str,
-    help='The visible GPU devices. Defaults to 0123',
-)
-@click.option(
-    'denoising_activation',
-    '-da',
-    '--denoising-activation',
-    default='dynamic_soft_thresholding',
-    type=click.Choice([
-        'dynamic_soft_thresholding',
-        'dynamic_hard_thresholding',
-        'dynamic_soft_thresholding_per_filter',
-        'cheeky_dynamic_hard_thresholding'
-    ], case_sensitive=False),
-    help='The denoising activation to use. Defaults to dynamic_soft_thresholding',
-)
-@click.option(
-    'n_filters',
-    '-nf',
-    '--n-filters',
-    default=256,
-    type=int,
-    help='The number of filters in the learnlets. Defaults to 256.',
-)
-@click.option(
-    'decreasing_noise_level',
-    '--decr-n-lvl',
-    is_flag=True,
-    help='Set if you want the noise level distribution to be non uniform, skewed towards low value.',
-)
-@click.option(
-    'undecimated',
-    '-u',
-    is_flag=True,
-    help='Set if you want the learnlets to be undecimated.',
-)
-@click.option(
-    'exact_reco',
-    '-e',
-    is_flag=True,
-    help='Set if you want the learnlets to have exact reconstruction.',
-)
-@click.option(
-    'n_reweights',
-    '-nr',
-    default=1,
-    help='The number of reweights. Defaults to 1.',
-)
+
 def train_learnlet(
-        noise_std_train,
-        noise_std_val,
-        n_samples,
-        source,
-        cuda_visible_devices,
-        denoising_activation,
-        n_filters,
-        decreasing_noise_level,
-        undecimated,
-        exact_reco,
-        n_reweights,
+        noise_std_train=(0, 55),
+        noise_std_val=30,
+        n_samples=None,
+        source='bsd500',
+        cuda_visible_devices='0123',
+        denoising_activation='dynamic_soft_thresholding',
+        n_filters=256,
+        decreasing_noise_level=False,
+        undecimated=True,
+        exact_reco=True,
+        n_reweights=1,
+        n_epochs=500,
+        batch_size=8,
+        steps_per_epoch=200,
     ):
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
     # data preparation
-    batch_size = 8
     if source == 'bsd500':
         data_func = im_dataset_bsd500
     elif source == 'div2k':
@@ -157,7 +76,6 @@ def train_learnlet(
         'clip': False,
     }
 
-    n_epochs = 100
     undecimated_str = 'decimated'
     if undecimated:
         undecimated_str = 'un' + undecimated_str
@@ -202,7 +120,7 @@ def train_learnlet(
 
     model.fit(
         im_ds_train,
-        steps_per_epoch=200,
+        steps_per_epoch=steps_per_epoch,
         epochs=n_epochs,
         validation_data=im_ds_val,
         validation_steps=1,
@@ -210,6 +128,3 @@ def train_learnlet(
         callbacks=[tboard_cback, chkpt_cback, norm_cback, lrate_cback],
         shuffle=False,
     )
-
-if __name__ == '__main__':
-    train_learnlet()
