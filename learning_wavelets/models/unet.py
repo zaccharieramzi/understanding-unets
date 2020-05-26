@@ -81,7 +81,6 @@ def unet(
         layers_n_non_lins=1,
         non_relu_contract=False,
         pool='max',
-        lr=1e-3,
         bn=False,
     ):
     if isinstance(layers_n_channels, int):
