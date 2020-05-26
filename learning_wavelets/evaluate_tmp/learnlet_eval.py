@@ -46,6 +46,7 @@ def evaluate_learnlet(
     model.load_weights(chkpt_path)
     metrics = evaluate_multiscale(
         model,
+        distrib_strat=mirrored_strategy,
         n_scales=n_scales,
         dynamic_denoising=True,
         **kwargs,

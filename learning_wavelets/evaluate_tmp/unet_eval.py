@@ -24,6 +24,7 @@ def evaluate_unet(run_id, base_n_filters=64, n_epochs=500, **kwargs):
     model.load_weights(chkpt_path)
     metrics = evaluate_multiscale(
         model,
+        distrib_strat=mirrored_strategy,
         n_scales=n_layers,
         dynamic_denoising=False,
         **kwargs,
