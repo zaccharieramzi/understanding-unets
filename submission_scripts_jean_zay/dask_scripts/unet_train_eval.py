@@ -1,8 +1,8 @@
 from learning_wavelets.evaluate_tmp.unet_eval import evaluate_unet
+from learning_wavelets.evaluate_tmp.results_to_csv import results_to_csv
 from learning_wavelets.training.scripts.unet_training import train_unet
 
 from generic_dask import train_eval_parameter_grid
-from results_to_csv import results_to_csv
 
 
 def evaluate_unet_parameters(

@@ -1,8 +1,8 @@
 from learning_wavelets.evaluate_tmp.learnlet_eval import evaluate_learnlet
+from learning_wavelets.evaluate_tmp.results_to_csv import results_to_csv
 from learning_wavelets.training.scripts.learnlet_training import train_learnlet
 
 from generic_dask import train_eval_parameter_grid
-from results_to_csv import results_to_csv
 
 
 def evaluate_learnlet_parameters(
