@@ -77,7 +77,7 @@ def eval_on_jz_dask(job_name, eval_function, *args, **kwargs):
     print(eval_res)
     print('Shutting down dask workers')
 
-def train_eval_parameter_grid(job_name, train_function, eval_function, parameter_grid, n_samples_eval=68):
+def train_eval_parameter_grid(job_name, train_function, eval_function, parameter_grid, n_samples_eval=None):
     parameters = list(ParameterGrid(parameter_grid))
     n_parameters_config = len(parameters)
     train_cluster = SLURMCluster(
