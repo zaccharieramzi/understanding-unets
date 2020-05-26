@@ -1,3 +1,5 @@
+import tensorflow as tf
+
 from learning_wavelets.config import CHECKPOINTS_DIR
 from learning_wavelets.models.learnlet_model import Learnlet
 from .multiscale_eval import evaluate_multiscale
