@@ -2,7 +2,6 @@ import os
 import os.path as op
 import time
 
-import click
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LearningRateScheduler
 import tensorflow as tf
 
@@ -13,56 +12,20 @@ from learning_wavelets.models.unet import unet
 
 tf.random.set_seed(1)
 
-@click.command()
-@click.option(
-    'noise_std_train',
-    '--ns-train',
-    nargs=2,
-    default=(0, 55),
-    type=float,
-    help='The noise standard deviation range for the training set. Defaults to [0, 55]',
-)
-@click.option(
-    'noise_std_val',
-    '--ns-val',
-    default=30,
-    type=float,
-    help='The noise standard deviation for the validation set. Defaults to 30',
-)
-@click.option(
-    'n_samples',
-    '-n',
-    default=None,
-    type=int,
-    help='The number of samples to use for training. Defaults to None, which means that all samples are used.',
-)
-@click.option(
-    'source',
-    '-s',
-    default='bsd500',
-    type=click.Choice(['bsd500', 'div2k'], case_sensitive=False),
-    help='The dataset you wish to use for training and validation, between bsd500 and div2k. Defaults to bsd500',
-)
-@click.option(
-    'cuda_visible_devices',
-    '-gpus',
-    '--cuda-visible-devices',
-    default='0123',
-    type=str,
-    help='The visible GPU devices. Defaults to 0123',
-)
-@click.option(
-    'base_n_filters',
-    '-bnf',
-    '--base-n-filters',
-    default=64,
-    type=int,
-    help='The number of filters in the first scale of the u-net. Defaults to 64.',
-)
-def train_unet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_devices, base_n_filters):
+def train_unet(
+        noise_std_train=(0, 55),
+        noise_std_val=30,
+        n_samples=None,
+        source='bsd500',
+        cuda_visible_devices='0123',
+        base_n_filters=64,
+        n_epochs=500,
+        batch_size=8,
+        steps_per_epoch=200,
+        lr=1e-3,
+    ):
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
     # data preparation
-    batch_size = 8
     if source == 'bsd500':
         data_func = im_dataset_bsd500
     elif source == 'div2k':
@@ -92,7 +55,6 @@ def train_unet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_d
         'non_relu_contract': False,
         'bn': True,
     }
-    n_epochs = 500
     run_id = f'unet_{base_n_filters}_dynamic_st_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{n_samples}_{int(time.time())}'
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
@@ -116,13 +78,12 @@ def train_unet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_d
     # run distributed
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
-        model = unet(input_size=(None, None, n_channels), lr=1e-3, **run_params)
-    print(model.summary(line_length=114))
+        model = unet(input_size=(None, None, n_channels), lr=lr, **run_params)
 
     # actual training
     model.fit(
         im_ds_train,
-        steps_per_epoch=200,
+        steps_per_epoch=steps_per_epoch,
         epochs=n_epochs,
         validation_data=im_ds_val,
         validation_steps=1,
@@ -130,6 +91,7 @@ def train_unet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_d
         callbacks=[tboard_cback, chkpt_cback, lrate_cback],
         shuffle=False,
     )
+    return run_id
 
 if __name__ == '__main__':
-    train_unet()
+    train_unet_click()
