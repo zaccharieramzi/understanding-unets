@@ -106,7 +106,7 @@ def unet(
     output = Conv2D(
         4 * input_size[-1],
         1,
-        activation='linear',
+        activation='relu',
         padding='same',
         kernel_initializer='glorot_uniform',
     )(output)
