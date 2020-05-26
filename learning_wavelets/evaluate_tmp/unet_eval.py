@@ -15,7 +15,9 @@ def evaluate_unet(run_id, base_n_filters=64, n_epochs=500, **kwargs):
         'bn': True,
     }
     n_channels = 1
-    model = unet(input_size=(None, None, n_channels), **run_params)
+    mirrored_strategy = tf.distribute.MirroredStrategy()
+    with mirrored_strategy.scope():
+        model = unet(input_size=(None, None, n_channels), **run_params)
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}-{n_epochs:02d}.hdf5'
     model.load_weights(chkpt_path)
     metrics = evaluate_multiscale(

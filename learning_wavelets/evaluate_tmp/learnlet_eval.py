@@ -36,8 +36,10 @@ def evaluate_learnlet(
         'undecimated': undecimated,
         'clip': False,
     }
-    model = Learnlet(**run_params)
-    model.build([[None, None, None, 1], [None, 1]])
+    mirrored_strategy = tf.distribute.MirroredStrategy()
+    with mirrored_strategy.scope():
+        model = Learnlet(**run_params)
+        model.build([[None, None, None, 1], [None, 1]])
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}-{n_epochs:02d}.hdf5'
     model.load_weights(chkpt_path)
     metrics = evaluate_multiscale(
