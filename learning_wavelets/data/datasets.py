@@ -183,7 +183,7 @@ def im_dataset(
             )
         else:
             image_noisy_ds = image_patch_ds.map(
-                lambda patch: (add_noise(patch), patch, tf.shape(patch)[:2]),
+                lambda patch: (add_noise(patch), patch),
                 num_parallel_calls=tf.data.experimental.AUTOTUNE,
             )
     image_noisy_ds = image_noisy_ds.batch(batch_size)
