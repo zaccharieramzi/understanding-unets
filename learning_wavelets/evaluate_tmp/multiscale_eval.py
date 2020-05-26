@@ -25,7 +25,6 @@ def evaluate_multiscale(
             dynamic_denoising=dynamic_denoising,
         )
         default_model_compile(multiscale_model)
-    metrics_names = multiscale_model.metrics_names
     for noise_std in tqdm(noise_stds, 'Noise stds'):
         im_ds = im_dataset_bsd68(
             mode='testing',
@@ -36,4 +35,5 @@ def evaluate_multiscale(
             n_samples=n_samples,
         )
         metrics.append(multiscale_model.evaluate(im_ds, verbose=1))
+    metrics_names = multiscale_model.metrics_names
     return metrics_names, metrics
