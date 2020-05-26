@@ -79,7 +79,7 @@ def train_unet(
     # run distributed
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
-        model = unet(input_size=(None, None, n_channels), lr=lr, **run_params)
+        model = unet(input_size=(None, None, n_channels), **run_params)
         default_model_compile(model, lr=lr)
 
     # actual training
