@@ -3,14 +3,14 @@ import os.path as op
 import time
 
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LearningRateScheduler
-from tensorflow.keras.optimizers import Adam
 import tensorflow as tf
 
 from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
 from learning_wavelets.data.datasets import im_dataset_div2k, im_dataset_bsd500
-from learning_wavelets.evaluate import keras_psnr, keras_ssim, center_keras_psnr
 from learning_wavelets.keras_utils.normalisation import NormalisationAdjustment
 from learning_wavelets.models.learnlet_model import Learnlet
+from ..compile import default_model_compile
+
 
 tf.random.set_seed(1)
 
@@ -30,6 +30,7 @@ def train_learnlet(
         n_epochs=500,
         batch_size=8,
         steps_per_epoch=200,
+        lr=1e-3,
     ):
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
     # data preparation
@@ -112,11 +113,7 @@ def train_learnlet(
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
         model = Learnlet(**run_params)
-        model.compile(
-            optimizer=Adam(lr=1e-3),
-            loss='mse',
-            metrics=[keras_psnr, keras_ssim, center_keras_psnr],
-        )
+        default_model_compile(model, lr=lr)
 
     model.fit(
         im_ds_train,

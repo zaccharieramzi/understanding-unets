@@ -118,11 +118,6 @@ def unet(
         kernel_initializer='glorot_uniform',
     )(output)
     model = Model(inputs=inputs, outputs=output)
-    model.compile(
-        optimizer=Adam(lr=lr, clipnorm=1.),
-        loss='mean_squared_error',
-        metrics=[keras_psnr, keras_ssim],
-    )
 
     return model
 

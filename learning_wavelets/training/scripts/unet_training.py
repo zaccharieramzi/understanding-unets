@@ -8,6 +8,7 @@ import tensorflow as tf
 from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
 from learning_wavelets.data.datasets import im_dataset_div2k, im_dataset_bsd500
 from learning_wavelets.models.unet import unet
+from ..compile import default_model_compile
 
 
 tf.random.set_seed(1)
@@ -79,6 +80,7 @@ def train_unet(
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
         model = unet(input_size=(None, None, n_channels), lr=lr, **run_params)
+        default_model_compile(model, lr=lr)
 
     # actual training
     model.fit(
