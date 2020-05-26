@@ -15,6 +15,7 @@ def evaluate_multiscale(
         noise_stds=DEFAULT_NOISE_STDS,
         n_samples=None,
         batch_size=8,
+        **dummy_kwargs,
     ):
     metrics = []
     mirrored_strategy = tf.distribute.MirroredStrategy()

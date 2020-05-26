@@ -3,7 +3,7 @@ from learning_wavelets.models.unet import unet
 from .multiscale_eval import evaluate_multiscale
 
 
-def evaluate_unet(run_id, base_n_filters=64, n_epochs=500):
+def evaluate_unet(run_id, base_n_filters=64, n_epochs=500, **kwargs):
     # model definition
     n_layers = 5
     run_params = {
@@ -22,5 +22,6 @@ def evaluate_unet(run_id, base_n_filters=64, n_epochs=500):
         model,
         n_scales=n_layers,
         dynamic_denoising=False,
+        **kwargs,
     )
     return metrics

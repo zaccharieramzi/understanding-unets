@@ -11,6 +11,7 @@ def evaluate_learnlet(
         exact_reco=True,
         n_reweights=1,
         n_epochs=500,
+        **kwargs,
     ):
     # model definition
     n_scales = 5
@@ -43,5 +44,6 @@ def evaluate_learnlet(
         model,
         n_scales=n_scales,
         dynamic_denoising=True,
+        **kwargs,
     )
     return metrics
