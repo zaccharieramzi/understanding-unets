@@ -17,7 +17,7 @@ def results_to_csv(metrics_names, results, output_path):
                 'noise_std': noise_std,
             })
             row_dict.update(dict(zip(metrics_names, noise_res)))
-            results_df = results_df.append(row_dict)
+            results_df = results_df.append(row_dict, ignore_index=True)
             i += 1
     results_df.to_csv(output_path)
     return results_df
