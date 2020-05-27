@@ -8,7 +8,7 @@ def results_to_csv(metrics_names, results, output_path):
     for parameters, eval_res in results:
         if results_df is None:
             results_df = pd.DataFrame(
-                columns=parameters.keys() + ['noise_std'] + metrics_names,
+                columns=list(parameters.keys()) + ['noise_std'] + metrics_names,
             )
         for noise_res, noise_std in zip(eval_res, DEFAULT_NOISE_STDS):
             # NOTE: not efficient as per pandas doc, but easy
