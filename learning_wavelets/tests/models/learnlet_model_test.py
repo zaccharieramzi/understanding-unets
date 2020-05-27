@@ -29,20 +29,6 @@ def test_build_compile(learnlet_kwargs):
     model.build([(None, 32, 32, 1), (None, 1)])
     K.clear_session()
 
-@pytest.mark.parametrize('learnlet_kwargs', learnlet_test_cases)
-def test_fit(learnlet_kwargs):
-    model = Learnlet(**learnlet_kwargs)
-    model.compile(
-        optimizer='adam',
-        loss='mse',
-    )
-    model.build([(None, 32, 32, 1), (None, 1)])
-    model.fit(
-        x=[tf.random.normal((8, 32, 32, 1), seed=0), tf.zeros((8, 1))],
-        y=tf.random.normal((8, 32, 32, 1), seed=0),
-    )
-    K.clear_session()
-
 @pytest.mark.parametrize('learnlet_kwargs', learnlet_test_cases[-2:])
 def test_exact_reconstruction(learnlet_kwargs):
     model = Learnlet(**learnlet_kwargs)
