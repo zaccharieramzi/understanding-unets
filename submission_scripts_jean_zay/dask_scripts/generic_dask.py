@@ -144,7 +144,7 @@ def train_eval_parameter_grid(job_name, train_function, eval_function, parameter
     results = []
     for params, future in zip(parameters, futures):
         metrics_names, eval_res = client.gather(future)
-        results.append((parameters, eval_res))
+        results.append((params, eval_res))
     print('Shutting down dask workers')
     client.close()
     eval_cluster.close()
