@@ -127,14 +127,14 @@ def im_dataset(
     ):
     file_ds = None
     for path in paths:
-        file_ds_new = tf.data.Dataset.list_files(f'{data_dir}{path}/*.{pattern}', seed=0)
+        file_ds_new = tf.data.Dataset.list_files(f'{data_dir}{path}/*.{pattern}', shuffle=False)
         if file_ds is None:
             file_ds = file_ds_new
         else:
             file_ds.concatenate(file_ds_new)
+    file_ds = file_ds.shuffle(800, seed=0, reshuffle_each_iteration=False)
     if n_samples is not None:
         file_ds = file_ds.take(n_samples)
-    file_ds = file_ds.shuffle(800, seed=0)
     if pattern == 'jpg':
         decode_function = tf.image.decode_jpeg
     elif pattern == 'png':
