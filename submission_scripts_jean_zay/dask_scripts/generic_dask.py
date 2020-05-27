@@ -113,7 +113,7 @@ def train_eval_parameter_grid(job_name, train_function, eval_function, parameter
     eval_cluster = SLURMCluster(
         cores=1,
         job_cpu=40,
-        memory='80GB',
+        memory='40GB',
         job_name=job_name,
         walltime='20:00:00',
         interface='ib0',
@@ -125,7 +125,7 @@ def train_eval_parameter_grid(job_name, train_function, eval_function, parameter
             '--output=%x_%j.out',
         ],
         env_extra=[
-            'cd $WORK/fastmri-reproducible-benchmark',
+            'cd $WORK/understanding-unets',
             '. ./submission_scripts_jean_zay/env_config.sh',
         ],
     )
