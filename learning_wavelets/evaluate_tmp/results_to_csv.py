@@ -14,7 +14,8 @@ def results_to_csv(metrics_names, results, output_path):
                 columns=params_keys + ['noise_std'] + metrics_names,
             )
         for noise_res, noise_std in zip(eval_res, DEFAULT_NOISE_STDS):
-            results_df.iloc[i] = params_values + [noise_std] + noise_res
+            # NOTE: not efficient as per pandas doc, but easy
+            results_df.append(params_values + [noise_std] + noise_res)
             i += 1
     results_df.to_csv(output_path)
     return results_df
