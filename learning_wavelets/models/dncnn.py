@@ -22,7 +22,7 @@ def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3, bn=True):
             kernel_size=3,
             # kernel_initializer='Orthogonal',  # this is only in FFDNet
             padding='same',
-            use_bias=False,
+            use_bias=not bn,
         )(x)
         if bn:
             x = BatchNormalization(axis=-1, epsilon=1e-3, momentum=0.9)(x)
@@ -36,9 +36,4 @@ def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3, bn=True):
     )(x)
     x = Subtract()([inpt, x])
     model = Model(inputs=inpt, outputs=x)
-    model.compile(
-        optimizer=Adam(lr=lr, clipnorm=1.0),
-        loss='mean_squared_error',
-        metrics=[keras_psnr, keras_ssim],
-    )
     return model
