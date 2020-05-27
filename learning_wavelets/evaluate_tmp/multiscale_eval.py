@@ -31,7 +31,7 @@ def evaluate_multiscale(
             batch_size=batch_size,
             patch_size=None,
             noise_std=noise_std,
-            return_noise_level=True,
+            return_noise_level=dynamic_denoising,
             n_samples=n_samples,
         )
         metrics.append(multiscale_model.evaluate(im_ds, verbose=1))
