@@ -15,7 +15,9 @@ def results_to_csv(metrics_names, results, output_path):
             )
         for noise_res, noise_std in zip(eval_res, DEFAULT_NOISE_STDS):
             # NOTE: not efficient as per pandas doc, but easy
-            results_df.append(params_values + [noise_std] + noise_res)
+            results_df = results_df.append(
+                params_values + [noise_std] + noise_res,
+            )
             i += 1
     results_df.to_csv(output_path)
     return results_df
