@@ -23,7 +23,7 @@ def train_dncnn(
         depth=20,
         bn=False,
         n_epochs=500,
-        batch_size=8,
+        batch_size=128,
         steps_per_epoch=200,
         lr=1e-3,
     ):
@@ -36,14 +36,14 @@ def train_dncnn(
     im_ds_train = data_func(
         mode='training',
         batch_size=batch_size,
-        patch_size=256,
+        patch_size=50,
         noise_std=noise_std_train,
         return_noise_level=False,
         n_samples=n_samples,
     )
     im_ds_val = data_func(
         mode='validation',
-        batch_size=batch_size,
+        batch_size=8,
         patch_size=256,
         noise_std=noise_std_val,
         return_noise_level=False,
