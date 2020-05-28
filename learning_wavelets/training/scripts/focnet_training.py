@@ -7,7 +7,7 @@ import tensorflow as tf
 
 from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
 from learning_wavelets.data.datasets import im_dataset_div2k, im_dataset_bsd500
-from learning_wavelets.models.focnet import focnet
+from learning_wavelets.models.focnet import FocNet
 from ..compile import default_model_compile
 
 
@@ -76,7 +76,7 @@ def train_focnet(
     # run distributed
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
-        model = focnet(**run_params)
+        model = FocNet(**run_params)
         default_model_compile(model, lr=lr)
 
     # actual training
