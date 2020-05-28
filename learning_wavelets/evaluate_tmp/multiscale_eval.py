@@ -14,7 +14,6 @@ def evaluate_multiscale(
         dynamic_denoising=True,
         noise_stds=DEFAULT_NOISE_STDS,
         n_samples=None,
-        batch_size=8,
         **dummy_kwargs,
     ):
     metrics = []
@@ -28,7 +27,7 @@ def evaluate_multiscale(
     for noise_std in tqdm(noise_stds, 'Noise stds'):
         im_ds = im_dataset_bsd68(
             mode='testing',
-            batch_size=batch_size,
+            batch_size=1,
             patch_size=None,
             noise_std=noise_std,
             return_noise_level=dynamic_denoising,
