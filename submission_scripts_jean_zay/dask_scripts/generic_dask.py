@@ -7,7 +7,7 @@ def train_on_jz_dask(job_name, train_function, *args, **kwargs):
     cluster = SLURMCluster(
         cores=1,
         job_cpu=40,
-        memory='40GB',
+        memory='80GB',
         job_name=job_name,
         walltime='20:00:00',
         interface='ib0',
@@ -43,7 +43,7 @@ def eval_on_jz_dask(job_name, eval_function, *args, **kwargs):
     cluster = SLURMCluster(
         cores=1,
         job_cpu=40,
-        memory='40GB',
+        memory='80GB',
         job_name=job_name,
         walltime='20:00:00',
         interface='ib0',
