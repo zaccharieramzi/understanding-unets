@@ -35,7 +35,7 @@ def train_focnet(
     im_ds_train = data_func(
         mode='training',
         batch_size=batch_size,
-        patch_size=256,
+        patch_size=80,
         noise_std=noise_std_train,
         return_noise_level=False,
         n_samples=n_samples,
@@ -43,7 +43,7 @@ def train_focnet(
     im_ds_val = data_func(
         mode='validation',
         batch_size=batch_size,
-        patch_size=256,
+        patch_size=80,
         noise_std=noise_std_val,
         return_noise_level=False,
     )
