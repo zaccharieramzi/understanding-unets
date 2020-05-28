@@ -86,7 +86,7 @@ def eval_parameter_grid(job_name, eval_function, parameter_grid, run_ids, n_samp
         job_cpu=40,
         memory='60GB',
         job_name=job_name,
-        walltime='20:00:00',
+        walltime='3:00:00',
         interface='ib0',
         job_extra=[
             f'--gres=gpu:4',
