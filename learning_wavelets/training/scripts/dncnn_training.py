@@ -44,7 +44,7 @@ def train_dncnn(
     im_ds_val = data_func(
         mode='validation',
         batch_size=8,
-        patch_size=256,
+        patch_size=50,
         noise_std=noise_std_val,
         return_noise_level=False,
     )
