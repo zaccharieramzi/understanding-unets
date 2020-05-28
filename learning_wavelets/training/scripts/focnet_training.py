@@ -21,9 +21,9 @@ def train_focnet(
         cuda_visible_devices='0123',
         n_filters=128,
         beta=0.2,
-        n_epochs=500,
-        batch_size=8,
-        steps_per_epoch=200,
+        n_epochs=40,
+        batch_size=64,
+        steps_per_epoch=2000,
         lr=1e-3,
     ):
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
