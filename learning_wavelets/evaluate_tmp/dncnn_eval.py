@@ -5,12 +5,12 @@ from learning_wavelets.models.dncnn import dncnn
 from .multiscale_eval import evaluate_multiscale
 
 
-def evaluate_dncnn(run_id, filters=64, depth=20, n_epochs=500, **kwargs):
+def evaluate_dncnn(run_id, filters=64, depth=20, bn=False, n_epochs=500, **kwargs):
     # model definition
     run_params = {
         "filters": filters,
         'depth': depth,
-        'bn': False,
+        'bn': bn,
     }
     n_channels = 1
     mirrored_strategy = tf.distribute.MirroredStrategy()

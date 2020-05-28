@@ -21,6 +21,7 @@ def train_dncnn(
         cuda_visible_devices='0123',
         filters=64,
         depth=20,
+        bn=False,
         n_epochs=500,
         batch_size=8,
         steps_per_epoch=200,
@@ -52,7 +53,7 @@ def train_dncnn(
     run_params = {
         "filters": filters,
         'depth': depth,
-        'bn': False,
+        'bn': bn,
     }
     run_id = f'dncnn_{filters}_{depth}_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{n_samples}_{int(time.time())}'
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'

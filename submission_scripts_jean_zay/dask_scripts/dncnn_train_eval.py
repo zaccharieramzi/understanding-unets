@@ -9,6 +9,7 @@ def evaluate_dncnn_parameters(
         filters=None,
         depth=None,
         noise_std_train=None,
+        bn=None,
         n_samples=None,
         exp_id='',
         **add_kwargs,
@@ -17,6 +18,8 @@ def evaluate_dncnn_parameters(
         filters = [64]
     if depth is None:
         depth = [20]
+    if bn is None:
+        bn = [False]
     if noise_std_train is None:
         noise_std_train = [(0, 55)]
     if n_samples is None:
@@ -26,6 +29,7 @@ def evaluate_dncnn_parameters(
         'filters': filters,
         'depth': depth,
         'noise_std_train': noise_std_train,
+        'bn': bn,
         'n_samples': n_samples,
     }
     param_grid.update(**add_kwargs)
