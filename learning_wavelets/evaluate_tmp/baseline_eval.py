@@ -33,7 +33,7 @@ def metrics_baseline(denoising_function, baseline_name='original', n_pooling=5, 
     ]
     results_to_csv(
         list(metrics_names),
-        [(kwargs, list(m)) for m in formatted_metrics_list],
+        [[(kwargs, list(m)) for m in formatted_metrics_list]],
         f'{baseline_name}_metrics.csv',
     )
     return metrics_list
