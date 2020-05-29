@@ -31,12 +31,12 @@ def metrics_baseline(denoising_function, baseline_name='original', n_pooling=5, 
         m.means().values()
         for m in metrics_list
     ]
-    results_to_csv(
+    df_results = results_to_csv(
         list(metrics_names),
         [(kwargs, [list(m) for m in formatted_metrics_list])],
         f'{baseline_name}_metrics.csv',
     )
-    return metrics_list
+    return df_results
 
 def metrics_original():
     def identity(images_noisy, noise_std):
