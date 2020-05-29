@@ -125,3 +125,4 @@ def train_learnlet(
         callbacks=[tboard_cback, chkpt_cback, norm_cback, lrate_cback],
         shuffle=False,
     )
+    return run_id
