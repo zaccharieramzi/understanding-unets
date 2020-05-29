@@ -1,5 +1,7 @@
 # Learnlets
 
+[![Build Status](https://travis-ci.com/zaccharieramzi/understanding-unets.svg?token=wHL4tmyGD3TP6bSo6Mdh&branch=master)](https://travis-ci.com/zaccharieramzi/understanding-unets)
+
 Learnlets are a way to learn a filter bank rather than design one like in the curvelets.
 
 This filter bank will be learned in a denoising setting with backpropagation and gradient descent.
