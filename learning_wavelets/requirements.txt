@@ -7,6 +7,7 @@ keras-tqdm
 pydot
 tensorboard
 tensorflow
+tensorflow-addons
 click
 scikit-image
 pandas
