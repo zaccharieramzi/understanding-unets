@@ -18,7 +18,7 @@ def metrics_baseline(denoising_function, baseline_name='original', n_pooling=5, 
             batch_size=1,
             patch_size=None,
             noise_std=noise_std,
-            return_noise_level=True,
+            return_noise_level=False,
             n_samples=None,
             n_pooling=n_pooling,
         )
