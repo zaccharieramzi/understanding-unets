@@ -5,9 +5,8 @@ from learning_wavelets.models.focnet import FocNet
 from .multiscale_eval import evaluate_multiscale
 
 
-def evaluate_focnet(run_id, n_filters=64, beta=0.2, n_epochs=500, **kwargs):
+def evaluate_focnet(run_id, n_filters=128, beta=0.2, n_epochs=40, **kwargs):
     # model definition
-    n_layers = 5
     run_params = {
         'n_filters': n_filters,
         'beta': beta,
@@ -22,7 +21,7 @@ def evaluate_focnet(run_id, n_filters=64, beta=0.2, n_epochs=500, **kwargs):
     metrics = evaluate_multiscale(
         model,
         distrib_strat=mirrored_strategy,
-        n_scales=n_layers,
+        n_scales=run_params.get('n_scales', 4),
         dynamic_denoising=False,
         **kwargs,
     )
