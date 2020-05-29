@@ -12,6 +12,7 @@ def evaluate_learnlet(
         undecimated=True,
         exact_reco=True,
         n_reweights=1,
+        kernel_size=11,
         n_epochs=500,
         **kwargs,
     ):
@@ -23,11 +24,11 @@ def evaluate_learnlet(
             'n_tiling': n_filters,
             'mixing_details': False,
             'skip_connection': True,
-            'kernel_size': 11,
+            'kernel_size': kernel_size,
         },
         'learnlet_synthesis_kwargs': {
             'res': True,
-            'kernel_size': 13,
+            'kernel_size': kernel_size + 2,
         },
         'threshold_kwargs':{
             'noise_std_norm': True,

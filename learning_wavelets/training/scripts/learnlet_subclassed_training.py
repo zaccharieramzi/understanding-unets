@@ -27,6 +27,7 @@ def train_learnlet(
         undecimated=True,
         exact_reco=True,
         n_reweights=1,
+        kernel_size=11,
         n_epochs=500,
         batch_size=8,
         steps_per_epoch=200,
@@ -61,11 +62,11 @@ def train_learnlet(
             'n_tiling': n_filters,
             'mixing_details': False,
             'skip_connection': True,
-            'kernel_size': 11,
+            'kernel_size': kernel_size,
         },
         'learnlet_synthesis_kwargs': {
             'res': True,
-            'kernel_size': 13,
+            'kernel_size': kernel_size + 2,
         },
         'threshold_kwargs':{
             'noise_std_norm': True,
