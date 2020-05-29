@@ -45,7 +45,7 @@ def evaluate_focnet_parameters(
 def evaluate_focnet_runs(
         run_ids,
         n_filters=None,
-        beta=None
+        beta=None,
         noise_std_train=None,
         n_samples=None,
         exp_id='',
