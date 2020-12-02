@@ -4,15 +4,18 @@ import time
 import click
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LearningRateScheduler
 import tensorflow as tf
+from tensorflow.keras.optimizers import Adam
 
 from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
 from learning_wavelets.data.datasets import im_dataset_div2k, im_dataset_bsd500
+from learning_wavelets.evaluate import keras_psnr, keras_ssim
 from learning_wavelets.keras_utils.normalisation import NormalisationAdjustment
-from learning_wavelets.models.learned_wavelet import learnlet
+from learning_wavelets.models.learnlet_model import Learnlet
 
 tf.random.set_seed(1)
 
 def train_learnlet(
+        n_epochs=500,
         noise_std_train=(0, 55),
         noise_std_val=30,
         n_samples=None,
@@ -62,7 +65,6 @@ def train_learnlet(
         'clip': False,
         'random_analysis': random_analysis,
     }
-    n_epochs = 500
     additional_info = ""
     if n_filters != 256:
         additional_info += f'_{n_filters}_'
@@ -101,13 +103,15 @@ def train_learnlet(
     norm_cback.on_train_batch_end = norm_cback.on_batch_end
 
 
-    n_channels = 1
     # run distributed
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
-        model = learnlet(input_size=(None, None, n_channels), lr=1e-3, **run_params)
-    print(model.summary(line_length=114))
-
+        model = Learnlet(**run_params)
+        model.compile(
+            optimizer=Adam(lr=1e-3),
+            loss='mse',
+            metrics=[keras_psnr, keras_ssim],
+        )
 
     model.fit(
         im_ds_train,
