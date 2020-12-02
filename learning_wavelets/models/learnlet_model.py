@@ -19,6 +19,7 @@ class Learnlet(Model):
             n_reweights_learn=1,
             exact_reconstruction=False,
             random_analysis=False,
+            wav_type='starlet',
         ):
         super(Learnlet, self).__init__()
         if learnlet_analysis_kwargs is None:
@@ -34,9 +35,11 @@ class Learnlet(Model):
         self.n_reweights_learn = n_reweights_learn
         self.exact_reconstruction = exact_reconstruction
         self.random_analysis = random_analysis
+        self.wav_type = wav_type
         self.analysis = LearnletAnalysis(
             normalize=self.normalize,
             n_scales=self.n_scales,
+            wav_type=self.wav_type,
             **learnlet_analysis_kwargs,
         )
         if self.random_analysis:
@@ -59,6 +62,7 @@ class Learnlet(Model):
         self.synthesis = LearnletSynthesis(
             normalize=self.normalize,
             n_scales=self.n_scales,
+            wav_type=self.wav_type,
             **learnlet_synthesis_kwargs,
         )
 
