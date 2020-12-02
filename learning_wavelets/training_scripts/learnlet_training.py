@@ -24,6 +24,7 @@ def train_learnlet(
         n_filters=256,
         decreasing_noise_level=False,
         random_analysis=False,
+        exact_reconstruction=False,
     ):
     # data preparation
     batch_size = 8
@@ -64,6 +65,7 @@ def train_learnlet(
         'n_scales': 5,
         'clip': False,
         'random_analysis': random_analysis,
+        'exact_reconstruction': exact_reconstruction,
     }
     additional_info = ""
     if n_filters != 256:
