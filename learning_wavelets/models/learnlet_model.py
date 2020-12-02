@@ -18,6 +18,7 @@ class Learnlet(Model):
             threshold_kwargs=None,
             n_reweights_learn=1,
             exact_reconstruction=False,
+            random_analysis=False,
         ):
         super(Learnlet, self).__init__()
         if learnlet_analysis_kwargs is None:
@@ -32,11 +33,14 @@ class Learnlet(Model):
         self.normalize = normalize
         self.n_reweights_learn = n_reweights_learn
         self.exact_reconstruction = exact_reconstruction
+        self.random_analysis = random_analysis
         self.analysis = LearnletAnalysis(
             normalize=self.normalize,
             n_scales=self.n_scales,
             **learnlet_analysis_kwargs,
         )
+        if self.random_analysis:
+            self.analysis.trainable = False
         self.threshold = ScalesThreshold(
             n_scales=self.n_scales,
             dynamic_denoising=True,
