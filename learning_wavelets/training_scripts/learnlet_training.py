@@ -1,4 +1,3 @@
-import os
 import os.path as op
 import time
 
@@ -13,73 +12,16 @@ from learning_wavelets.models.learned_wavelet import learnlet
 
 tf.random.set_seed(1)
 
-@click.command()
-@click.option(
-    'noise_std_train',
-    '--ns-train',
-    nargs=2,
-    default=(0, 55),
-    type=float,
-    help='The noise standard deviation range for the training set. Defaults to [0, 55]',
-)
-@click.option(
-    'noise_std_val',
-    '--ns-val',
-    default=30,
-    type=float,
-    help='The noise standard deviation for the validation set. Defaults to 30',
-)
-@click.option(
-    'n_samples',
-    '-n',
-    default=None,
-    type=int,
-    help='The number of samples to use for training. Defaults to None, which means that all samples are used.',
-)
-@click.option(
-    'source',
-    '-s',
-    default='bsd500',
-    type=click.Choice(['bsd500', 'div2k'], case_sensitive=False),
-    help='The dataset you wish to use for training and validation, between bsd500 and div2k. Defaults to bsd500',
-)
-@click.option(
-    'cuda_visible_devices',
-    '-gpus',
-    '--cuda-visible-devices',
-    default='0123',
-    type=str,
-    help='The visible GPU devices. Defaults to 0123',
-)
-@click.option(
-    'denoising_activation',
-    '-da',
-    '--denoising-activation',
-    default='dynamic_soft_thresholding',
-    type=click.Choice([
-        'dynamic_soft_thresholding',
-        'dynamic_hard_thresholding',
-        'dynamic_soft_thresholding_per_filter',
-        'cheeky_dynamic_hard_thresholding'
-    ], case_sensitive=False),
-    help='The denoising activation to use. Defaults to dynamic_soft_thresholding',
-)
-@click.option(
-    'n_filters',
-    '-nf',
-    '--n-filters',
-    default=256,
-    type=int,
-    help='The number of filters in the learnlets. Defaults to 256.',
-)
-@click.option(
-    'decreasing_noise_level',
-    '--decr-n-lvl',
-    is_flag=True,
-    help='Set if you want the noise level distribution to be non uniform, skewed towards low value.',
-)
-def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_devices, denoising_activation, n_filters, decreasing_noise_level):
-    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
+def train_learnlet(
+        noise_std_train=(0, 55),
+        noise_std_val=30,
+        n_samples=None,
+        source='bsd500',
+        denoising_activation='dynamic_soft_thresholding',
+        n_filters=256,
+        decreasing_noise_level=False,
+        random_analysis=False,
+    ):
     # data preparation
     batch_size = 8
     if source == 'bsd500':
@@ -118,9 +60,21 @@ def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visib
         'wav_type': 'starlet',
         'n_scales': 5,
         'clip': False,
+        'random_analysis': random_analysis,
     }
     n_epochs = 500
-    run_id = f'learnlet_dynamic_{n_filters}_{denoising_activation}_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{n_samples}_{int(time.time())}'
+    additional_info = ""
+    if n_filters != 256:
+        additional_info += f'_{n_filters}_'
+    if denoising_activation != 'dynamic_soft_thresholding':
+        additional_info += f'{denoising_activation}_'
+    if source != 'bsd500':
+        additional_info += f'{source}_'
+    if noise_std_train != (0, 55):
+        additional_info += f'{noise_std_train[0]}_{noise_std_train[1]}_'
+    if n_samples is not None:
+        additional_info += f'{n_samples}_'
+    run_id = f'learnlet_dynamic{additional_info}{int(time.time())}'
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
 
@@ -166,5 +120,65 @@ def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visib
         shuffle=False,
     )
 
+@click.command()
+@click.option(
+    'noise_std_train',
+    '--ns-train',
+    nargs=2,
+    default=(0, 55),
+    type=float,
+    help='The noise standard deviation range for the training set. Defaults to [0, 55]',
+)
+@click.option(
+    'noise_std_val',
+    '--ns-val',
+    default=30,
+    type=float,
+    help='The noise standard deviation for the validation set. Defaults to 30',
+)
+@click.option(
+    'n_samples',
+    '-n',
+    default=None,
+    type=int,
+    help='The number of samples to use for training. Defaults to None, which means that all samples are used.',
+)
+@click.option(
+    'source',
+    '-s',
+    default='bsd500',
+    type=click.Choice(['bsd500', 'div2k'], case_sensitive=False),
+    help='The dataset you wish to use for training and validation, between bsd500 and div2k. Defaults to bsd500',
+)
+@click.option(
+    'denoising_activation',
+    '-da',
+    '--denoising-activation',
+    default='dynamic_soft_thresholding',
+    type=click.Choice([
+        'dynamic_soft_thresholding',
+        'dynamic_hard_thresholding',
+        'dynamic_soft_thresholding_per_filter',
+        'cheeky_dynamic_hard_thresholding'
+    ], case_sensitive=False),
+    help='The denoising activation to use. Defaults to dynamic_soft_thresholding',
+)
+@click.option(
+    'n_filters',
+    '-nf',
+    '--n-filters',
+    default=256,
+    type=int,
+    help='The number of filters in the learnlets. Defaults to 256.',
+)
+@click.option(
+    'decreasing_noise_level',
+    '--decr-n-lvl',
+    is_flag=True,
+    help='Set if you want the noise level distribution to be non uniform, skewed towards low value.',
+)
+def train_learnlet_click(noise_std_train, noise_std_val, n_samples, source, denoising_activation, n_filters, decreasing_noise_level):
+    train_learnlet(noise_std_train, noise_std_val, n_samples, source, denoising_activation, n_filters, decreasing_noise_level)
+
 if __name__ == '__main__':
-    train_learnlet()
+    train_learnlet_click()
