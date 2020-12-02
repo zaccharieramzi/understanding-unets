@@ -14,6 +14,7 @@ def evaluate_learnlet(
         n_samples=None,
         denoising_activation='dynamic_soft_thresholding',
         n_filters=256,
+        exact_reconstruction=False,
     ):
     run_params = {
         'denoising_activation': denoising_activation,
@@ -31,6 +32,7 @@ def evaluate_learnlet(
         'n_scales': 5,
         'clip': False,
         'random_analysis': True,
+        'exact_reconstruction': exact_reconstruction,
     }
     model = Learnlet(**run_params)
     model(
