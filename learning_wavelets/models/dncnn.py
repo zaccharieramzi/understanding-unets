@@ -2,7 +2,7 @@ from tensorflow.keras.layers import  Input, Conv2D, Activation, BatchNormalizati
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
-from .evaluate import keras_psnr, keras_ssim
+from learning_wavelets.evaluate import keras_psnr, keras_ssim
 
 
 def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3, bn=True):
