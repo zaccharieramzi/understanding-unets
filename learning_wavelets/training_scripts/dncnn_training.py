@@ -13,6 +13,7 @@ tf.random.set_seed(1)
 
 def train_dncnn(
         n_epochs=500,
+        steps_per_epoch=3000,
         noise_std_train=(0, 55),
         noise_std_val=30,
         n_samples=None,
@@ -74,7 +75,7 @@ def train_dncnn(
 
     model.fit(
         im_ds_train,
-        steps_per_epoch=200,
+        steps_per_epoch=steps_per_epoch,
         epochs=n_epochs,
         validation_data=im_ds_val,
         validation_steps=5,
