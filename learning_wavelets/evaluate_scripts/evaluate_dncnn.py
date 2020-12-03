@@ -42,4 +42,4 @@ def evaluate_dncnn(
             metrics.push(images.numpy(), im_recos, im_shape.numpy())
         noise_std_metrics[noise_std] = metrics
     print(noise_std_metrics)
-    return noise_std_metrics
+    return ['PSNR' 'SSIM'], noise_std_metrics
