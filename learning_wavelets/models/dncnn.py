@@ -22,7 +22,7 @@ def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3, bn=True):
             kernel_size=3,
             # kernel_initializer='Orthogonal',  # this is only in FFDNet
             padding='same',
-            use_bias=False,
+            use_bias=not bn,
         )(x)
         if bn:
             x = BatchNormalization(axis=-1, epsilon=1e-3, momentum=0.9)(x)
