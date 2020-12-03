@@ -19,6 +19,7 @@ def train_dncnn(
         n_samples=None,
         source='bsd500',
         bn=True,
+        lr=1e-4,
     ):
     # data preparation
     batch_size = 8
@@ -55,7 +56,8 @@ def train_dncnn(
     print(run_id)
 
     def l_rate_schedule(epoch):
-        return max(1e-3 / 2**(epoch//25), 1e-5)
+        steps = epoch * steps_per_epoch
+        return lr * (0.5)**(steps//200_000)
     lrate_cback = LearningRateScheduler(l_rate_schedule)
 
     chkpt_cback = ModelCheckpoint(chkpt_path, period=n_epochs, save_weights_only=False)
@@ -71,7 +73,7 @@ def train_dncnn(
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
         n_channels = 1
-        model = dncnn(input_size=(None, None, n_channels), lr=1e-3, **run_params)
+        model = dncnn(input_size=(None, None, n_channels), lr=lr, **run_params)
 
     model.fit(
         im_ds_train,

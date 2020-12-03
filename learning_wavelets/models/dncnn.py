@@ -12,7 +12,7 @@ def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3, bn=True):
     x = Conv2D(
         filters=filters,
         kernel_size=3,
-        # kernel_initializer='Orthogonal',  # this is only in FFDNet
+        kernel_initializer='Orthogonal',  # this is only in FFDNet
         padding='same',
     )(inpt)
     x = Activation('relu')(x)
@@ -20,7 +20,7 @@ def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3, bn=True):
         x = Conv2D(
             filters=filters,
             kernel_size=3,
-            # kernel_initializer='Orthogonal',  # this is only in FFDNet
+            kernel_initializer='Orthogonal',  # this is only in FFDNet
             padding='same',
             use_bias=not bn,
         )(x)
@@ -30,7 +30,7 @@ def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3, bn=True):
     x = Conv2D(
         filters=input_size[-1],
         kernel_size=3,
-        # kernel_initializer='Orthogonal',  # this is only in FFDNet
+        kernel_initializer='Orthogonal',  # this is only in FFDNet
         padding='same',
         use_bias=True,
     )(x)
@@ -38,7 +38,7 @@ def dncnn(input_size=(None, None, 1), filters=64, depth=20, lr=1e-3, bn=True):
     model = Model(inputs=inpt, outputs=x)
     model.compile(
         optimizer=Adam(lr=lr),
-        loss='mean_squared_error',
+        loss='mae',
         metrics=[keras_psnr, keras_ssim],
     )
     return model
