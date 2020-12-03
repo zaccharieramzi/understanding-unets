@@ -82,3 +82,4 @@ def train_dncnn(
         callbacks=[tboard_cback, chkpt_cback, lrate_cback],
         shuffle=False,
     )
+    return run_id
