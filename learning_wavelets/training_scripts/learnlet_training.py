@@ -78,6 +78,8 @@ def train_learnlet(
         additional_info += f'{noise_std_train[0]}_{noise_std_train[1]}_'
     if n_samples is not None:
         additional_info += f'{n_samples}_'
+    if random_analysis:
+        additional_info += 'ra_'
     run_id = f'learnlet_dynamic{additional_info}{int(time.time())}'
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
