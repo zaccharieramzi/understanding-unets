@@ -58,7 +58,7 @@ def evaluate_learnlet(
             for images_noisy, images_gt, im_shape in tqdm(im_ds)
         ]
         for im_recos, images, im_shape in pred_and_gt_shape:
-            metrics.push(images.numpy(), im_recos.numpy(), im_shape.numpy())
+            metrics.push(images.numpy(), im_recos, im_shape.numpy())
         noise_std_metrics[noise_std] = metrics
     print(noise_std_metrics)
     return ['PSNR' 'SSIM'], noise_std_metrics
