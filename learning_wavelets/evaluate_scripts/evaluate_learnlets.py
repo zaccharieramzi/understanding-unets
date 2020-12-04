@@ -35,10 +35,10 @@ def evaluate_learnlet(
         'exact_reconstruction': exact_reconstruction,
     }
     model = Learnlet(**run_params)
-    model(
+    model([
         tf.ones([1, 32, 32, 1]),
         tf.ones([1, 1]),
-    )
+    ])
     chkpt_path = f'{CHECKPOINTS_DIR}/checkpoints/{run_id}-{n_epochs}.hdf5'
     model.load_weights(chkpt_path)
     noise_std_metrics = {}
