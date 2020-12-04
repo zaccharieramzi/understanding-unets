@@ -48,7 +48,7 @@ def evaluate_learnlet(
             batch_size=1,
             patch_size=None,
             noise_std=noise_std,
-            return_noise_level=False,
+            return_noise_level=True,
             n_pooling=5,
             n_samples=n_samples,
         )
