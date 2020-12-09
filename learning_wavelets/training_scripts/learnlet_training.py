@@ -16,6 +16,7 @@ tf.random.set_seed(1)
 
 def train_learnlet(
         n_epochs=500,
+        steps_per_epoch=3000,
         noise_std_train=(0, 55),
         noise_std_val=30,
         n_samples=None,
@@ -25,6 +26,7 @@ def train_learnlet(
         decreasing_noise_level=False,
         random_analysis=False,
         exact_reconstruction=False,
+        lr=1e-4,
     ):
     # data preparation
     batch_size = 8
@@ -84,15 +86,10 @@ def train_learnlet(
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
 
-
-
-
     def l_rate_schedule(epoch):
-        return max(1e-3 / 2**(epoch//25), 1e-5)
+        steps = epoch * steps_per_epoch
+        return lr * (0.5)**(steps//200_000)
     lrate_cback = LearningRateScheduler(l_rate_schedule)
-
-
-
 
     chkpt_cback = ModelCheckpoint(chkpt_path, period=n_epochs, save_weights_only=False)
     log_dir = op.join(f'{LOGS_DIR}logs', run_id)
@@ -106,23 +103,22 @@ def train_learnlet(
     norm_cback = NormalisationAdjustment(momentum=0.99, n_pooling=5)
     norm_cback.on_train_batch_end = norm_cback.on_batch_end
 
-
     # run distributed
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
         model = Learnlet(**run_params)
         model.compile(
-            optimizer=Adam(lr=1e-3),
-            loss='mse',
+            optimizer=Adam(lr=lr),
+            loss='mae',
             metrics=[keras_psnr, keras_ssim],
         )
 
     model.fit(
         im_ds_train,
-        steps_per_epoch=200,
+        steps_per_epoch=steps_per_epoch,
         epochs=n_epochs,
         validation_data=im_ds_val,
-        validation_steps=1,
+        validation_steps=5,
         verbose=0,
         callbacks=[tboard_cback, chkpt_cback, norm_cback, lrate_cback],
         shuffle=False,
@@ -187,7 +183,7 @@ def train_learnlet(
     help='Set if you want the noise level distribution to be non uniform, skewed towards low value.',
 )
 def train_learnlet_click(noise_std_train, noise_std_val, n_samples, source, denoising_activation, n_filters, decreasing_noise_level):
-    train_learnlet(noise_std_train, noise_std_val, n_samples, source, denoising_activation, n_filters, decreasing_noise_level)
+    train_learnlet(noise_std_train, 3000, noise_std_val, n_samples, source, denoising_activation, n_filters, decreasing_noise_level)
 
 if __name__ == '__main__':
     train_learnlet_click()
