@@ -1,7 +1,7 @@
 import numpy as np
 try:
     from runstats import Statistics
-    from skimage.measure import compare_psnr, compare_ssim
+    from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 except ModuleNotFoundError:
     # TODO: this is just a quick hack to be able to submit jobs on the TGCC,
     # it has to be removed once they are installed.
@@ -31,7 +31,7 @@ def keras_ssim(y_true, y_pred):
 
 def psnr_single_image(gt, pred):
     """ Compute Peak Signal to Noise Ratio metric (PSNR) """
-    return compare_psnr(gt, pred, data_range=1)
+    return peak_signal_noise_ratio(gt, pred, data_range=1)
 
 
 def ssim_single_image(gt, pred):
@@ -39,7 +39,7 @@ def ssim_single_image(gt, pred):
 
     The images must be in HWC format
     """
-    return compare_ssim(
+    return structural_similarity(
         gt, pred, multichannel=True, data_range=1
     )
 
