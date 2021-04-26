@@ -1,142 +1,138 @@
-"""Largely inspired by https://github.com/zhixuhao/unet/blob/master/model.py"""
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, concatenate, Dropout, UpSampling2D, Input, AveragePooling2D, BatchNormalization, Lambda
+import tensorflow as tf
+from tensorflow.keras.layers import Layer, Conv2D, LeakyReLU, PReLU, UpSampling2D, MaxPooling2D, Activation
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
-
-from ..evaluate import keras_psnr, keras_ssim
 
 
-def unet_rec(
-        inputs,
-        kernel_size=3,
-        n_layers=1,
-        layers_n_channels=1,
-        layers_n_non_lins=1,
-        pool='max',
-        non_relu_contract=False,
-        bn=False,
-    ):
-    if n_layers == 1:
-        last_conv = chained_convolutions(
-            inputs,
-            n_channels=layers_n_channels[0],
-            n_non_lins=layers_n_non_lins[0],
-            kernel_size=kernel_size,
-            bn=bn,
-        )
-        output = last_conv
-    else:
-        # TODO: refactor the following
-        n_non_lins = layers_n_non_lins[0]
-        n_channels = layers_n_channels[0]
-        if non_relu_contract:
-            activation = 'linear'
-        else:
-            activation = 'relu'
-        left_u = chained_convolutions(
-            inputs,
-            n_channels=n_channels,
-            n_non_lins=n_non_lins,
-            kernel_size=kernel_size,
-            activation=activation,
-        )
-        if pool == 'average':
-            pooling = AveragePooling2D
-        else:
-            pooling = MaxPooling2D
-        rec_input = pooling(pool_size=(2, 2))(left_u)
-        rec_output = unet_rec(
-            inputs=rec_input,
-            kernel_size=kernel_size,
-            n_layers=n_layers-1,
-            layers_n_channels=layers_n_channels[1:],
-            layers_n_non_lins=layers_n_non_lins[1:],
-            pool=pool,
-            non_relu_contract=non_relu_contract,
-        )
-        merge = concatenate([
-            left_u,
-            Conv2D(
-                n_channels,
-                kernel_size - 1,
-                activation='relu',
-                padding='same',
-                kernel_initializer='glorot_uniform',
-            )(UpSampling2D(size=(2, 2))(rec_output))  # up-conv
-        ], axis=3)
-        output = chained_convolutions(
-            merge,
-            n_channels=n_channels,
-            n_non_lins=n_non_lins,
-            kernel_size=kernel_size,
-        )
-    return output
-
-
-def unet(
-        input_size=(256, 256, 1),
-        kernel_size=3,
-        n_layers=1,
-        layers_n_channels=1,
-        layers_n_non_lins=1,
-        non_relu_contract=False,
-        pool='max',
-        lr=1e-3,
-        bn=False,
-    ):
-    if isinstance(layers_n_channels, int):
-        layers_n_channels = [layers_n_channels] * n_layers
-    else:
-        assert len(layers_n_channels) == n_layers
-    if isinstance(layers_n_non_lins, int):
-        layers_n_non_lins = [layers_n_non_lins] * n_layers
-    else:
-        assert len(layers_n_non_lins) == n_layers
-    inputs = Input(input_size)
-    output = unet_rec(
-        inputs,
-        kernel_size=kernel_size,
-        n_layers=n_layers,
-        layers_n_channels=layers_n_channels,
-        layers_n_non_lins=layers_n_non_lins,
-        pool=pool,
-        non_relu_contract=non_relu_contract,
-        bn=bn,
-    )
-    output = Conv2D(
-        4 * input_size[-1],
-        1,
-        activation='linear',
-        padding='same',
-        kernel_initializer='glorot_uniform',
-    )(output)
-    output = Conv2D(
-        input_size[-1],
-        1,
-        activation='linear',
-        padding='same',
-        kernel_initializer='glorot_uniform',
-    )(output)
-    model = Model(inputs=inputs, outputs=output)
-    model.compile(
-        optimizer=Adam(lr=lr, clipnorm=1.),
-        loss='mean_squared_error',
-        metrics=[keras_psnr, keras_ssim],
-    )
-
-    return model
-
-
-def chained_convolutions(inputs, n_channels=1, n_non_lins=1, kernel_size=3, activation='relu', bn=False):
-    conv = inputs
-    for _ in range(n_non_lins):
-        conv = Conv2D(
-            n_channels,
-            kernel_size,
-            activation=activation,
+class Conv(Layer):
+    def __init__(self, n_filters, kernel_size=3, non_linearity='relu', **kwargs):
+        super().__init__(**kwargs)
+        self.n_filters = n_filters
+        self.kernel_size = kernel_size
+        self.non_linearity = non_linearity
+        self.conv = Conv2D(
+            filters=self.n_filters,
+            kernel_size=self.kernel_size,
             padding='same',
-            kernel_initializer='glorot_uniform',
-        )(conv)
-        if bn:
-            conv = BatchNormalization()(conv)
-    return conv
+            activation=None,
+        )
+        if self.non_linearity == 'lrelu':
+            self.act = LeakyReLU(0.1)
+        elif self.non_linearity == 'prelu':
+            self.act = PReLU(shared_axes=[1, 2])
+        else:
+            self.act = Activation(self.non_linearity)
+
+    def call(self, inputs):
+        outputs = self.conv(inputs)
+        outputs = self.act(outputs)
+        return outputs
+
+class ConvBlock(Layer):
+    def __init__(self, n_filters, kernel_size=3, non_linearity='relu', n_non_lins=2, **kwargs):
+        super().__init__(**kwargs)
+        self.n_filters = n_filters
+        self.kernel_size = kernel_size
+        self.non_linearity = non_linearity
+        self.n_non_lins = n_non_lins
+        self.convs = [
+            Conv(
+                n_filters=self.n_filters,
+                kernel_size=self.kernel_size,
+                non_linearity=self.non_linearity,
+            ) for _ in range(self.n_non_lins)
+        ]
+
+    def call(self, inputs):
+        outputs = inputs
+        for conv in self.convs:
+            outputs = conv(outputs)
+        return outputs
+
+class UpConv(Layer):
+    def __init__(self, n_filters, kernel_size=3, **kwargs):
+        super().__init__(**kwargs)
+        self.n_filters = n_filters
+        self.kernel_size = kernel_size
+        self.conv = Conv2D(
+            filters=self.n_filters,
+            kernel_size=self.kernel_size,
+            padding='same',
+            activation=None,
+        )
+        self.up = UpSampling2D(size=(2, 2))
+
+    def call(self, inputs):
+        outputs = self.up(inputs)
+        outputs = self.conv(outputs)
+        return outputs
+
+
+class Unet(Model):
+    def __init__(
+            self,
+            n_output_channels=1,
+            kernel_size=3,
+            layers_n_channels=[64, 128, 256, 512, 1024],
+            layers_n_non_lins=2,
+            non_linearity='relu',
+            **kwargs,
+        ):
+        super().__init__(**kwargs)
+        self.n_output_channels = n_output_channels
+        self.kernel_size = kernel_size
+        self.layers_n_channels = layers_n_channels
+        self.n_layers = len(self.layers_n_channels)
+        self.layers_n_non_lins = layers_n_non_lins
+        self.non_linearity = non_linearity
+        self.down_convs = [
+            ConvBlock(
+                n_filters=n_channels,
+                kernel_size=self.kernel_size,
+                non_linearity=self.non_linearity,
+                n_non_lins=self.layers_n_non_lins,
+            ) for n_channels in self.layers_n_channels[:-1]
+        ]
+        self.down = MaxPooling2D(pool_size=(2, 2), padding='same')
+        self.bottom_conv = ConvBlock(
+            n_filters=self.layers_n_channels[-1],
+            kernel_size=self.kernel_size,
+            non_linearity=self.non_linearity,
+            n_non_lins=self.layers_n_non_lins,
+        )
+        self.up_convs = [
+            ConvBlock(
+                n_filters=n_channels,
+                kernel_size=self.kernel_size,
+                non_linearity=self.non_linearity,
+                n_non_lins=self.layers_n_non_lins,
+            ) for n_channels in self.layers_n_channels[:-1]
+        ]
+        self.ups = [
+            UpConv(
+                n_filters=n_channels,
+                kernel_size=self.kernel_size,
+            ) for n_channels in self.layers_n_channels[:-1]
+        ]
+        self.final_conv = Conv2D(
+            filters=self.n_output_channels,
+            kernel_size=1,
+            padding='same',
+            activation=None,
+        )
+
+    def call(self, inputs):
+        scales = []
+        outputs = tf.identity(inputs[0])
+        noise_std = inputs[1]
+        for conv in self.down_convs:
+            outputs = conv(outputs)
+            scales.append(outputs)
+            outputs = self.down(outputs)
+        outputs = self.bottom_conv(outputs)
+        for scale, conv, up in zip(scales[::-1], self.up_convs[::-1], self.ups[::-1]):
+            outputs = up(outputs)
+            outputs = tf.concat([outputs, scale], axis=-1)
+            outputs = conv(outputs)
+        outputs = self.final_conv(outputs)
+        noise_std = tf.reshape(noise_std, shape=[tf.shape(noise_std)[0], 1, 1, 1])
+        return inputs[0]-noise_std*outputs
