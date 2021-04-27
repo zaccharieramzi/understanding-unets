@@ -6,7 +6,7 @@ from learning_wavelets.models.exact_recon_unet import ExactReconUnet
 
 
 def test_init():
-    (n_layers=3, layers_n_non_lins=2)
+    ExactReconUnet(n_layers=3, layers_n_non_lins=2)
     K.clear_session()
 
 def test_fit():
