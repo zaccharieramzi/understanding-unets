@@ -136,4 +136,5 @@ class ExactReconUnet(Model):
             outputs = conv(outputs)
         outputs = self.final_conv(outputs)
         noise_std = tf.reshape(noise_std, shape=[tf.shape(noise_std)[0], 1, 1, 1])
-        return noisy_image-noise_std*outputs
+        outputs = noisy_image - noise_std * outputs
+        return outputs
