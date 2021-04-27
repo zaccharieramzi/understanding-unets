@@ -124,7 +124,7 @@ class ExactReconUnet(Model):
         scales = []
         noisy_image = inputs[0]
         noise_std = inputs[1]
-        outputs = tf.identity(noisy_image)
+        outputs = noisy_image
         for conv in self.down_convs:
             outputs = conv(outputs)
             scales.append(outputs)
