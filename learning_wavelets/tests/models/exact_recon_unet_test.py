@@ -2,7 +2,7 @@ import pytest
 import tensorflow as tf
 import tensorflow.keras.backend as K
 
-from learning_wavelets.models.exact_recon_unet.py import ExactReconUnet
+from learning_wavelets.models.exact_recon_unet import ExactReconUnet
 
 
 def test_init():
