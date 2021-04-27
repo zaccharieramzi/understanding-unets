@@ -122,8 +122,7 @@ class Unet(Model):
 
     def call(self, inputs):
         scales = []
-        outputs = tf.identity(inputs[0])
-        noise_std = inputs[1]
+        outputs = inputs
         for conv in self.down_convs:
             outputs = conv(outputs)
             scales.append(outputs)
@@ -134,5 +133,4 @@ class Unet(Model):
             outputs = tf.concat([outputs, scale], axis=-1)
             outputs = conv(outputs)
         outputs = self.final_conv(outputs)
-        noise_std = tf.reshape(noise_std, shape=[tf.shape(noise_std)[0], 1, 1, 1])
-        return inputs[0]-noise_std*outputs
+        return outputs
