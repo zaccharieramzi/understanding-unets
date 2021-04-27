@@ -1,8 +1,0 @@
-language: python
-install:
-  - pip install -r learning_wavelets/requirements.txt
-  - pip install pytest
-  - pip install .
-
-script:
-  - pytest learning_wavelets
