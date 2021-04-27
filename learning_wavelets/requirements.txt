@@ -6,7 +6,7 @@ pylint
 keras-tqdm
 pydot
 tensorboard
-tensorflow
+tensorflow==2.2
 click
 scikit-image
 pandas
