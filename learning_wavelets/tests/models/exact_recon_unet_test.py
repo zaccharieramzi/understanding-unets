@@ -11,7 +11,7 @@ def test_init():
     K.clear_session()
 
 def test_fit():
-    model=ExactReconUnet(n_output_channels=1, kernel_size=3, layers_n_channels=[4, 8, 16, 32])
+    model=ExactReconUnet(n_output_channels=1, kernel_size=3, layers_n_channels=[4, 8])
     model.compile(optimizer=Adam(lr=1e-3), loss='mse')
     model.fit(
         x=(
