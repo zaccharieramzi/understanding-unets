@@ -14,8 +14,10 @@ def test_fit():
     model=ExactReconUnet(n_output_channels=1, kernel_size=3, layers_n_channels=[4, 8, 16, 32])
     model.compile(optimizer=Adam(lr=1e-3), loss='mse')
     model.fit(
-        x=(tf.random.normal((8, 32, 32, 1), seed=0),
-           tf.random.normal((8, 1, 1, 1), seed=0)),
+        x=(
+        	tf.random.normal((8, 32, 32, 1), seed=0),
+            tf.random.normal((8, 1, 1, 1), seed=0),
+        ),
         y=tf.random.normal((8, 32, 32, 1), seed=0),
     )
     K.clear_session()
