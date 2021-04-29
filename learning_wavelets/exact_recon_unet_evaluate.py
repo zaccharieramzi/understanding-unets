@@ -80,8 +80,6 @@ class Metrics:
         )
 
 def evaluate_unet(
-        model_fun,
-        model_kwargs,
         run_id,
         n_epochs=200,
         n_output_channels = 1,
@@ -118,7 +116,7 @@ def evaluate_unet(
 
     val_set = val_set.take(n_volumes)
 
-    model = ExactReconUnet(model_fun, model_kwargs, **run_params)
+    model = ExactReconUnet(**run_params)
     model.load_weights(f'{CHECKPOINTS_DIR}checkpoints/{run_id}-{n_epochs:02d}.hdf5')
     
     eval_res = Metrics(METRIC_FUNCS)
