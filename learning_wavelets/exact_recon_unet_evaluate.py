@@ -1,22 +1,18 @@
 import os
+
 import numpy as np
-from learning_wavelets.config import *
 import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Conv2D, Subtract, Dropout
-from tensorflow.keras.optimizers import Adam
-import tensorflow_addons as tfa
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 from runstats import Statistics
 from skimage.measure import compare_psnr, compare_ssim
+from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
+from learning_wavelets.data.datasets import im_dataset_bsd68, im_dataset_bsd500
 
-from learning_wavelets.data.datasets import im_dataset_bsd68
-
-from exact_recon_unet import ExactReconUnet
+from learning_wavelets.models.exact_recon_unet import ExactReconUnet
 
 
-
+tf.random.set_seed(1)
 
 def mse(gt, pred):
     """ Compute Mean Squared Error (MSE) """
@@ -41,6 +37,7 @@ def ssim(gt, pred):
 
 
 METRIC_FUNCS = dict(
+    LOSS=mse,
     PSNR=psnr,
     SSIM=ssim,
 )
@@ -80,8 +77,8 @@ class Metrics:
         )
 
 def evaluate_unet(
-        run_id,
-        n_epochs=200,
+        run_id = 'ExactReconUnet_4_dynamic_st_bsd500_0_55_2000_1619995500-200',
+        n_epochs=500,
         n_output_channels = 1,
         kernel_size = 3,
         cuda_visible_devices = '0123',
@@ -90,10 +87,8 @@ def evaluate_unet(
         non_linearity = 'relu',
     ):
     
-    val_path = f'{BSD68_DATA_DIR}BSD68'
-    n_volumes = 68
-
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
+    n_volumes = 68
 
     run_params = {
             'n_output_channels': n_output_channels,
@@ -104,23 +99,30 @@ def evaluate_unet(
     }
 
 
-   
-    dataset = im_dataset_bsd68
-    kwargs = {}
+    data_func = im_dataset_bsd68
 
-        
-    val_set = dataset(
-        val_path,
-        **kwargs,
+    batch_size = 8
+    patch_size = 256
+    val_set = data_func(
+        mode='validation',
+        batch_size=batch_size,
+        patch_size=patch_size,
+        return_noise_level=True,
     )
 
     val_set = val_set.take(n_volumes)
 
     model = ExactReconUnet(**run_params)
-    model.load_weights(f'{CHECKPOINTS_DIR}checkpoints/{run_id}-{n_epochs:02d}.hdf5')
+    model.built = True
+    inputs = [
+                tf.zeros((n_volumes, patch_size, patch_size, 1)),
+                tf.zeros((n_volumes, 1)),
+            ]
+    model(inputs)
+    model.load_weights(f'{CHECKPOINTS_DIR}checkpoints/{run_id}.hdf5')
     
     eval_res = Metrics(METRIC_FUNCS)
-    for x, y_true in tqdm(val_set.as_numpy_iterator(), total=n_volumes):
-        y_pred = model.predict(x, batch_size=4)
+    for x, y_true in tqdm(val_set.as_numpy_iterator(), total = n_volumes):
+        y_pred = model.predict(x, batch_size = 4)
         eval_res.push(y_true[..., 0], y_pred[..., 0])
     return METRIC_FUNCS, (list(eval_res.means().values()), list(eval_res.stddevs().values()))
