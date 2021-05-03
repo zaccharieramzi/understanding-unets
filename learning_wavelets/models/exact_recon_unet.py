@@ -153,13 +153,16 @@ def pad_power_of_two(x, layers):
     y = tf.convert_to_tensor(x).numpy()
     h = y.shape[1]
     w = y.shape[2]
-    pad_value_w = diff - w % diff 
-    pad_value_h = diff - h % diff 
     
-    if(w % diff == 0):
+    if(w % diff != 0):
+        pad_value_w = diff - w % diff 
+    else:
         pad_value_w = 0
-    if(h % diff == 0):
+    if(h % diff != 0):
+        pad_value_h = diff - h % diff 
+    else:
         pad_value_h = 0
+    
     
     padding = tf.constant([(0,0), (int(floor(pad_value_h/2)), int(ceil(pad_value_h/2))), (int(floor(pad_value_w/2)), int(ceil(pad_value_w/2))), (0, 0)])
         
