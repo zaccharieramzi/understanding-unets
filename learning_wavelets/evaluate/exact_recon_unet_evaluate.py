@@ -46,3 +46,4 @@ def evaluate_unet(
         y_pred = model.predict(x)
         eval_res.push(y_true[..., 0], y_pred[..., 0])
     return METRIC_FUNCS, (list(eval_res.means().values()), list(eval_res.stddevs().values()))
+
