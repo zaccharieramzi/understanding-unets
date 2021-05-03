@@ -18,7 +18,6 @@ tf.random.set_seed(1)
 def train_unet(noise_std_train, noise_std_val, n_samples, source, base_n_filters, batch_size):
 
     # data preparation
-    batch_size = batch_size
     if source == 'bsd500':
         data_func = im_dataset_bsd500
     elif source == 'div2k':
