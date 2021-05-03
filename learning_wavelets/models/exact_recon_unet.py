@@ -148,13 +148,13 @@ class ExactReconUnet(Model):
 
 def pad_power_of_two(x, layers):
     
-    diff = 2**len(layers)
+    diff = 2**(len(layers))
     y = tf.convert_to_tensor(x).numpy()
     w = y.shape[1]
     h = y.shape[2]
     
-    pad_value_w = w % diff 
-    pad_value_h = h % diff 
+    pad_value_w = diff - w % diff 
+    pad_value_h = diff - h % diff 
     padding = tf.constant([(0,0), (int(floor(pad_value_w/2)), int(ceil(pad_value_w/2))), (int(floor(pad_value_h/2)), int(ceil(pad_value_h/2))), (0, 0)])
         
     return tf.pad(x, padding, 'CONSTANT'), pad_value_w, pad_value_h, w, h
