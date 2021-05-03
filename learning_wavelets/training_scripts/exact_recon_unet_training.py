@@ -1,13 +1,12 @@
-import os
 import os.path as op
 import time
 
-from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LearningRateScheduler
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 import tensorflow as tf
+import tensorflow_addons as tfa
 
 
 from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
-from keras_radam import RAdam
 from learning_wavelets.data.datasets import im_dataset_div2k, im_dataset_bsd500
 from learning_wavelets.models.exact_recon_unet import ExactReconUnet
 
@@ -58,7 +57,7 @@ def train_unet(noise_std_train, noise_std_val, n_samples, source, base_n_filters
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
         model=ExactReconUnet(n_output_channels=1, kernel_size=3, layers_n_channels=[4, 8, 16, 32])
-        model.compile(optimizer=RAdam(warmup_proportion=0.1, min_lr=1e-5), loss = 'mse')
+        model.compile(optimizer=tfa.optimizers.RectifiedAdam(), loss = 'mse')
     
 
     # actual training
