@@ -126,7 +126,7 @@ class ExactReconUnet(Model):
         noisy_image = inputs[0]
         noise_std = inputs[1]
         outputs = noisy_image
-        outputs, w, h = pad_power_of_two(outputs, self.n_layers)
+        outputs, h, w = pad_power_of_two(outputs, self.n_layers)
         for conv in self.down_convs:
             outputs = conv(outputs)
             scales.append(outputs)
