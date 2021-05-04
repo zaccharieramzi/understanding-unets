@@ -4,7 +4,6 @@ from tensorflow.keras.layers import Layer, Conv2D, LeakyReLU, PReLU, UpSampling2
 from tensorflow.keras.models import Model
 from math import log, ceil, floor
 
-tf.config.run_functions_eagerly(True)
 
 class Conv(Layer):
     def __init__(self, n_filters, kernel_size=3, non_linearity='relu', **kwargs):
