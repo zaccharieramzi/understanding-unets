@@ -5,8 +5,7 @@ from learning_wavelets.config import CHECKPOINTS_DIR
 from learning_wavelets.data.datasets import im_dataset_bsd68
 
 from learning_wavelets.models.exact_recon_unet import ExactReconUnet
-from learning_wavelets.evaluate import METRIC_FUNCS
-from learning_wavelets.evaluate import Metrics
+from learning_wavelets.evaluation_scripts.utils import METRIC_FUNCS, Metrics
 
 def evaluate_unet(
         run_id='ExactReconUnet_4_bsd500_0_55_2000_1620051556-20',
@@ -43,7 +42,7 @@ def evaluate_unet(
     model.load_weights(f'{CHECKPOINTS_DIR}checkpoints/{run_id}.hdf5')
     
     eval_res = Metrics(METRIC_FUNCS)
-    for x, y_true, size in tqdm(val_set):
+    for x, y_true, size in tqdm(val_set.as_numpy_iterator()):
         y_pred = model.predict(x)
         eval_res.push(y_true[..., 0], y_pred[..., 0])
     return METRIC_FUNCS, (list(eval_res.means().values()), list(eval_res.stddevs().values()))
