@@ -5,7 +5,6 @@ from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 import tensorflow as tf
 import tensorflow_addons as tfa
 
-
 from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
 from learning_wavelets.data.datasets import im_dataset_div2k, im_dataset_bsd500
 from learning_wavelets.models.exact_recon_unet import ExactReconUnet
