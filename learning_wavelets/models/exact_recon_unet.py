@@ -1,8 +1,6 @@
 import tensorflow as tf
-import numpy as np
 from tensorflow.keras.layers import Layer, Conv2D, LeakyReLU, PReLU, UpSampling2D, MaxPooling2D, Activation
 from tensorflow.keras.models import Model
-from math import log, ceil, floor
 
 
 class Conv(Layer):
@@ -128,7 +126,7 @@ class ExactReconUnet(Model):
         noisy_image = inputs[0]
         noise_std = inputs[1]
         outputs = noisy_image
-        outputs, crop_w, crop_h, w, h = pad_power_of_two(outputs, self.layers_n_channels)
+        outputs, w, h = pad_power_of_two(outputs, self.n_layers)
         for conv in self.down_convs:
             outputs = conv(outputs)
             scales.append(outputs)
@@ -140,29 +138,24 @@ class ExactReconUnet(Model):
             outputs = conv(outputs)
         outputs = self.final_conv(outputs)
         noise_std = tf.reshape(noise_std, shape=[tf.shape(noise_std)[0], 1, 1, 1])
-        outputs = tf.image.crop_to_bounding_box(outputs, int(floor(crop_h)), int(floor(crop_w)), h, w)
+        outputs = tf.image.resize_with_crop_or_pad(outputs, h, w)
         outputs = noisy_image - noise_std * outputs
         return outputs
     
 
-def pad_power_of_two(x, layers):
+def pad_power_of_two(x, n_layers):
     
-    diff = 2**(len(layers))
+    diff = 2**n_layers
 
-    y = tf.convert_to_tensor(x).numpy()
-    h = y.shape[1]
-    w = y.shape[2]
+    h = tf.shape(x)[1]
+    w = tf.shape(x)[2]
     
+    new_w = w
+    new_h = h
     if(w % diff != 0):
-        pad_value_w = diff - w % diff 
-    else:
-        pad_value_w = 0
+        new_w = diff - w % diff + new_w
+
     if(h % diff != 0):
-        pad_value_h = diff - h % diff 
-    else:
-        pad_value_h = 0
-    
-    
-    padding = tf.constant([(0,0), (int(floor(pad_value_h/2)), int(ceil(pad_value_h/2))), (int(floor(pad_value_w/2)), int(ceil(pad_value_w/2))), (0, 0)])
+        new_h = diff - h % diff + new_h
         
-    return tf.pad(x, padding, 'CONSTANT'), pad_value_w, pad_value_h, w, h
+    return tf.image.resize_with_crop_or_pad(x, new_h, new_w), w, h
