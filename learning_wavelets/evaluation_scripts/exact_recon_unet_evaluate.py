@@ -33,7 +33,6 @@ def evaluate_unet(
         return_noise_level=True,
     )
 
-    
     model = ExactReconUnet(**run_params)
 
     inputs = [tf.zeros((1, 32, 32, 1)), tf.zeros((1, 1))]
