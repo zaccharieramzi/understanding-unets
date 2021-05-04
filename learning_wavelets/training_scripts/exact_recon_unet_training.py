@@ -70,5 +70,5 @@ def train_unet(noise_std_train, noise_std_val, n_samples, source, base_n_filters
         callbacks=[tboard_cback, chkpt_cback],
         shuffle=False,
     )
-    
+    return run_id
         
