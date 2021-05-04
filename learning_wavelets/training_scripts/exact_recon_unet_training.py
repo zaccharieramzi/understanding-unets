@@ -1,19 +1,16 @@
-import os.path as op
-import time
-
-from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
-import tensorflow as tf
-import tensorflow_addons as tfa
-
 from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
 from learning_wavelets.data.datasets import im_dataset_div2k, im_dataset_bsd500
 from learning_wavelets.models.exact_recon_unet import ExactReconUnet
-
+import os.path as op
+import tensorflow as tf
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
+import tensorflow_addons as tfa
+import time
 
 tf.random.set_seed(1)
 
 
-def train_unet(noise_std_train, noise_std_val, n_samples, source, base_n_filters, batch_size):
+def train_unet(noise_std_train=(0, 55), noise_std_val=30, n_samples=2000, source='bsd500', base_n_filters=4, batch_size=8, n_epochs=50):
 
     # data preparation
     if source == 'bsd500':
@@ -34,7 +31,6 @@ def train_unet(noise_std_train, noise_std_val, n_samples, source, base_n_filters
         return_noise_level=True,
     )
 
-    n_epochs = 50
     run_id = f'ExactReconUnet_{base_n_filters}_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{n_samples}_{int(time.time())}'
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
@@ -55,7 +51,7 @@ def train_unet(noise_std_train, noise_std_val, n_samples, source, base_n_filters
     # run distributed 
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
-        model=ExactReconUnet(n_output_channels=1, kernel_size=3, layers_n_channels=[4, 8, 16, 32])
+        model=ExactReconUnet(n_output_channels=1, kernel_size=3, n_layers=4, non_linearity='relu')
         model.compile(optimizer=tfa.optimizers.RectifiedAdam(), loss='mse')
     
 
@@ -70,5 +66,5 @@ def train_unet(noise_std_train, noise_std_val, n_samples, source, base_n_filters
         callbacks=[tboard_cback, chkpt_cback],
         shuffle=False,
     )
+    
     return run_id
-        
