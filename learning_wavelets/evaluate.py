@@ -23,6 +23,10 @@ def _tf_crop(im, crop=320):
     im = im[:, starty:starty+crop, startx:startx+crop, :]
     return im
 
+def mse(gt, pred):
+    """ Compute Mean Squared Error (MSE) """
+    return np.mean((gt - pred) ** 2)
+
 def center_keras_psnr(y_true, y_pred):
     return tf.image.psnr(_tf_crop(y_true, crop=128), _tf_crop(y_pred, crop=128), 1)
 
@@ -31,21 +35,18 @@ def keras_ssim(y_true, y_pred):
 
 def psnr_single_image(gt, pred):
     """ Compute Peak Signal to Noise Ratio metric (PSNR) """
+    
     return peak_signal_noise_ratio(gt, pred, data_range=1)
 
 
 def ssim_single_image(gt, pred):
     """ Compute Structural Similarity Index Metric (SSIM).
-
     The images must be in HWC format
     """
-    return structural_similarity(
-        gt, pred, multichannel=True, data_range=1
-    )
+    return structural_similarity(gt[0,...], pred[0,...], multichannel=True, data_range=1)
 
 def psnr(gts, preds):
     """Compute the psnr of a batch of images in HWC format.
-
     Images must be in NHWC format
     """
     if len(gts.shape) == 3:
@@ -56,7 +57,6 @@ def psnr(gts, preds):
 
 def ssim(gts, preds):
     """Compute the ssim of a batch of images in HWC format.
-
     Images must be in NHWC format
     """
     if len(gts.shape) == 3:
@@ -66,6 +66,7 @@ def ssim(gts, preds):
         return mean_ssim
 
 METRIC_FUNCS = dict(
+    LOSS=mse,
     PSNR=psnr,
     SSIM=ssim,
 )
@@ -76,10 +77,11 @@ class Metrics:
     Maintains running statistics for a given collection of metrics.
     """
 
-    def __init__(self):
+    def __init__(self, metric_funcs):
         self.metrics = {
             metric: Statistics() for metric in METRIC_FUNCS
         }
+        self.metric_funcs = metric_funcs
 
     def push(self, target, recons, im_shape=None):
         if im_shape is not None:
@@ -101,6 +103,4 @@ class Metrics:
         means = self.means()
         stddevs = self.stddevs()
         metric_names = sorted(list(means))
-        return ' '.join(
-            f'{name} = {means[name]:.4g} +/- {2 * stddevs[name]:.4g}' for name in metric_names
-        )
+        return ' '.join(f'{name} = {means[name]:.4g} +/- {2 * stddevs[name]:.4g}' for name in metric_names)
