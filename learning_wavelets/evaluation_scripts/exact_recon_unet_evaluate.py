@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 
 def evaluate_unet(
+        noise_std_test=30,
         run_id='ExactReconUnet_4_bsd500_0_55_2000_1620137581',
         n_epochs=500,
         n_output_channels=1,
@@ -30,6 +31,7 @@ def evaluate_unet(
         mode='testing',
         batch_size=1,
         patch_size=None,
+        noise_std=noise_std_test,
         return_noise_level=True,
     )
 
