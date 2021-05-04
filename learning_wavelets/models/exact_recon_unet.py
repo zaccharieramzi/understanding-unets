@@ -144,19 +144,40 @@ class ExactReconUnet(Model):
     
 
 def pad_power_of_two(x, n_layers):
+    """ If padding is needed, the new width/height size can be
+    obtained by adding the corresponding power of two and subtracting
+    the rest of the division between the original width/height and
+    that same power of two.
     
-    diff = 2**n_layers
+    Example #1:
+    w = 23
+    power_of_two = 32
+    
+    new_w = 32 - 23%32 + 23
+    new_w = 32
+    
+    
+    Example #2:
+    w = 77
+    power_of_two = 32
+    
+    new_w = 32 - 77%32 + 77
+    new_w = 32 - 13 + 77
+    new_w = 96
+    """
+    
+    power_of_two = 2**n_layers
 
     h = tf.shape(x)[1]
     w = tf.shape(x)[2]
     
     new_w = w
     new_h = h
-    if(w % diff != 0):
-        new_w = diff - w % diff + new_w
+    if(w % power_of_two != 0):
+        new_w = power_of_two - w % power_of_two + new_w
 
-    if(h % diff != 0):
-        new_h = diff - h % diff + new_h
-        
-	image_resized = tf.image.resize_with_crop_or_pad(x, new_h, new_w)
+    if(h % power_of_two != 0):
+        new_h = power_of_two - h % power_of_two + new_h
+    
+    image_resized = tf.image.resize_with_crop_or_pad(x, new_h, new_w)        
     return image_resized, h, w
