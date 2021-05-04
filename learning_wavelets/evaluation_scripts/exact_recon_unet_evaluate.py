@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 
 def evaluate_unet(
-        run_id='ExactReconUnet_4_bsd500_0_55_2000_1620051556-20',
+        run_id='ExactReconUnet_4_bsd500_0_55_2000_1620137581',
         n_epochs=500,
         n_output_channels=1,
         kernel_size=3,
@@ -33,12 +33,13 @@ def evaluate_unet(
         return_noise_level=True,
     )
 
+    
     model = ExactReconUnet(**run_params)
 
     inputs = [tf.zeros((1, 32, 32, 1)), tf.zeros((1, 1))]
     model(inputs)
     
-    model.load_weights(f'{CHECKPOINTS_DIR}checkpoints/{run_id}.hdf5')
+    model.load_weights(f'{CHECKPOINTS_DIR}checkpoints/{run_id}-{n_epochs}.hdf5')
     
     eval_res = Metrics(METRIC_FUNCS)
     for x, y_true, size in tqdm(val_set.as_numpy_iterator()):
