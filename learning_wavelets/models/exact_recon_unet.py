@@ -158,4 +158,5 @@ def pad_power_of_two(x, n_layers):
     if(h % diff != 0):
         new_h = diff - h % diff + new_h
         
-    return tf.image.resize_with_crop_or_pad(x, new_h, new_w), w, h
+	image_resized = tf.image.resize_with_crop_or_pad(x, new_h, new_w)
+    return image_resized, h, w
