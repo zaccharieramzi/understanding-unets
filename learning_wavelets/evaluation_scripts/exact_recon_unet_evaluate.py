@@ -22,7 +22,7 @@ def evaluate_unet(
     ):
     
     noise_std_test = force_list(noise_std_test)
-    layers_n_channels = [base_n_filters*2**j for j in range(0,n_layers)]
+    layers_n_channels = [base_n_filters*2**j for j in range(0, n_layers)]
     
     run_params = {
         'n_output_channels': n_output_channels,
