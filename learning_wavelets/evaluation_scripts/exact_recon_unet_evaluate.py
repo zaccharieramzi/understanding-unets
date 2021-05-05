@@ -51,6 +51,6 @@ def evaluate_unet(
         for x, y_true, size in tqdm(val_set.as_numpy_iterator()):
             y_pred = model.predict(x)
             eval_res.push(y_true, y_pred)
-        loss_noise_dic[noise_level] = METRIC_FUNCS, (list(eval_res.means().values()), list(eval_res.stddevs().values()))
+        loss_noise_dic[noise_level] = (list(eval_res.means().values()), list(eval_res.stddevs().values()))
         
-    return loss_noise_dic
+    return METRIC_FUNCS, loss_noise_dic
