@@ -14,7 +14,17 @@ from learning_wavelets.models.exact_recon_unet import ExactReconUnet
 tf.random.set_seed(1)
 
 
-def train_unet(noise_std_train=(0, 55), noise_std_val=30, n_samples=None, source='bsd500', base_n_filters=4, n_layers=4, non_linearity='relu', batch_size=8, n_epochs=50):
+def train_unet(
+        noise_std_train=(0, 55), 
+        noise_std_val=30, 
+        n_samples=None, 
+        source='bsd500', 
+        base_n_filters=4, 
+        n_layers=4, 
+        non_linearity='relu', 
+        batch_size=8, 
+        n_epochs=50
+    ):
 
     # data preparation
     if source == 'bsd500':
