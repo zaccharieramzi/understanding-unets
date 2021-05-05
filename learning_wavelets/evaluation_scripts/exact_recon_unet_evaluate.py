@@ -6,6 +6,7 @@ from learning_wavelets.data.datasets import im_dataset_bsd68
 from learning_wavelets.evaluate import METRIC_FUNCS, Metrics 
 from learning_wavelets.models.exact_recon_unet import ExactReconUnet
 
+tf.random.set_seed(1)
 
 
 def evaluate_unet(
