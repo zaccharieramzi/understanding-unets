@@ -35,7 +35,6 @@ def keras_ssim(y_true, y_pred):
 
 def psnr_single_image(gt, pred):
     """ Compute Peak Signal to Noise Ratio metric (PSNR) """
-    
     return peak_signal_noise_ratio(gt, pred, data_range=1)
 
 
