@@ -14,12 +14,15 @@ def evaluate_unet(
         n_epochs=500,
         n_output_channels=1,
         kernel_size=3,
-        layers_n_channels=[64, 128, 256, 512, 1024],
+        base_n_filters=4, 
+        n_layers=4,
         layers_n_non_lins=2,
         non_linearity='relu',
     ):
     
-
+    noise_std_test = force_list(noise_std_test)
+    layers_n_channels = [base_n_filters*2**j for j in range(0,n_layers)]
+    
     run_params = {
         'n_output_channels': n_output_channels,
         'kernel_size': kernel_size,
@@ -35,7 +38,7 @@ def evaluate_unet(
         
     model.load_weights(f'{CHECKPOINTS_DIR}checkpoints/{run_id}-{n_epochs}.hdf5')
     
-    loss_noise_dic = {}
+    metrics_per_noise_level = {}
     
     for noise_level in noise_std_test:
         val_set = im_dataset_bsd68(
@@ -51,6 +54,13 @@ def evaluate_unet(
         for x, y_true, size in tqdm(val_set.as_numpy_iterator()):
             y_pred = model.predict(x)
             eval_res.push(y_true, y_pred)
-        loss_noise_dic[noise_level] = (list(eval_res.means().values()), list(eval_res.stddevs().values()))
+        metrics_per_noise_level[noise_level] = (list(eval_res.means().values()), list(eval_res.stddevs().values()))
         
-    return METRIC_FUNCS, loss_noise_dic
+    return METRIC_FUNCS, metrics_per_noise_level
+
+
+def force_list(x):
+    if not isinstance(x, list):
+        return [x]
+    else:
+        return x
