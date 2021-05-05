@@ -55,7 +55,12 @@ def train_unet(noise_std_train=(0, 55), noise_std_val=30, n_samples=None, source
     # run distributed 
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
-        model=ExactReconUnet(n_output_channels=1, kernel_size=3, layers_n_channels=[base_n_filters*2**j for j in range(0,n_layers)], non_linearity='relu')
+        model = ExactReconUnet(
+            n_output_channels=1, 
+            kernel_size=3, 
+            layers_n_channels=[base_n_filters*2**j for j in range(0, n_layers)], 
+            non_linearity='relu'
+        )
         model.compile(optimizer=tfa.optimizers.RectifiedAdam(), loss='mse')
     
 
