@@ -10,7 +10,7 @@ from learning_wavelets.models.exact_recon_unet import ExactReconUnet
 
 def evaluate_unet(
         noise_std_test=30,
-        run_id='ExactReconUnet_4_bsd500_0_55_2000_1620143391',
+        run_id='ExactReconUnet_4_bsd500_0_55_None_1620201240',
         n_epochs=500,
         n_output_channels=1,
         kernel_size=3,
