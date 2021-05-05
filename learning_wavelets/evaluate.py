@@ -40,7 +40,7 @@ def psnr_single_image(gt, pred):
 
 def ssim_single_image(gt, pred):
     """ Compute Structural Similarity Index Metric (SSIM).
-    
+
     The images must be in HWC format
     """
     return structural_similarity(
@@ -49,7 +49,7 @@ def ssim_single_image(gt, pred):
 
 def psnr(gts, preds):
     """Compute the psnr of a batch of images in HWC format.
-    
+
     Images must be in NHWC format
     """
     if len(gts.shape) == 3:
@@ -60,7 +60,7 @@ def psnr(gts, preds):
 
 def ssim(gts, preds):
     """Compute the ssim of a batch of images in HWC format.
-    
+
     Images must be in NHWC format
     """
     if len(gts.shape) == 3:
