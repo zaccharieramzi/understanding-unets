@@ -42,7 +42,7 @@ def ssim_single_image(gt, pred):
     """ Compute Structural Similarity Index Metric (SSIM).
     The images must be in HWC format
     """
-    return structural_similarity(gt[0,...], pred[0,...], multichannel=True, data_range=1)
+    return structural_similarity(gt, pred, multichannel=True, data_range=1)
 
 def psnr(gts, preds):
     """Compute the psnr of a batch of images in HWC format.
@@ -76,11 +76,10 @@ class Metrics:
     Maintains running statistics for a given collection of metrics.
     """
 
-    def __init__(self, metric_funcs):
+    def __init__(self):
         self.metrics = {
             metric: Statistics() for metric in METRIC_FUNCS
         }
-        self.metric_funcs = metric_funcs
 
     def push(self, target, recons, im_shape=None):
         if im_shape is not None:
