@@ -10,7 +10,7 @@ from learning_wavelets.models.exact_recon_unet import ExactReconUnet
 
 def evaluate_unet(
         noise_std_test=30,
-        run_id='ExactReconUnet_4_bsd500_0_55_2000_1620137581',
+        run_id='ExactReconUnet_4_bsd500_0_55_2000_1620143391',
         n_epochs=500,
         n_output_channels=1,
         kernel_size=3,
@@ -44,7 +44,7 @@ def evaluate_unet(
     
     model.load_weights(f'{CHECKPOINTS_DIR}checkpoints/{run_id}-{n_epochs}.hdf5')
     
-    eval_res = Metrics(METRIC_FUNCS)
+    eval_res = Metrics()
     for x, y_true, size in tqdm(val_set.as_numpy_iterator()):
         y_pred = model.predict(x)
         eval_res.push(y_true, y_pred)
