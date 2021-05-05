@@ -47,5 +47,5 @@ def evaluate_unet(
     eval_res = Metrics(METRIC_FUNCS)
     for x, y_true, size in tqdm(val_set.as_numpy_iterator()):
         y_pred = model.predict(x)
-        eval_res.push(y_true[..., 0], y_pred[..., 0])
+        eval_res.push(y_true, y_pred)
     return METRIC_FUNCS, (list(eval_res.means().values()), list(eval_res.stddevs().values()))
