@@ -19,6 +19,8 @@ def evaluate_unet(
         n_layers=4,
         layers_n_non_lins=2,
         non_linearity='relu',
+        n_samples=None,
+        batch_size=1,
     ):
     
     noise_std_test = force_list(noise_std_test)
@@ -44,7 +46,7 @@ def evaluate_unet(
     for noise_level in noise_std_test:
         val_set = im_dataset_bsd68(
             mode='testing',
-            batch_size=1,
+            batch_size=batch_size,
             patch_size=None,
             noise_std=noise_level,
             return_noise_level=True,
