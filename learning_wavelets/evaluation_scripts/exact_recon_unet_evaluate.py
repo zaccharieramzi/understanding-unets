@@ -45,7 +45,6 @@ def evaluate_unet(
     for noise_level in noise_std_test:
         val_set = im_dataset_bsd68(
             mode='testing',
-            batch_size=batch_size,
             patch_size=None,
             noise_std=noise_level,
             return_noise_level=True,
