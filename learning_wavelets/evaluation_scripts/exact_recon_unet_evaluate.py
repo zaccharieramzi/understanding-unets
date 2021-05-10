@@ -20,7 +20,6 @@ def evaluate_unet(
         layers_n_non_lins=2,
         non_linearity='relu',
         n_samples=None,
-        batch_size=1,
     ):
     
     noise_std_test = force_list(noise_std_test)
