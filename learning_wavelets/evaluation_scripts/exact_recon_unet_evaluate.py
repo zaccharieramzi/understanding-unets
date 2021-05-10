@@ -48,6 +48,7 @@ def evaluate_unet(
             patch_size=None,
             noise_std=noise_level,
             return_noise_level=True,
+            n_samples=n_samples,
         )
     
         
