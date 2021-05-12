@@ -84,7 +84,7 @@ def train_unet(
         steps_per_epoch=200,
         epochs=n_epochs,
         validation_data=im_ds_val,
-        validation_steps=8,
+        validation_steps=100,
         verbose=1,
         callbacks=[tboard_cback, chkpt_cback],
         shuffle=False,
