@@ -25,6 +25,7 @@ def train_unet(
         batch_size=8, 
         n_epochs=50,
         bn=False,
+        exact_recon=False,
     ):
 
     # data preparation
@@ -72,6 +73,7 @@ def train_unet(
             layers_n_channels=[base_n_filters*2**j for j in range(0, n_layers)], 
             non_linearity='relu',
             bn=bn,
+            exact_recon=exact_recon,
         )
         model.compile(optimizer=tfa.optimizers.RectifiedAdam(), loss='mse')
     
@@ -87,7 +89,5 @@ def train_unet(
         callbacks=[tboard_cback, chkpt_cback],
         shuffle=False,
     )
-    
-    print(model.count_params())
 
     return run_id
