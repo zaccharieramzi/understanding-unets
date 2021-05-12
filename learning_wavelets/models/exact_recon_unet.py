@@ -22,12 +22,14 @@ class Conv(Layer):
             self.act = PReLU(shared_axes=[1, 2])
         else:
             self.act = Activation(self.non_linearity)
+        
+        self.bnorm = BatchNormalization()
 
     def call(self, inputs):
         outputs = self.conv(inputs)
         outputs = self.act(outputs)
         if bn:
-            outputs = BatchNormalization()(outputs)
+            outputs = self.bnorm(outputs)
         return outputs
 
 class ConvBlock(Layer):
@@ -81,6 +83,7 @@ class ExactReconUnet(Model):
             layers_n_non_lins=2,
             non_linearity='relu',
             bn=False,
+            exact_recon=False,
             **kwargs,
         ):
         super().__init__(**kwargs)
@@ -91,6 +94,7 @@ class ExactReconUnet(Model):
         self.layers_n_non_lins = layers_n_non_lins
         self.non_linearity = non_linearity
         self.bn = bn
+        self.exact_recon = exact_recon
         self.down_convs = [
             ConvBlock(
                 n_filters=n_channels,
@@ -149,7 +153,8 @@ class ExactReconUnet(Model):
         outputs = self.final_conv(outputs)
         noise_std = tf.reshape(noise_std, shape=[tf.shape(noise_std)[0], 1, 1, 1])
         outputs = tf.image.resize_with_crop_or_pad(outputs, h, w)
-        outputs = noisy_image - noise_std * outputs
+        if exact_recon:
+            outputs = noisy_image - noise_std * outputs
         return outputs
     
 
