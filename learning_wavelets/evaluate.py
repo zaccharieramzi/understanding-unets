@@ -23,6 +23,10 @@ def _tf_crop(im, crop=320):
     im = im[:, starty:starty+crop, startx:startx+crop, :]
     return im
 
+def mse(gt, pred):
+    """ Compute Mean Squared Error (MSE) """
+    return np.mean((gt - pred) ** 2)
+
 def center_keras_psnr(y_true, y_pred):
     return tf.image.psnr(_tf_crop(y_true, crop=128), _tf_crop(y_pred, crop=128), 1)
 
@@ -66,6 +70,7 @@ def ssim(gts, preds):
         return mean_ssim
 
 METRIC_FUNCS = dict(
+    LOSS=mse,
     PSNR=psnr,
     SSIM=ssim,
 )
