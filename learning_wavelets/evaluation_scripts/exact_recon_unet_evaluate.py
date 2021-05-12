@@ -20,6 +20,7 @@ def evaluate_unet(
         layers_n_non_lins=2,
         non_linearity='relu',
         n_samples=None,
+        bn=False,
     ):
     
     noise_std_test = force_list(noise_std_test)
@@ -31,6 +32,7 @@ def evaluate_unet(
         'layers_n_channels': layers_n_channels,
         'layers_n_non_lins': layers_n_non_lins,
         'non_linearity': non_linearity,
+        'bn': bn,
     }
     
     model = ExactReconUnet(**run_params)
