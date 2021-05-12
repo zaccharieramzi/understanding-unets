@@ -28,7 +28,7 @@ class Conv(Layer):
     def call(self, inputs):
         outputs = self.conv(inputs)
         outputs = self.act(outputs)
-        if bn:
+        if self.bn:
             outputs = self.bnorm(outputs)
         return outputs
 
@@ -153,7 +153,7 @@ class ExactReconUnet(Model):
         outputs = self.final_conv(outputs)
         noise_std = tf.reshape(noise_std, shape=[tf.shape(noise_std)[0], 1, 1, 1])
         outputs = tf.image.resize_with_crop_or_pad(outputs, h, w)
-        if exact_recon:
+        if self.exact_recon:
             outputs = noisy_image - noise_std * outputs
         return outputs
     
