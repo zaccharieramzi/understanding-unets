@@ -53,7 +53,7 @@ def train_unet(
 
     # callbacks preparation
 
-    chkpt_cback = ModelCheckpoint(chkpt_path, period=500, save_weights_only=True)
+    chkpt_cback = ModelCheckpoint(chkpt_path, period=min(500, n_epochs), save_weights_only=True)
     log_dir = op.join(f'{LOGS_DIR}logs', run_id)
     tboard_cback = TensorBoard(
         log_dir=log_dir,
