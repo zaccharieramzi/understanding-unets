@@ -1,14 +1,15 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Layer, Conv2D, LeakyReLU, PReLU, UpSampling2D, MaxPooling2D, Activation
+from tensorflow.keras.layers import Layer, Conv2D, LeakyReLU, PReLU, UpSampling2D, MaxPooling2D, Activation, BatchNormalization
 from tensorflow.keras.models import Model
 
 
 class Conv(Layer):
-    def __init__(self, n_filters, kernel_size=3, non_linearity='relu', **kwargs):
+    def __init__(self, n_filters, kernel_size=3, non_linearity='relu', bn=False, **kwargs):
         super().__init__(**kwargs)
         self.n_filters = n_filters
         self.kernel_size = kernel_size
         self.non_linearity = non_linearity
+        self.bn = bn
         self.conv = Conv2D(
             filters=self.n_filters,
             kernel_size=self.kernel_size,
@@ -25,20 +26,24 @@ class Conv(Layer):
     def call(self, inputs):
         outputs = self.conv(inputs)
         outputs = self.act(outputs)
+        if bn:
+            outputs = BatchNormalization()(outputs)
         return outputs
 
 class ConvBlock(Layer):
-    def __init__(self, n_filters, kernel_size=3, non_linearity='relu', n_non_lins=2, **kwargs):
+    def __init__(self, n_filters, kernel_size=3, non_linearity='relu', bn=False, n_non_lins=2, **kwargs):
         super().__init__(**kwargs)
         self.n_filters = n_filters
         self.kernel_size = kernel_size
         self.non_linearity = non_linearity
         self.n_non_lins = n_non_lins
+        self.bn = bn
         self.convs = [
             Conv(
                 n_filters=self.n_filters,
                 kernel_size=self.kernel_size,
                 non_linearity=self.non_linearity,
+                bn=self.bn,
             ) for _ in range(self.n_non_lins)
         ]
 
@@ -75,6 +80,7 @@ class ExactReconUnet(Model):
             layers_n_channels=[64, 128, 256, 512, 1024],
             layers_n_non_lins=2,
             non_linearity='relu',
+            bn=False,
             **kwargs,
         ):
         super().__init__(**kwargs)
@@ -84,12 +90,14 @@ class ExactReconUnet(Model):
         self.n_layers = len(self.layers_n_channels)
         self.layers_n_non_lins = layers_n_non_lins
         self.non_linearity = non_linearity
+        self.bn = bn
         self.down_convs = [
             ConvBlock(
                 n_filters=n_channels,
                 kernel_size=self.kernel_size,
                 non_linearity=self.non_linearity,
                 n_non_lins=self.layers_n_non_lins,
+                bn=self.bn,
             ) for n_channels in self.layers_n_channels[:-1]
         ]
         self.down = MaxPooling2D(pool_size=(2, 2), padding='same')
@@ -98,6 +106,7 @@ class ExactReconUnet(Model):
             kernel_size=self.kernel_size,
             non_linearity=self.non_linearity,
             n_non_lins=self.layers_n_non_lins,
+            bn=self.bn,
         )
         self.up_convs = [
             ConvBlock(
@@ -105,6 +114,7 @@ class ExactReconUnet(Model):
                 kernel_size=self.kernel_size,
                 non_linearity=self.non_linearity,
                 n_non_lins=self.layers_n_non_lins,
+                bn=self.bn,
             ) for n_channels in self.layers_n_channels[:-1]
         ]
         self.ups = [
