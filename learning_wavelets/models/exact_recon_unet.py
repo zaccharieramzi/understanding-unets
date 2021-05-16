@@ -155,8 +155,6 @@ class ExactReconUnet(Model):
         outputs = tf.image.resize_with_crop_or_pad(outputs, h, w)
         if self.exact_recon:
             outputs = noisy_image - noise_std * outputs
-        #else:
-        #	outputs = noisy_image - outputs
         return outputs
     
 
