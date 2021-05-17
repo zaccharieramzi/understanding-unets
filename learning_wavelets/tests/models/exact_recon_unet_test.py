@@ -10,7 +10,9 @@ def test_init():
     ExactReconUnet()
     K.clear_session()
 
-def test_fit():
+@pytest.mark.parametrize("bn", [True, False])
+@pytest.mark.parametrize("exact_recon", [True, False])
+def test_fit(bn, exact_recon):
     model=ExactReconUnet(n_output_channels=1, kernel_size=3, layers_n_channels=[4, 8], bn=True, exact_recon=True)
     model.compile(optimizer=Adam(lr=1e-3), loss='mse')
     model.fit(
