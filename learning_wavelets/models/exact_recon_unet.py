@@ -151,7 +151,6 @@ class ExactReconUnet(Model):
             outputs = tf.concat([outputs, scale], axis=-1)
             outputs = conv(outputs)
         outputs = self.final_conv(outputs)
-        #identity = tf.reshape(1, shape=[tf.shape(noise_std)[0], 1, 1, 1])
         noise_std = tf.reshape(noise_std, shape=[tf.shape(noise_std)[0], 1, 1, 1])
         outputs = tf.image.resize_with_crop_or_pad(outputs, h, w)
         if self.exact_recon:
