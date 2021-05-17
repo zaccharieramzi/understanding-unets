@@ -175,7 +175,7 @@ def train_old_unet(
         'bn': True,
     }
 
-    run_id = f'ExactReconUnet_{base_n_filters}_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{n_samples}_{int(time.time())}'
+    run_id = f'unet_{base_n_filters}_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{n_samples}_{int(time.time())}'
     chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
 
