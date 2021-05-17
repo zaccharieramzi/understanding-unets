@@ -189,13 +189,8 @@ def pad_power_of_two(x, n_layers):
     h = tf.shape(x)[1]
     w = tf.shape(x)[2]
     
-    new_w = w
-    new_h = h
-    if(w % power_of_two != 0):
-        new_w = power_of_two - w % power_of_two + new_w
-
-    if(h % power_of_two != 0):
-        new_h = power_of_two - h % power_of_two + new_h
+    new_w = power_of_two - w % power_of_two + w
+    new_h = power_of_two - h % power_of_two + h
     
     image_resized = tf.image.resize_with_crop_or_pad(x, new_h, new_w)        
     return image_resized, h, w
