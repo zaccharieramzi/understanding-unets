@@ -156,7 +156,7 @@ class ExactReconUnet(Model):
         if self.exact_recon:
             outputs = noisy_image - noise_std * outputs
         else:
-        	outputs = noisy_image - outputs
+            outputs = noisy_image - outputs
         return outputs
     
 
