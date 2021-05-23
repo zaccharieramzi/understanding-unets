@@ -22,6 +22,7 @@ def evaluate_unet(
         n_samples=None,
         bn=False,
         exact_recon=False,
+        residual=False,
     ):
     
     noise_std_test = force_list(noise_std_test)
@@ -35,6 +36,7 @@ def evaluate_unet(
         'non_linearity': non_linearity,
         'bn': bn,
         'exact_recon': exact_recon,
+        'residual': residual,
     }
     
     model = ExactReconUnet(**run_params)
@@ -51,15 +53,16 @@ def evaluate_unet(
             mode='testing',
             patch_size=None,
             noise_std=noise_level,
+            n_pooling=5,
             return_noise_level=True,
             n_samples=n_samples,
         )
     
         
         eval_res = Metrics()
-        for x, y_true, size in tqdm(val_set.as_numpy_iterator()):
+        for x, y_true, im_shape in tqdm(val_set.as_numpy_iterator()):
             y_pred = model.predict(x)
-            eval_res.push(y_true, y_pred)
+            eval_res.push(y_true, y_pred, im_shape=im_shape)
         metrics_per_noise_level[noise_level] = (list(eval_res.means().values()), list(eval_res.stddevs().values()))
         
     return METRIC_FUNCS, metrics_per_noise_level
