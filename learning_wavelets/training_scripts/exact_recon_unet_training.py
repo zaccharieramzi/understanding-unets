@@ -26,6 +26,7 @@ def train_unet(
         n_epochs=50,
         bn=False,
         exact_recon=False,
+        residual=False,
     ):
 
     # data preparation
@@ -74,6 +75,7 @@ def train_unet(
             non_linearity='relu',
             bn=bn,
             exact_recon=exact_recon,
+            residual=residual,
         )
         model.compile(optimizer=tfa.optimizers.RectifiedAdam(), loss='mse')
     
