@@ -6,9 +6,12 @@ from learning_wavelets.models.learnlet_model import Learnlet
 
 learnlet_test_cases = [
     {},
+    {'undecimated': True},
     {'n_reweights_learn': 3},
+    {'n_reweights_learn': 3, 'undecimated': True},
     # TODO: maybe change in subclassed model to have a check for these 2 params when doing exact recon
     {'exact_reconstruction': True, 'learnlet_synthesis_kwargs': {'res': True}, 'learnlet_analysis_kwargs': {'skip_connection': True}},
+    {'exact_reconstruction': True, 'undecimated': True, 'learnlet_synthesis_kwargs': {'res': True}, 'learnlet_analysis_kwargs': {'skip_connection': True}},
 ]
 
 @pytest.mark.parametrize('learnlet_kwargs', learnlet_test_cases)
@@ -40,11 +43,13 @@ def test_fit(learnlet_kwargs):
     )
     K.clear_session()
 
-def test_exact_reconstruction():
-    model = Learnlet(**learnlet_test_cases[-1])
+@pytest.mark.parametrize('learnlet_kwargs', learnlet_test_cases[-2:])
+def test_exact_reconstruction(learnlet_kwargs):
+    model = Learnlet(**learnlet_kwargs)
     model.build([(None, 32, 32, 1), (None, 1)])
     image = tf.random.uniform((1, 32, 32, 1), maxval=1, seed=0)
     # we use a noise of level 0 to simulate no thresholding
     res_image = model([image, tf.zeros(1, 1)])
     res_psnr = tf.image.psnr(image, res_image, 1.).numpy()
     assert res_psnr > 100
+    K.clear_session()
