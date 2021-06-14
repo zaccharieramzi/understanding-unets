@@ -139,9 +139,22 @@ class LearnletAnalysis(Layer):
         if self.tiling_unit_norm:
             constraint = UnitNorm(axis=[0, 1, 2])
         tiling_prefix = 'details_tiling'
-        self.convs_detail_tiling = [
+        self.convs_detail_tiling_fixed = [
             Conv2D(
-                n_tiling,
+                n_tiling//2,
+                self.kernel_size,
+                activation='linear',
+                padding='same',
+                kernel_initializer='glorot_uniform',
+                use_bias=tiling_use_bias,
+                kernel_constraint=constraint,
+                trainable = False,
+                name=f'{tiling_prefix}_{str(K.get_uid(tiling_prefix))}',
+            ) for i in range(self.n_scales)
+        ]
+        self.convs_detail_tiling_train = [
+            Conv2D(
+                n_tiling//2,
                 self.kernel_size,
                 activation='linear',
                 padding='same',
@@ -151,6 +164,7 @@ class LearnletAnalysis(Layer):
                 name=f'{tiling_prefix}_{str(K.get_uid(tiling_prefix))}',
             ) for i in range(self.n_scales)
         ]
+        
         if self.mixing_details:
             mixing_prefix = 'details_mixing'
             self.convs_detail_mixing = [
@@ -172,7 +186,9 @@ class LearnletAnalysis(Layer):
         wav_coarse = wav_coeffs[-1]
         outputs_list = []
         for i_scale, wav_detail in enumerate(wav_details):
-            details_tiled = self.convs_detail_tiling[i_scale](wav_detail)
+            details_tiled_fixed = self.convs_detail_tiling_fixed[i_scale](wav_detail)
+            details_tiled_train = self.convs_detail_tiling_train[i_scale](wav_detail)
+            details_tiled = Concatenate()([details_tiled_fixed, details_tiled_train])
             if self.mixing_details:
                 details_tiled = self.convs_detail_mixing[i_scale](details_tiled)
             if self.skip_connection:
