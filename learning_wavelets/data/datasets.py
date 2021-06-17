@@ -13,7 +13,6 @@ def normalise(image):
 # data augmentation
 def random_rotate_flip_image(image):
     # in numpy
-    np.random.seed(seed=0)
 
     rot_coef = np.random.randint(4, size=1)[0]  # 0-3
     flip_coef = np.random.randint(2, size=1)[0]  # 0-1
