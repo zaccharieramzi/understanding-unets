@@ -223,7 +223,7 @@ def train_learnlet(
         epochs=n_epochs,
         validation_data=im_ds_val,
         validation_steps=1,
-        verbose=1,
+        verbose=0,
         callbacks=[tboard_cback, chkpt_cback, norm_cback, lrate_cback],
         shuffle=False,
     )
