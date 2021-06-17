@@ -37,7 +37,7 @@ def select_patch_in_image_function(patch_size):
         if patch_size is not None:
             patch = tf.image.random_crop(
                 image,
-                [patch_size, patch_size, 1]
+                [patch_size, patch_size, 1],
             )
             return patch
         else:
