@@ -197,10 +197,12 @@ class LearnletAnalysis(Layer):
         outputs_list.append(wav_coarse)
         return outputs_list
 
-    def tiling(self, wav_thresholded_details):
+   def tiling(self, wav_thresholded_details):
         outputs_list = []
         for i_scale, wav_thresholded_detail in enumerate(wav_thresholded_details):
-            thresholded_details_tiled = self.convs_detail_tiling[i_scale](wav_thresholded_detail)
+            thresholded_details_tiled_fixed = self.convs_detail_tiling_fixed[i_scale](wav_thresholded_detail)
+            thresholded_details_tiled_train = self.convs_detail_tiling_train[i_scale](wav_thresholded_detail)
+            thresholded_details_tiled = Concatenate()([thresholded_details_tiled_fixed, thresholded_details_tiled_train])
             outputs_list.append(thresholded_details_tiled)
         return outputs_list
 
