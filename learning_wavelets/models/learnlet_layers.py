@@ -148,7 +148,7 @@ class LearnletAnalysis(Layer):
                 kernel_initializer='glorot_uniform',
                 use_bias=tiling_use_bias,
                 kernel_constraint=constraint,
-                trainable = False,
+                trainable=False,
                 name=f'{tiling_prefix}_{str(K.get_uid(tiling_prefix))}',
             ) for i in range(self.n_scales)
         ]
