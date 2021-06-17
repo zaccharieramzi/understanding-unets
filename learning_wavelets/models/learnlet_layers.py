@@ -149,7 +149,7 @@ class LearnletAnalysis(Layer):
                 use_bias=tiling_use_bias,
                 kernel_constraint=constraint,
                 trainable=False,
-                name=f'{tiling_prefix}_{str(K.get_uid(tiling_prefix))}',
+                name=f'{tiling_prefix}_fixed_{str(K.get_uid(tiling_prefix))}',
             ) for i in range(self.n_scales)
         ]
         self.convs_detail_tiling_train = [
