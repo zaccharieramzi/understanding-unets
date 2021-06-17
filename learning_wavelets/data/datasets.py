@@ -17,10 +17,10 @@ def random_rotate_flip_image(image):
     rot_coef = np.random.randint(4, size=1)[0]  # 0-3
     flip_coef = np.random.randint(2, size=1)[0]  # 0-1
 
-    image = np.rot90(image, rot_coef).copy()
+    image = np.rot90(image, rot_coef)
 
     if flip_coef == 1:
-        image = np.fliplr(image).copy()
+        image = np.fliplr(image)
 
     return image
 
