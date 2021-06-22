@@ -11,26 +11,33 @@ def normalise(image):
     return (image / 255) - 0.5
 
 # data augmentation
-def random_rotate_image(image):
+def random_rotate_flip_image(image):
     # in numpy
-    image = ndimage.rotate(image, np.random.uniform(-30, 30), reshape=False)
+
+    rot_coef = np.random.randint(4, size=1)[0]  # 0-3
+    flip_coef = np.random.randint(2, size=1)[0]  # 0-1
+
+    image = np.rot90(image, rot_coef)
+
+    if flip_coef == 1:
+        image = np.fliplr(image)
+
     return image
 
-def tf_random_rotate_image(image):
+def tf_random_rotate_flip_image(image):
     # in tf
     im_shape = image.shape
-    [image,] = tf.py_function(random_rotate_image, [image], [tf.float32])
+    [image,] = tf.py_function(random_rotate_flip_image, [image], [tf.float32])
     image.set_shape(im_shape)
     return image
 
 # patch selection
-def select_patch_in_image_function(patch_size, seed=0):
+def select_patch_in_image_function(patch_size):
     def select_patch_in_image(image):
         if patch_size is not None:
             patch = tf.image.random_crop(
                 image,
                 [patch_size, patch_size, 1],
-                seed=seed,
             )
             return patch
         else:
@@ -171,7 +178,12 @@ def im_dataset(
         decreasing_noise_level=decreasing_noise_level,
     )
     if mode == 'validation' or mode == 'training':
-        image_noisy_ds = image_patch_ds.map(
+        image_augm_ds = image_patch_ds.map(
+            tf_random_rotate_flip_image,
+            num_parallel_calls=tf.data.experimental.AUTOTUNE,
+        )
+
+        image_noisy_ds = image_augm_ds.map(
             lambda patch: (add_noise(patch), patch),
             num_parallel_calls=tf.data.experimental.AUTOTUNE,
         )
