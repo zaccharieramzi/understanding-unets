@@ -52,14 +52,13 @@ def metrics_wavelets_from_ds(ds, wavelet_id, noise_std=30, with_shape=True):
 
 def metrics_bm3d_from_ds(ds, noise_std=30, with_shape=True):
     metrics = Metrics()
-    import ipdb; ipdb.set_trace()
     pred_and_gt_shape = [
         (
-            bm3d.bm3d(
+            (bm3d.bm3d(
                 images_noisy[0, ..., 0].numpy() + 0.5,
                 sigma_psd=noise_std/255,
                 stage_arg=bm3d.BM3DStages.ALL_STAGES
-            )[None, ..., None],
+            ) - 0.5)[None, ..., None],
             images_gt.numpy(),
             im_shape.numpy(),
         )
