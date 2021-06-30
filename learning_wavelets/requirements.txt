@@ -11,3 +11,4 @@ click
 scikit-image
 pandas
 bm3d
+SciencePlots
