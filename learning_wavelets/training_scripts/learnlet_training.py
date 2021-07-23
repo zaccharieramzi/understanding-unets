@@ -136,7 +136,7 @@ def train_learnlet(
         data_func = im_dataset_bsd500
     elif source == 'div2k':
         data_func = im_dataset_div2k
-        im_ds_train = data_func(
+    im_ds_train = data_func(
         mode='training',
         batch_size=batch_size,
         patch_size=256,
