@@ -1,13 +1,18 @@
+import click
 import os
 import os.path as op
+import tensorflow as tf
 import time
 
-import numpy as np
-import cadmos_lib as cl
-import click
+try:
+    import numpy as np
+    import cadmos_lib as cl
+    has_cadmos = True
+except ImportError:
+    has_cadmos = False
+
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LearningRateScheduler
 from tensorflow.keras.optimizers import Adam
-import tensorflow as tf
 
 from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
 from learning_wavelets.data.datasets import im_dataset_div2k, im_dataset_bsd500
@@ -203,36 +208,37 @@ def train_learnlet(
         model(inputs)
     
     # Introducing shearlet filters for the analysis part
-
-    shearlets, shearlets_adj = cl.get_shearlets(512, 512, n_scales + 1) 
-
-    n_shearlets = np.shape(shearlets)[0]
-    total_size = np.shape(shearlets)[1]
-    n_shearlets_adj = np.shape(shearlets_adj)[0]
-    total_size_adj = np.shape(shearlets_adj)[1]
-    filter_size = kernel_sizes[0]
-    filter_size_adj = kernel_sizes[1]
     
-    crop_min = total_size//2 - filter_size//2
-    crop_max = total_size//2 + filter_size//2 + 1
-    resized_shearlets = np.zeros((n_scales, filter_size, filter_size, 1, n_shearlets)) 
-    crop_min_adj = total_size_adj//2 - filter_size_adj//2
-    crop_max_adj = total_size_adj//2 + filter_size_adj//2 + 1
-    resized_shearlets_adj = np.zeros((n_scales, filter_size_adj, filter_size_adj, n_shearlets_adj, 1)) 
-    
-    for i in range(n_shearlets):
-        resized_shearlets[:,:,:,0,i] = shearlets[i, crop_min:crop_max, crop_min:crop_max] 
-    analysis_filters = model.layers[0].get_weights()
-    for i in range(n_scales + 1, 2*n_scales + 1):
-        analysis_filters[i] = resized_shearlets[i-(n_scales + 1),:,:,:,:]
-    model.layers[0].set_weights(analysis_filters)
+    if has_cadmos:
+        shearlets, shearlets_adj = cl.get_shearlets(512, 512, n_scales + 1) 
 
-    for i in range(n_shearlets_adj):
-        resized_shearlets_adj[:,:,:,i,0] = shearlets_adj[i, crop_min_adj:crop_max_adj, crop_min_adj:crop_max_adj] 
-    synthesis_filters = model.layers[2].get_weights()
-    for i in range(n_scales, 2*n_scales):
-        synthesis_filters[i] = resized_shearlets_adj[i-n_scales,:,:,:,:]
-    model.layers[2].set_weights(synthesis_filters)
+        n_shearlets = np.shape(shearlets)[0]
+        total_size = np.shape(shearlets)[1]
+        n_shearlets_adj = np.shape(shearlets_adj)[0]
+        total_size_adj = np.shape(shearlets_adj)[1]
+        filter_size = kernel_sizes[0]
+        filter_size_adj = kernel_sizes[1]
+
+        crop_min = total_size//2 - filter_size//2
+        crop_max = total_size//2 + filter_size//2 + 1
+        resized_shearlets = np.zeros((n_scales, filter_size, filter_size, 1, n_shearlets)) 
+        crop_min_adj = total_size_adj//2 - filter_size_adj//2
+        crop_max_adj = total_size_adj//2 + filter_size_adj//2 + 1
+        resized_shearlets_adj = np.zeros((n_scales, filter_size_adj, filter_size_adj, n_shearlets_adj, 1)) 
+
+        for i in range(n_shearlets):
+            resized_shearlets[:,:,:,0,i] = shearlets[i, crop_min:crop_max, crop_min:crop_max] 
+        analysis_filters = model.layers[0].get_weights()
+        for i in range(n_scales + 1, 2*n_scales + 1):
+            analysis_filters[i] = resized_shearlets[i-(n_scales + 1),:,:,:,:]
+        model.layers[0].set_weights(analysis_filters)
+
+        for i in range(n_shearlets_adj):
+            resized_shearlets_adj[:,:,:,i,0] = shearlets_adj[i, crop_min_adj:crop_max_adj, crop_min_adj:crop_max_adj] 
+        synthesis_filters = model.layers[2].get_weights()
+        for i in range(n_scales, 2*n_scales):
+            synthesis_filters[i] = resized_shearlets_adj[i-n_scales,:,:,:,:]
+        model.layers[2].set_weights(synthesis_filters)
 
     model.fit(
         im_ds_train,
