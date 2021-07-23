@@ -151,7 +151,7 @@ class LearnletAnalysis(Layer):
                 use_bias=tiling_use_bias,
                 kernel_constraint=constraint, 
                 trainable=False,
-                name=f'{tiling_prefix}_{str(K.get_uid(tiling_prefix))}',
+                name=f'{tiling_prefix}_fixed_{str(K.get_uid(tiling_prefix))}',
             ) for i in range(self.n_scales)
         ]
         self.convs_detail_tiling_train = [
@@ -169,7 +169,7 @@ class LearnletAnalysis(Layer):
 
         if self.mixing_details:
             mixing_prefix = 'details_mixing'
-            self.convs_detail_mixing_fixed = [
+            self.convs_detail_mixing = [
                 Conv2D(
                     n_tiling,
                     self.kernel_size,
@@ -258,7 +258,7 @@ class LearnletSynthesis(Layer):
                 use_bias=synthesis_use_bias,
                 kernel_constraint=constraint,
                 trainable=False,
-                name=f'{groupping_prefix}_{str(K.get_uid(groupping_prefix))}',
+                name=f'{groupping_prefix}_fixed_{str(K.get_uid(groupping_prefix))}',
             ) for i in range(self.n_scales)
         ]
 
