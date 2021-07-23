@@ -2,16 +2,12 @@ import os
 import os.path as op
 import time
 
-import cadmos_lib as cl
 import click
-import numpy as np
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, LearningRateScheduler
-from tensorflow.keras.optimizers import Adam
 import tensorflow as tf
 
 from learning_wavelets.config import LOGS_DIR, CHECKPOINTS_DIR
 from learning_wavelets.data.datasets import im_dataset_div2k, im_dataset_bsd500
-from learning_wavelets.evaluate import keras_psnr, keras_ssim, center_keras_psnr
 from learning_wavelets.keras_utils.normalisation import NormalisationAdjustment
 from learning_wavelets.models.learned_wavelet import learnlet
 
@@ -77,44 +73,12 @@ tf.random.set_seed(1)
     help='The number of filters in the learnlets. Defaults to 256.',
 )
 @click.option(
-    'kernel_sizes',
-    '--k-sizes',
-    nargs=2,
-    default=(11, 13),
-    type=int,
-    help='The analysis and synthesis kernel sizes. Defaults to [11, 13]',
-)
-@click.option(
     'decreasing_noise_level',
     '--decr-n-lvl',
     is_flag=True,
     help='Set if you want the noise level distribution to be non uniform, skewed towards low value.',
 )
-@click.option(
-    'exact_reco',
-    '-e',
-    is_flag=True,
-    help='Set if you want the learnlets to have exact reconstruction.',
-)
-@click.option(
-    'n_reweights',
-    '-nr',
-    default=1,
-    help='The number of reweights. Defaults to 1.',
-)
-def train_learnlet(
-        noise_std_train,
-        noise_std_val,
-        n_samples,
-        source,
-        cuda_visible_devices,
-        denoising_activation,
-        n_filters,
-        kernel_sizes,
-        decreasing_noise_level,
-        exact_reco,
-        n_reweights,
-    ):
+def train_learnlet(noise_std_train, noise_std_val, n_samples, source, cuda_visible_devices, denoising_activation, n_filters, decreasing_noise_level):
     os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(cuda_visible_devices)
     # data preparation
     batch_size = 8
@@ -145,23 +109,19 @@ def train_learnlet(
             'n_tiling': n_filters,
             'mixing_details': False,
             'skip_connection': True,
-            'kernel_size': analysis_kernel_size,
+            'kernel_size': 11,
         },
         'learnlet_synthesis_kwargs': {
             'res': True,
-            'kernel_size': synthesis_kernel_size,
+            'kernel_size': 13,
         },
-        'threshold_kwargs':{
-            'noise_std_norm': True,
-        },
+        'wav_type': 'starlet',
         'n_scales': 5,
-        'n_reweights_learn': n_reweights,
-        'exact_reconstruction': exact_reco,
         'clip': False,
     }
-
     n_epochs = 500
-    run_id = f'learnlet_exact_recon_{exact_reco}_{n_filters}_{denoising_activation}_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{n_samples}_{int(time.time())}'    chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
+    run_id = f'learnlet_dynamic_{n_filters}_{denoising_activation}_{source}_{noise_std_train[0]}_{noise_std_train[1]}_{n_samples}_{int(time.time())}'
+    chkpt_path = f'{CHECKPOINTS_DIR}checkpoints/{run_id}' + '-{epoch:02d}.hdf5'
     print(run_id)
 
 
@@ -187,35 +147,13 @@ def train_learnlet(
     norm_cback.on_train_batch_end = norm_cback.on_batch_end
 
 
-   # run distributed
+    n_channels = 1
+    # run distributed
     mirrored_strategy = tf.distribute.MirroredStrategy()
     with mirrored_strategy.scope():
-        model = Learnlet(**run_params)
-        model.compile(
-            optimizer=Adam(lr=1e-3),
-            loss='mse',
-            metrics=[keras_psnr, keras_ssim],
-        )
-        inputs = [tf.zeros((1, 32, 32, 1)), tf.zeros((1, 1))]
-        model(inputs)
+        model = learnlet(input_size=(None, None, n_channels), lr=1e-3, **run_params)
+    print(model.summary(line_length=114))
 
-    shearlets, _ = cl.get_shearlets(512, 512, 6)
-
-    n_shearlets = np.shape(shearlets)[0]
-    total_size = np.shape(shearlets)[1]
-    half_filters = n_filters//2
-    filter_size = analysis_kernel_size
-    crop_min = total_size//2 - filter_size//2
-    crop_max = total_size//2 + filter_size//2 + 1
-    resized_shearlets = np.zeros((5, filter_size, filter_size, 1, half_filters))
-    for i in range(half_filters):
-        resized_shearlets[:,:,:,0,i] = shearlets[i % n_shearlets, crop_min:crop_max, crop_min:crop_max]
-    
-    filters = np.copy(model.layers[0].get_weights())
-    for i in range(6, 11):
-        filters[i] = resized_shearlets[i-6,:,:,:,:]
-
-    model.layers[0].set_weights(filters)
 
     model.fit(
         im_ds_train,
