@@ -216,15 +216,13 @@ def train_learnlet(
         total_size = np.shape(shearlets)[1]
         n_shearlets_adj = np.shape(shearlets_adj)[0]
         total_size_adj = np.shape(shearlets_adj)[1]
-        filter_size = kernel_sizes[0]
-        filter_size_adj = kernel_sizes[1]
 
-        crop_min = total_size//2 - filter_size//2
-        crop_max = total_size//2 + filter_size//2 + 1
-        resized_shearlets = np.zeros((n_scales, filter_size, filter_size, 1, n_shearlets)) 
-        crop_min_adj = total_size_adj//2 - filter_size_adj//2
-        crop_max_adj = total_size_adj//2 + filter_size_adj//2 + 1
-        resized_shearlets_adj = np.zeros((n_scales, filter_size_adj, filter_size_adj, n_shearlets_adj, 1)) 
+        crop_min = total_size//2 - analysis_kernel_size//2
+        crop_max = total_size//2 + analysis_kernel_size//2 + 1
+        resized_shearlets = np.zeros((n_scales, analysis_kernel_size, analysis_kernel_size, 1, n_shearlets)) 
+        crop_min_adj = total_size_adj//2 - synthesis_kernel_size//2
+        crop_max_adj = total_size_adj//2 + synthesis_kernel_size//2 + 1
+        resized_shearlets_adj = np.zeros((n_scales, synthesis_kernel_size, synthesis_kernel_size, n_shearlets_adj, 1)) 
 
         for i in range(n_shearlets):
             resized_shearlets[:,:,:,0,i] = shearlets[i, crop_min:crop_max, crop_min:crop_max] 
