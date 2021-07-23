@@ -6,7 +6,7 @@ from learning_wavelets.models.learnlet_model import Learnlet
 
 learnlet_test_cases = [
     {},
-    {'n_tiling': 256, 'n_reweights_learn': 3},
+    {'n_reweights_learn': 3},
     # TODO: maybe change in subclassed model to have a check for these 2 params when doing exact recon
     {'exact_reconstruction': False, 'learnlet_synthesis_kwargs': {'res': True}, 'learnlet_analysis_kwargs': {'skip_connection': True}},
 ]
