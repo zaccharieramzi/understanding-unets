@@ -123,7 +123,7 @@ class LearnletAnalysis(Layer):
             mixing_details=False,
             n_scales=5,
             kernel_size=11,
-            skip_connection=False,
+            skip_connection=True,
             n_shearlets=85,
             **wav_analysis_kwargs,
         ):
@@ -223,7 +223,7 @@ class LearnletAnalysis(Layer):
 
 class LearnletSynthesis(Layer):
     __name__ = 'learnlet_synthesis'
-    def __init__(self, normalize=True, n_scales=5, n_tiling=256, n_channels=1, synthesis_use_bias=False, synthesis_norm=False, res=False, kernel_size=13, wav_type='starlet', n_shearlets=85):
+    def __init__(self, normalize=True, n_scales=5, n_tiling=256, n_channels=1, synthesis_use_bias=False, synthesis_norm=False, res=True, kernel_size=13, wav_type='starlet', n_shearlets=85):
         super(LearnletSynthesis, self).__init__()
         self.normalize = normalize
         self.n_scales = n_scales
