@@ -23,7 +23,10 @@ def train_unet(
         n_layers=4, 
         non_linearity='relu', 
         batch_size=8, 
-        n_epochs=50
+        n_epochs=50,
+        bn=False,
+        exact_recon=False,
+        residual=False,
     ):
 
     # data preparation
@@ -51,7 +54,7 @@ def train_unet(
 
     # callbacks preparation
 
-    chkpt_cback = ModelCheckpoint(chkpt_path, period=n_epochs, save_weights_only=True)
+    chkpt_cback = ModelCheckpoint(chkpt_path, period=min(500, n_epochs), save_weights_only=True)
     log_dir = op.join(f'{LOGS_DIR}logs', run_id)
     tboard_cback = TensorBoard(
         log_dir=log_dir,
@@ -69,7 +72,10 @@ def train_unet(
             n_output_channels=1, 
             kernel_size=3, 
             layers_n_channels=[base_n_filters*2**j for j in range(0, n_layers)], 
-            non_linearity='relu'
+            non_linearity='relu',
+            bn=bn,
+            exact_recon=exact_recon,
+            residual=residual,
         )
         model.compile(optimizer=tfa.optimizers.RectifiedAdam(), loss='mse')
     
@@ -80,7 +86,7 @@ def train_unet(
         steps_per_epoch=200,
         epochs=n_epochs,
         validation_data=im_ds_val,
-        validation_steps=1,
+        validation_steps=15,
         verbose=1,
         callbacks=[tboard_cback, chkpt_cback],
         shuffle=False,
