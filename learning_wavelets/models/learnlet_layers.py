@@ -145,7 +145,7 @@ class LearnletAnalysis(Layer):
                 self.kernel_size,
                 activation='linear',
                 padding='same',
-                kernel_initializer='glorot_uniform',
+                kernel_initializer=tf.keras.initializers.Constant(value=1/25),
                 use_bias=tiling_use_bias,
                 kernel_constraint=constraint,
                 name=f'{tiling_prefix}_{str(K.get_uid(tiling_prefix))}',
