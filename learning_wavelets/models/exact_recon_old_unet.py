@@ -142,7 +142,7 @@ def exact_recon_old_unet(
 
     model = Model(inputs=(noisy_image, noise_std), outputs=output)
     model.compile(
-        optimizer=Adam(lr=lr, clipnorm=1.),
+        optimizer=Adam(lr=lr),
         loss='mean_squared_error',
         metrics=[keras_psnr, keras_ssim],
     )
