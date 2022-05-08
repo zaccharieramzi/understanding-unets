@@ -1,9 +1,8 @@
-from modopt.signal.wavelet import get_mr_filters, filter_convolve
-import numpy as np
-from pysap.extensions.sparse2d import Filter
-
-
 def wavelet_denoising_pysap(noisy_images, noise_std, wavelet_id='2', n_scales=2, soft_thresh=True, n_sigma=2):
+    from modopt.signal.wavelet import get_mr_filters, filter_convolve
+    import numpy as np
+    from pysap.extensions.sparse2d import Filter
+
     if soft_thresh:
         type_of_filtering = 2
     else:
