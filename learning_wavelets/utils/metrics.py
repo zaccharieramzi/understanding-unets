@@ -16,7 +16,7 @@ def metrics_from_ds(ds, with_shape=True, name=None, **net_params):
         for images_noisy, images_gt, im_shape in tqdm_notebook(ds)
     ]
     for im_recos, images, im_shape in tqdm_notebook(pred_and_gt_shape, desc=f'Stats for {name}'):
-        metrics.push(images.numpy(), im_recos.numpy(), im_shape.numpy())
+        metrics.push(images.numpy(), im_recos, im_shape.numpy())
     return metrics
 
 def metrics_original_from_ds(ds, with_shape=True):
