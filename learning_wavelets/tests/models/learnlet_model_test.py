@@ -51,7 +51,7 @@ def test_exact_reconstruction():
     assert res_psnr > 100
 
 
-def test_equivariance():
+def test_equivariance_scale():
     model = Learnlet(**learnlet_test_cases[-1])  # exact reco
     model.build([(None, 32, 32, 1), (None, 1)])
     image = tf.random.uniform((1, 32, 32, 1), maxval=1, seed=0)
