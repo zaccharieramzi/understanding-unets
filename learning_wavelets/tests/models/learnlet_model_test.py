@@ -60,3 +60,13 @@ def test_equivariance_scale():
     image_scaled = image * scale_factor
     res_image_scaled = model([image_scaled, scale_factor * tf.ones(1, 1)])
     np.testing.assert_allclose(res_image, res_image_scaled / 2, atol=1e-5, rtol=0)
+
+def test_equivariance_translation():
+    model = Learnlet(**learnlet_test_cases[-1])  # exact reco
+    model.build([(None, 32, 32, 1), (None, 1)])
+    image = tf.random.uniform((1, 32, 32, 1), maxval=1, seed=0)
+    res_image = model([image, tf.ones(1, 1)])
+    translation_value = 0.5
+    image_translated = image - translation_value
+    res_image_translated = model([image_translated, tf.ones(1, 1)])
+    np.testing.assert_allclose(res_image, res_image_translated + translation_value, atol=1e-5, rtol=0)
