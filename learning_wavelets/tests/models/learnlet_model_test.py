@@ -59,4 +59,4 @@ def test_equivariance():
     scale_factor = 2
     image_scaled = image * scale_factor
     res_image_scaled = model([image_scaled, scale_factor * tf.ones(1, 1)])
-    np.testing.assert_allclose(res_image, res_image_scaled, atol=1e-5, rtol=0)
+    np.testing.assert_allclose(res_image, res_image_scaled / 2, atol=1e-5, rtol=0)
